@@ -8,6 +8,9 @@ import '../features/quran/state/quran_bloc.dart';
 import '../features/hadith/services/hadith_service.dart';
 import '../features/hadith/state/hadith_bloc.dart';
 import '../features/quran/services/preferences_service.dart';
+import '../features/quran/services/wbw_database_service.dart';
+import 'services/translation_service.dart';
+import 'state/language_cubit.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -39,8 +42,11 @@ Future<void> setupDependencies() async {
   ));
 
   // ─── Services ──────────────────────────────
+  sl.registerLazySingleton<WbwDatabaseService>(
+        () => WbwDatabaseService.instance,
+  );
   sl.registerLazySingleton<QuranService>(
-        () => QuranService(dio, quranCacheBox),
+        () => QuranService(dio, quranCacheBox, sl<WbwDatabaseService>()),
   );
   sl.registerLazySingleton<TafseerService>(
         () => TafseerService(dio, quranCacheBox),
@@ -48,8 +54,14 @@ Future<void> setupDependencies() async {
   sl.registerLazySingleton<HadithService>(
         () => HadithService(dio, hadithCacheBox),
   );
+  sl.registerLazySingleton<TranslationService>(
+        () => TranslationService(dio),
+  );
 
   // ─── BLoCs ─────────────────────────────────
+  sl.registerFactory<LanguageCubit>(
+        () => LanguageCubit(),
+  );
   sl.registerFactory<QuranBloc>(
         () => QuranBloc(sl<QuranService>()),
   );

@@ -25,6 +25,7 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
     on<LoadSurahEvent>(_onLoadSurah);
     on<LoadSurahWordByWordEvent>(_onLoadSurahWordByWord);
     on<ChangeReadingModeEvent>(_onChangeReadingMode);
+    on<ChangeWbwLanguageEvent>(_onChangeWbwLanguage);
     on<ChangeFontSizeEvent>(_onChangeFontSize);
     on<ToggleTajweedEvent>(_onToggleTajweed);
     on<ToggleTransliterationEvent>(_onToggleTransliteration);
@@ -139,7 +140,10 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
       final surahMeta = allSurahs.firstWhere((s) => s.number == event.surahNumber);
 
       // Word-by-word ayahs
-      final ayahs = await _quranService.getSurahWithWordByWord(event.surahNumber);
+      final ayahs = await _quranService.getSurahWithWordByWord(
+        event.surahNumber,
+        languageCode: _preferences.wbwLanguage,
+      );
       _bookmarks = await _quranService.getBookmarks();
 
       emit(SurahWordByWordLoaded(
@@ -163,6 +167,21 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
     _preferences = _preferences.copyWith(displayMode: event.mode);
     await _quranService.saveReadingPreferences(_preferences);
     _emitPreferencesUpdate(emit);
+  }
+
+  Future<void> _onChangeWbwLanguage(
+      ChangeWbwLanguageEvent event,
+      Emitter<QuranState> emit,
+      ) async {
+    _preferences = _preferences.copyWith(wbwLanguage: event.languageCode);
+    await _quranService.saveReadingPreferences(_preferences);
+    _emitPreferencesUpdate(emit);
+
+    // If currently showing WBW, reload it to reflect new language translations
+    if (state is SurahWordByWordLoaded) {
+      final currentSurah = (state as SurahWordByWordLoaded).surahMeta;
+      add(LoadSurahWordByWordEvent(surahNumber: currentSurah.number));
+    }
   }
 
   Future<void> _onChangeFontSize(

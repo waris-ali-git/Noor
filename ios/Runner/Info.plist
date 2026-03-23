@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs access to location to provide precise daily prayer timings based on your current city.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app needs access to location to provide precise daily prayer timings based on your current city.</string>
 </dict>
 </plist>

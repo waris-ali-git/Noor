@@ -46,6 +46,16 @@ class ChangeReadingModeEvent extends QuranEvent {
   List<Object?> get props => [mode];
 }
 
+/// Word-by-Word mode ke liye language change karo
+class ChangeWbwLanguageEvent extends QuranEvent {
+  final String languageCode;
+
+  const ChangeWbwLanguageEvent({required this.languageCode});
+
+  @override
+  List<Object?> get props => [languageCode];
+}
+
 /// Font size adjust karo
 class ChangeFontSizeEvent extends QuranEvent {
   final double arabicSize;

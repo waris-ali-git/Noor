@@ -79,6 +79,7 @@ class ReadingPreferences extends Equatable {
   final String selectedTranslation;
   final bool showTransliteration;
   final int selectedReciterId;
+  final String wbwLanguage;
 
   const ReadingPreferences({
     this.displayMode = ReadingDisplayMode.arabicWithTranslation,
@@ -88,6 +89,7 @@ class ReadingPreferences extends Equatable {
     this.selectedTranslation = 'ur.jalandhry',
     this.showTransliteration = false,
     this.selectedReciterId = 7, // Mishari Rashid Al-Afasy
+    this.wbwLanguage = 'ur', // Default Urdu word by word
   });
 
   ReadingPreferences copyWith({
@@ -98,6 +100,7 @@ class ReadingPreferences extends Equatable {
     String? selectedTranslation,
     bool? showTransliteration,
     int? selectedReciterId,
+    String? wbwLanguage,
   }) {
     return ReadingPreferences(
       displayMode: displayMode ?? this.displayMode,
@@ -107,6 +110,7 @@ class ReadingPreferences extends Equatable {
       selectedTranslation: selectedTranslation ?? this.selectedTranslation,
       showTransliteration: showTransliteration ?? this.showTransliteration,
       selectedReciterId: selectedReciterId ?? this.selectedReciterId,
+      wbwLanguage: wbwLanguage ?? this.wbwLanguage,
     );
   }
 
@@ -119,5 +123,6 @@ class ReadingPreferences extends Equatable {
     selectedTranslation,
     showTransliteration,
     selectedReciterId,
+    wbwLanguage,
   ];
 }

@@ -28,14 +28,14 @@ class WordByWordAyahWidget extends StatelessWidget {
     required this.onTafseerTap,
   });
 
-  // Har word ko ek rng — cycle karta rahe (image jaise)
+  // Har word ko ek rng — cycle karta rahe (elegant scheme)
   static const List<Color> _wordColors = [
-    Color(0xFF1565C0), // Blue
-    Color(0xFFB71C1C), // Red
-    Color(0xFF1B5E20), // Green
-    Color(0xFF6A1B9A), // Purple
-    Color(0xFFE65100), // Orange
-    Color(0xFF00695C), // Teal
+    Color(0xFF0F4C81), // Classic Blue
+    Color(0xFF9B1B30), // Deep Red
+    Color(0xFF2E4053), // Slate
+    Color(0xFF8E44AD), // Muted Purple
+    Color(0xFFC0392B), // Brick
+    Color(0xFF229954), // Emerald
   ];
 
   @override
@@ -233,11 +233,12 @@ class _WordCard extends StatelessWidget {
               word.translation!,
               style: TextStyle(
                 color: Colors.black54,
+                fontWeight: FontWeight.w500,
                 fontSize: translationFontSize - 2,
               ),
               textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+              maxLines: 4,
+              overflow: TextOverflow.visible,
             ),
         ],
       ),

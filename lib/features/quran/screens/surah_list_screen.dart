@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/widgets/language_selector_button.dart';
+import '../../../core/widgets/translated_text.dart';
 import '../models/ayah.dart';
 import '../state/quran_bloc.dart';
 import '../models/surah.dart';
@@ -65,6 +67,9 @@ class _SurahListScreenState extends State<SurahListScreen> {
           ),
         ),
         centerTitle: true,
+        actions: const [
+          LanguageSelectorButton(),
+        ],
       ),
       body: BlocBuilder<QuranBloc, QuranState>(
         buildWhen: (previous, current) {
@@ -131,7 +136,7 @@ class _SurahListScreenState extends State<SurahListScreen> {
                       children: [
                         const Icon(Icons.search_off, size: 64, color: Colors.grey),
                         const SizedBox(height: 16),
-                        const Text(
+                        const TranslatedText(
                           'یہ نام کسی سورہ کا نہیں ہے',
                           style: TextStyle(fontSize: 18, color: Colors.grey),
                         ),
@@ -141,9 +146,18 @@ class _SurahListScreenState extends State<SurahListScreen> {
                             context.read<QuranBloc>().add(SearchQuranEvent(query: _searchController.text));
                           },
                           icon: const Icon(Icons.menu_book, color: Color(0xFF1B5E20)),
-                          label: Text(
-                            'قرآن کی آیات میں تلاش کریں: "${_searchController.text}"',
-                            style: const TextStyle(color: Color(0xFF1B5E20)),
+                          label: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const TranslatedText(
+                                'قرآن کی آیات میں تلاش کریں:',
+                                style: TextStyle(color: Color(0xFF1B5E20)),
+                              ),
+                              Text(
+                                ' "${_searchController.text}"',
+                                style: const TextStyle(color: Color(0xFF1B5E20)),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -259,7 +273,7 @@ class _LoadingWidget extends StatelessWidget {
         children: [
           CircularProgressIndicator(color: Color(0xFF1B5E20)),
           SizedBox(height: 16),
-          Text('قرآن لوڈ ہو رہا ہے...', style: TextStyle(fontSize: 16)),
+          TranslatedText('قرآن لوڈ ہو رہا ہے...', style: TextStyle(fontSize: 16)),
         ],
       ),
     );
@@ -282,7 +296,7 @@ class _ErrorWidget extends StatelessWidget {
           children: [
             const Icon(Icons.wifi_off, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
-            const Text(
+            const TranslatedText(
               'انٹرنیٹ کنکشن نہیں',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
@@ -292,7 +306,7 @@ class _ErrorWidget extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('دوبارہ کوشش کریں'),
+              label: const TranslatedText('دوبارہ کوشش کریں'),
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20)),
             ),
           ],
@@ -334,7 +348,7 @@ class _LastReadBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                const TranslatedText(
                   'آخری پڑھی ہوئی جگہ',
                   style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
@@ -350,7 +364,7 @@ class _LastReadBanner extends StatelessWidget {
           ),
           TextButton(
             onPressed: onContinue,
-            child: const Text('جاری رکھیں', style: TextStyle(color: Colors.white)),
+            child: const TranslatedText('جاری رکھیں', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -524,7 +538,7 @@ class _SurahListTile extends StatelessWidget {
               style: const TextStyle(color: Colors.grey),
             ),
             const Divider(height: 24),
-            const Text(
+            const TranslatedText(
               'پڑھنے کا طریقہ منتخب کریں',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             ),
@@ -594,8 +608,8 @@ class _ModeTile extends StatelessWidget {
         backgroundColor: const Color(0xFFE8F5E9),
         child: Icon(icon, color: const Color(0xFF1B5E20)),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+      title: TranslatedText(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      subtitle: TranslatedText(subtitle, style: const TextStyle(fontSize: 12)),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
     );

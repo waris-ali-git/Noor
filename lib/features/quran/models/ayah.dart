@@ -21,6 +21,12 @@ extension ArabicStringExtension on String {
     t = t.replaceAll('\u064F\u06E2', '\u06E2'); // Damma + Small Waw -> Small Waw
     t = t.replaceAll('\u0650\u06E3', '\u06E3'); // Kasra + Small Yeh -> Small Yeh
 
+    // 4. Fix Alif Khanjariyah issues (اَلْخَنْجَرِيَّة)
+    // These are combining marks that should render properly or be normalized
+    t = t.replaceAll('\u0653', 'ٓ'); // Maddah above -> normalize to standard form
+    t = t.replaceAll('\u0654', 'ٔ'); // Hamza above -> normalize
+    t = t.replaceAll('\u0655', 'ٕ'); // Hamza below -> normalize
+
     return t;
   }
 }

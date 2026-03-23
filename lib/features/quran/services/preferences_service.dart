@@ -23,6 +23,9 @@ class PreferencesService {
     _prefs = await SharedPreferences.getInstance();
   }
 
+  /// Expose the SharedPreferences instance
+  SharedPreferences? get prefs => _prefs;
+
   /// Get the saved reciter ID, defaults to 'alafasy'
   String getSelectedReciterId() {
     return _prefs.getString(_selectedReciterId) ?? 'alafasy';

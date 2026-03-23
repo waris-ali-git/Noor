@@ -1,9 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import '../models/surah.dart';
 import '../models/ayah.dart';
 import '../models/reading_mode.dart';
 import '../models/translation_edition.dart';
+
+import 'wbw_database_service.dart';
 
 /// Quran Service — AlQuran.cloud + Quran.com dono APIs use karta hai
 /// AlQuran.cloud  → Surah list, Ayah text, Translation
@@ -11,6 +14,7 @@ import '../models/translation_edition.dart';
 class QuranService {
   final Dio _dio;
   final Box<dynamic> _cacheBox;
+  final WbwDatabaseService _wbwDbService;
 
   static const String _alQuranBase = 'https://api.alquran.cloud/v1';
   static const String _quranComBase = 'https://api.quran.com/api/v4';
@@ -18,7 +22,7 @@ class QuranService {
   // Quran.com audio reciters
   static const int _defaultReciterId = 7; // Mishari Rashid Al-Afasy
 
-  QuranService(this._dio, this._cacheBox);
+  QuranService(this._dio, this._cacheBox, this._wbwDbService);
 
   // ─────────────────────────────────────────────
   // 1. SURAH LIST  (AlQuran.cloud)
@@ -90,7 +94,7 @@ class QuranService {
       int surahNumber,
       String translationEdition,
       ) async {
-    final cacheKey = 'surah_${surahNumber}_${translationEdition}_ur_maududi';
+    final cacheKey = 'surah_v2_${surahNumber}_${translationEdition}_ur_maududi';
     try {
       final cached = _cacheBox.get(cacheKey);
       if (cached != null) {
@@ -125,8 +129,11 @@ class QuranService {
           final tj = Map<String, dynamic>.from(tajweedAyahs[i] as Map);
           final tf = Map<String, dynamic>.from(tafseerAyahs[i] as Map); // Tafseer ayah
           
+          final rawTrans = tr['text'] as String?;
+          final cleanTrans = rawTrans?.replaceAll(RegExp(r'<[^>]*>'), '').trim();
+
           mergedAyahs.add(ar.copyWith(
-            translation: tr['text'] as String?,
+            translation: cleanTrans,
             tajweedText: tj['text'] as String?,
             tafseerText: tf['text'] as String?, // Store Tafseer text
           ));
@@ -154,10 +161,9 @@ class QuranService {
   /// Har word mein arabic, transliteration, translation, tajweed segments hain
   Future<List<Ayah>> getSurahWithWordByWord(
       int surahNumber, {
-        int translationId = 131, // Urdu: Dr. Farooq Khan & Dr. Nadeem
-        // English: 131 = Dr. Wahiduddin Khan, 57 = Sahih International
+        String languageCode = 'ur',
       }) async {
-    final cacheKey = 'surah_wbw_${surahNumber}_${translationId}_v2';
+    final cacheKey = 'surah_wbw_v3_${surahNumber}_${languageCode}_sqlite2';
     try {
       final cached = _cacheBox.get(cacheKey);
       if (cached != null) {
@@ -174,10 +180,8 @@ class QuranService {
         final res = await _dio.get(
           '$_quranComBase/verses/by_chapter/$surahNumber',
           queryParameters: {
-            'language': 'ur',
             'words': true,
             'word_fields': 'text_uthmani,transliteration,tajweed',
-            'translations': translationId,
             'per_page': 50,
             'page': page,
           },
@@ -197,6 +201,48 @@ class QuranService {
           page++;
         } else {
           break;
+        }
+      }
+
+      // Fetch local translations
+      final localTranslations = await _wbwDbService.getSurahTranslations(surahNumber, languageCode);
+
+      debugPrint('QuranService: WBW merge → ${ayahs.length} ayahs, ${localTranslations.length} DB entries');
+      
+      // Log first few keys from both sides for debugging
+      if (localTranslations.isNotEmpty) {
+        final dbKeys = localTranslations.keys.take(5).toList();
+        debugPrint('QuranService: DB keys sample: $dbKeys');
+      }
+      if (ayahs.isNotEmpty && ayahs.first.ayahWords != null) {
+        final apiKeys = ayahs.first.ayahWords!
+            .take(5)
+            .map((w) => '${ayahs.first.numberInSurah}:${w.position}')
+            .toList();
+        debugPrint('QuranService: API keys sample: $apiKeys');
+      }
+
+      // Merge translations into words
+      for (int i = 0; i < ayahs.length; i++) {
+        final ayah = ayahs[i];
+        if (ayah.ayahWords != null) {
+          final updatedWords = ayah.ayahWords!.map((word) {
+            final key = '${ayah.numberInSurah}:${word.position}';
+            final localTrans = localTranslations[key];
+
+            final diagnosticTrans = localTranslations.isEmpty 
+                ? '[DB EMPTY/ERR]' 
+                : '[NO MATCH ${ayah.numberInSurah}:${word.position}]';
+
+            return AyahWord(
+              position: word.position,
+              arabic: word.arabic,
+              translation: localTrans ?? diagnosticTrans,
+              transliteration: word.transliteration,
+              tajweedSegments: word.tajweedSegments,
+            );
+          }).toList();
+          ayahs[i] = ayah.copyWith(words: updatedWords);
         }
       }
 
@@ -358,6 +404,7 @@ class QuranService {
       'translationFontSize': prefs.translationFontSize,
       'selectedTranslation': prefs.selectedTranslation,
       'showTransliteration': prefs.showTransliteration,
+      'wbwLanguage': prefs.wbwLanguage,
     });
   }
 
@@ -370,8 +417,9 @@ class QuranService {
       showTajweed: map['showTajweed'] as bool? ?? true,
       arabicFontSize: (map['arabicFontSize'] as num?)?.toDouble() ?? 28.0,
       translationFontSize: (map['translationFontSize'] as num?)?.toDouble() ?? 16.0,
-      selectedTranslation: map['selectedTranslation'] as String? ?? 'en.sahih',
+      selectedTranslation: map['selectedTranslation'] as String? ?? 'ur.jalandhry',
       showTransliteration: map['showTransliteration'] as bool? ?? false,
+      wbwLanguage: map['wbwLanguage'] as String? ?? 'ur',
     );
   }
 }

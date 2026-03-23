@@ -4,6 +4,7 @@ import '../../state/quran_bloc.dart';
 import '../../models/reading_mode.dart';
 import '../widgets/tajweed_ayah.dart';
 import '../translation_selection_screen.dart';
+import 'wbw_language_selector.dart';
 
 /// Reading Settings Bottom Sheet
 /// - Reading mode select karo
@@ -63,9 +64,19 @@ class ReadingSettingsSheet extends StatelessWidget {
                     _ReadingModeSelector(
                       current: prefs.displayMode,
                       onChanged: (mode) {
-                        context.read<QuranBloc>().add(ChangeReadingModeEvent(mode: mode));
-                        onModeChanged?.call(mode);
-                        Navigator.pop(context);
+                        if (mode == ReadingDisplayMode.wordByWord) {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => BlocProvider.value(
+                              value: context.read<QuranBloc>(),
+                              child: WbwLanguageSelector(onModeChanged: onModeChanged),
+                            ),
+                          );
+                        } else {
+                          context.read<QuranBloc>().add(ChangeReadingModeEvent(mode: mode));
+                          onModeChanged?.call(mode);
+                          Navigator.pop(context);
+                        }
                       },
                     ),
                     const Divider(height: 24),

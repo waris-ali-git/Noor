@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'core/di.dart';
 import 'features/quran/state/quran_bloc.dart';
 import 'features/hadith/state/hadith_bloc.dart';
 import 'features/home/screens/home_screen.dart';
+import 'core/state/language_cubit.dart';
+import 'core/di.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await setupDependencies();
   runApp(const IslamicApp());
 }
@@ -18,10 +20,13 @@ class IslamicApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider(create: (_) => sl<LanguageCubit>()),
         BlocProvider(create: (_) => sl<QuranBloc>()),
         BlocProvider(create: (_) => sl<HadithBloc>()),
       ],
-      child: MaterialApp(
+      child: BlocBuilder<LanguageCubit, String>(
+        builder: (context, currentLang) {
+          return MaterialApp(
         title: 'Islamic App',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
@@ -32,8 +37,9 @@ class IslamicApp extends StatelessWidget {
           ),
           fontFamily: 'Poppins', // Latin text ke liye
         ),
-        home: const HomeScreen(),
-      ),
+          home: const HomeScreen(),
+        );
+      }),
     );
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/widgets/language_selector_button.dart';
+import '../../../core/widgets/translated_text.dart';
 import '../state/hadith_bloc.dart';
 import 'hadith_reader_screen.dart';
 
@@ -23,8 +25,11 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ahadeeth (احادیث)', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const TranslatedText('Ahadeeth (احادیث)', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
+        actions: const [
+          LanguageSelectorButton(),
+        ],
       ),
       body: BlocBuilder<HadithBloc, HadithState>(
         buildWhen: (previous, current) {
@@ -56,7 +61,7 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
 
           final books = bloc.books;
           if (books.isEmpty) {
-            return const Center(child: Text('No books available.'));
+            return const Center(child: TranslatedText('No books available.'));
           }
 
           // Important Books first (Bukhari, Muslim, etc.)
@@ -104,7 +109,7 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
                       const SizedBox(height: 16),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text(
+                        child: TranslatedText(
                           book.name,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
@@ -114,9 +119,18 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        '${book.editions.length} Translations',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${book.editions.length} ',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                          ),
+                          TranslatedText(
+                            'Translations',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                          ),
+                        ],
                       ),
                     ],
                   ),
