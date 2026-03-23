@@ -1,0 +1,92 @@
+[
+  {
+    "id": "1",
+    "title": "Takbeer-e-Tehreema",
+    "description": "Stand respectfully, face the Qibla, raise both hands up to the earlobes (for men) or shoulders (for women), state your intention (Niyyah), and say 'Allahu Akbar'.",
+    "arabicDua": "اَللّٰهُ اَكْبَرُ",
+    "duaTransliteration": "Allahu Akbar",
+    "duaTranslation": "Allah is the greatest",
+    "imagePath": "assets/images/namaz/niyyah.png"
+  },
+  {
+    "id": "2",
+    "title": "Qiyam (Standing & Sana)",
+    "description": "Fold your hands below the navel (for men) or on the chest (for women). Look towards the place of prostration and recite Thana (Sana).",
+    "arabicDua": "سُبْحَانَكَ اللّٰهُمَّ وَبِحَمْدِكَ وَتَبَارَكَ اسْمُكَ وَتَعَالٰی جَدُّكَ وَلَا اِلٰهَ غَيْرُكَ",
+    "duaTransliteration": "Subhanaka Allahumma wa bihamdika, wa tabarakasmuka, wa ta'ala jadduka, wa la ilaha ghayruk",
+    "duaTranslation": "Glory be to You O Allah, and all praises are due unto You, and blessed is Your name and high is Your majesty and none is worthy of worship but You.",
+    "imagePath": "assets/images/namaz/qiyam.png"
+  },
+  {
+    "id": "3",
+    "title": "Reciting Surah Al-Fatihah",
+    "description": "While still in the standing position (Qiyam), recite the complete Surah Al-Fatihah.",
+    "arabicDua": "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ. اَلْحَمْدُ لِلّٰهِ رَبِّ الْعَالَمِيْنَ. الرَّحْمٰنِ الرَّحِيْمِ. مَالِكِ يَوْمِ الدِّيْنِ. اِيَّاكَ نَعْبُدُ وَاِيَّاكَ نَسْتَعِيْنُ. اِهْدِنَا الصِّرَاطَ الْمُسْتَقِيْمَ. صِرَاطَ الَّذِيْنَ اَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوْبِ عَلَيْهِمْ وَلَا الضَّآلِّيْنَ.",
+    "duaTransliteration": "Bismillaahir-Rahmaanir-Raheem. Alhamdu lillaahi Rabbil-'aalameen. Ar-Rahmaanir-Raheem. Maaliki Yawmid-Deen. Iyyaaka na'budu wa iyyaaka nasta'een. Ihdinas-Siraatal-Mustaqeem. Siraatal-ladheena an'amta 'alayhim ghayril-maghdoobi 'alayhim walad-daalleen.",
+    "duaTranslation": "In the name of Allah, most Gracious, most Merciful. Praise be to Allah, Lord of the worlds. The most Gracious, the most Merciful. Master of the Day of Judgment. You alone do we worship, and You alone do we ask for help. Guide us to the straight path. The path of those upon whom You have bestowed favor, not of those who have evoked Your anger or of those who are astray.",
+    "imagePath": "assets/images/namaz/qiyam.png"
+  },
+  {
+    "id": "4",
+    "title": "Ruku (Bowing)",
+    "description": "Say 'Allahu Akbar' and bow down. Keep your back straight, grasp your knees with your hands. Recite the Tasbeeh 3 times.",
+    "arabicDua": "سُبْحَانَ رَبِّيَ الْعَظِيْمِ",
+    "duaTransliteration": "Subhana Rabbiyal Azeem",
+    "duaTranslation": "Glory be to my Lord the Almighty",
+    "imagePath": "assets/images/namaz/ruku.png"
+  },
+  {
+    "id": "5",
+    "title": "Qawmah (Standing up from Ruku)",
+    "description": "Stand up straight from Ruku. While rising, recite the Tasmee, and when fully upright, recite the Tahmeed.",
+    "arabicDua": "سَمِعَ اللّٰهُ لِمَنْ حَمِدَهُ. رَبَّنَا وَلَكَ الْحَمْدُ",
+    "duaTransliteration": "Sami Allahu liman hamidah. Rabbana walakal hamd.",
+    "duaTranslation": "Allah hears those who praise Him. Our Lord, all praise be to You.",
+    "imagePath": "assets/images/namaz/qawmah.png"
+  },
+  {
+    "id": "6",
+    "title": "Sujood (Prostration)",
+    "description": "Say 'Allahu Akbar' and go down for Sujood. Recite the Tasbeeh 3 times.",
+    "arabicDua": "سُبْحَانَ رَبِّيَ الْاَعْلٰی",
+    "duaTransliteration": "Subhana Rabbiyal A'la",
+    "duaTranslation": "Glory be to my Lord, the Most High",
+    "imagePath": "assets/images/namaz/sujood.png"
+  },
+  {
+    "id": "7",
+    "title": "At-tahiyyat (Tashahhud)",
+    "description": "Sit comfortably (Qa'dah) and recite the full Tashahhud.",
+    "arabicDua": "اَلتَّحِيَّاتُ لِلّٰهِ وَالصَّلَوَاتُ وَالطَّيِّبَاتُ، اَلسَّلَامُ عَلَيْكَ اَيُّهَا النَّبِيُّ وَرَحْمَةُ اللّٰهِ وَبَرَكَاتُهُ، اَلسَّلَامُ عَلَيْنَا وَعَلٰی عِبَادِ اللّٰهِ الصَّالِحِيْنَ، اَشْهَدُ اَنْ لَّا اِلٰهَ اِلَّا اللّٰهُ وَاَشْهَدُ اَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُوْلُهُ",
+    "duaTransliteration": "At-tahiyyatu lillahi was-salawatu wat-tayyibat. As-salamu 'alayka ayyuhan-nabiyyu wa rahmatullahi wa barakatuh. As-salamu 'alayna wa 'ala 'ibadillahis-salihin. Ash-hadu an la ilaha illallahu wa ash-hadu anna Muhammadan 'abduhu wa rasuluh.",
+    "duaTranslation": "All greetings, prayers, and pure words are for Allah. Peace be upon you, O Prophet, and the mercy of Allah and His blessings. Peace be upon us and upon the righteous servants of Allah. I bear witness that there is no god but Allah, and I bear witness that Muhammad is His servant and His messenger.",
+    "imagePath": "assets/images/namaz/qadah.png"
+  },
+  {
+    "id": "8",
+    "title": "Darood Sharif",
+    "description": "In the final sitting, after Tashahhud, recite the complete Darood Ibrahim.",
+    "arabicDua": "اَللّٰهُمَّ صَلِّ عَلٰی مُحَمَّدٍ وَّعَلٰی اٰلِ مُحَمَّدٍ كَمَا صَلَّيْتَ عَلٰی اِبْرَاهِيْمَ وَعَلٰی اٰلِ اِبْرَاهِيْمَ اِنَّكَ حَمِيْدٌ مَّجِيْدٌ. اَللّٰهُمَّ بَارِكْ عَلٰی مُحَمَّدٍ وَّعَلٰی اٰلِ مُحَمَّدٍ كَمَا بَارَكْتَ عَلٰی اِبْرَاهِيْمَ وَعَلٰی اٰلِ اِبْرَاهِيْمَ اِنَّكَ حَمِيْدٌ مَّجِيْدٌ",
+    "duaTransliteration": "Allahumma salli 'ala Muhammadin wa 'ala aali Muhammadin kama sallayta 'ala Ibrahima wa 'ala aali Ibrahima innaka Hamidum-Majid. Allahumma barik 'ala Muhammadin wa 'ala aali Muhammadin kama barakta 'ala Ibrahima wa 'ala aali Ibrahima innaka Hamidum-Majid.",
+    "duaTranslation": "O Allah, send blessings upon Muhammad and upon the family of Muhammad, as You sent blessings upon Ibrahim and upon the family of Ibrahim; indeed, You are Praiseworthy and Glorious. O Allah, bless Muhammad and the family of Muhammad, as You blessed Ibrahim and the family of Ibrahim; indeed, You are Praiseworthy and Glorious.",
+    "imagePath": "assets/images/namaz/qadah.png"
+  },
+  {
+    "id": "9",
+    "title": "Dua-e-Masura",
+    "description": "After Darood, recite a concluding Dua before Salam.",
+    "arabicDua": "اَللّٰهُمَّ اِنِّيْ ظَلَمْتُ نَفْسِيْ ظُلْمًا كَثِيْرًا وَّلَا يَغْفِرُ الذُّنُوْبَ اِلَّا اَنْتَ فَاغْفِرْ لِيْ مَغْفِرَةً مِّنْ عِنْدِكَ وَارْحَمْنِيْ اِنَّكَ اَنْتَ الْغَفُوْرُ الرَّحِيْمُ",
+    "duaTransliteration": "Allahumma inni zalamtu nafsi zulman katheeran wala yaghfiruz-zunuba illa anta faghfirli maghfiratan min 'indika warhamni innaka antal Ghafoorur-Raheem.",
+    "duaTranslation": "O Allah, I have greatly wronged myself and no one forgives sins except You, so grant me forgiveness from You and have mercy on me. Indeed, You are the Forgiving, the Merciful.",
+    "imagePath": "assets/images/namaz/qadah.png"
+  },
+  {
+    "id": "10",
+    "title": "Salam & Conclusion",
+    "description": "Turn your face first to the right and then to the left, saying the Salam both times.",
+    "arabicDua": "اَلسَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللّٰهِ",
+    "duaTransliteration": "Assalamu 'alaikum wa rahmatullah",
+    "duaTranslation": "May the peace and mercy of Allah be upon you",
+    "imagePath": "assets/images/namaz/salam.png"
+  }
+]
