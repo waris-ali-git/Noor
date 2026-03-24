@@ -4,6 +4,7 @@ import '../../hadith/screens/hadith_books_screen.dart';
 import '../../worship/screens/worship_home.dart';
 import '../../../core/widgets/translated_text.dart';
 import '../../../core/widgets/language_selector_button.dart';
+import '../../qibla/screens/qibla_home.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -61,6 +62,20 @@ class HomeScreen extends StatelessWidget {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const WorshipHomeScreen()));
               },
               child: const TranslatedText('Worship', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                backgroundColor: Colors.teal.shade50,
+                foregroundColor: Colors.teal.shade900,
+              ),
+              onPressed: () {
+                // Ignore lint for direct push without context check because we are in a simple stateless widget 
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaHomeScreen()));
+              },
+              child: const TranslatedText('Qibla Compass', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             ),
           ],
         ),

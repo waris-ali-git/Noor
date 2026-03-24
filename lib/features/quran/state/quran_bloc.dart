@@ -17,6 +17,7 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
   ReadingPreferences _preferences = const ReadingPreferences();
   List<String> _bookmarks = [];
   List<TranslationEdition> _availableTranslations = [];
+  List<Surah> _cachedSurahs = []; // Surah meta cache to avoid re-fetching
 
   List<TranslationEdition> get availableTranslations => _availableTranslations;
 
@@ -47,6 +48,7 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
     emit(const QuranLoading());
     try {
       final surahs = await _quranService.getAllSurahs();
+      _cachedSurahs = surahs; // Cache for WBW meta lookups
       final lastRead = await _quranService.getLastRead();
       _preferences = await _quranService.getReadingPreferences();
       _bookmarks = await _quranService.getBookmarks();
@@ -65,9 +67,24 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
       LoadSurahEvent event,
       Emitter<QuranState> emit,
       ) async {
-    emit(const QuranLoading());
     try {
       final edition = event.translationEdition ?? _preferences.selectedTranslation;
+      _bookmarks = await _quranService.getBookmarks();
+
+      // Cache-first: try to show cached data instantly (no loading spinner!)
+      final cachedSurah = _quranService.getCachedSurah(event.surahNumber, edition);
+      if (cachedSurah != null) {
+        emit(SurahLoaded(
+          surah: cachedSurah,
+          preferences: _preferences,
+          bookmarks: _bookmarks,
+          isFullyLoaded: true,
+        ));
+        return;
+      }
+
+      // No cache — show loading spinner and fetch
+      emit(const QuranLoading());
       Surah surah;
 
       // Agar Tajweed mode active hai, to WBW data (jisme tajweed info hai) fetch karke merge karo
@@ -90,8 +107,6 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
       } else {
         surah = await _quranService.getSurahWithTranslation(event.surahNumber, edition);
       }
-
-      _bookmarks = await _quranService.getBookmarks();
 
       emit(SurahLoaded(
         surah: surah,
@@ -135,9 +150,11 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
       ) async {
     emit(const QuranLoading());
     try {
-      // Surah meta alag se lo (naam etc)
-      final allSurahs = await _quranService.getAllSurahs();
-      final surahMeta = allSurahs.firstWhere((s) => s.number == event.surahNumber);
+      // Use cached surah meta instead of re-fetching from API
+      if (_cachedSurahs.isEmpty) {
+        _cachedSurahs = await _quranService.getAllSurahs();
+      }
+      final surahMeta = _cachedSurahs.firstWhere((s) => s.number == event.surahNumber);
 
       // Word-by-word ayahs
       final ayahs = await _quranService.getSurahWithWordByWord(

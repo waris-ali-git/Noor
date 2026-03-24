@@ -37,11 +37,11 @@ class TajweedAyahWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: Offset(0, 1),
           ),
         ],
       ),

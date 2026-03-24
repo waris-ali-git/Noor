@@ -253,9 +253,9 @@ class _SurahListScreenState extends State<SurahListScreen> {
       ),
     );
 
-    // Wapis aane par dobara list load karein taake screen blank na ho
+    // _allSurahs already cached — just refresh UI, no need to re-fetch
     if (context.mounted) {
-      context.read<QuranBloc>().add(const LoadSurahsEvent());
+      setState(() {});
     }
   }
 }
@@ -429,11 +429,11 @@ class _SurahListTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: isEven ? Colors.white : const Color(0xFFF1F8E9),
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: Colors.black12,
               blurRadius: 4,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 1),
             ),
           ],
         ),

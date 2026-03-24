@@ -47,11 +47,11 @@ class WordByWordAyahWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: Offset(0, 1),
           ),
         ],
       ),

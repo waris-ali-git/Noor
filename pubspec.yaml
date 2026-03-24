@@ -47,6 +47,7 @@ dependencies:
   sqflite: ^2.3.3
   path: ^1.9.1
   geolocator: ^14.0.2
+  flutter_compass: ^0.8.1
 
 
 dev_dependencies:

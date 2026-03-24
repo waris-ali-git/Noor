@@ -36,27 +36,31 @@ class SurahLoaded extends QuranState {
   final Surah surah;
   final ReadingPreferences preferences;
   final List<String> bookmarks;
+  final bool isFullyLoaded;
 
   const SurahLoaded({
     required this.surah,
     required this.preferences,
     required this.bookmarks,
+    this.isFullyLoaded = true,
   });
 
   SurahLoaded copyWith({
     Surah? surah,
     ReadingPreferences? preferences,
     List<String>? bookmarks,
+    bool? isFullyLoaded,
   }) {
     return SurahLoaded(
       surah: surah ?? this.surah,
       preferences: preferences ?? this.preferences,
       bookmarks: bookmarks ?? this.bookmarks,
+      isFullyLoaded: isFullyLoaded ?? this.isFullyLoaded,
     );
   }
 
   @override
-  List<Object?> get props => [surah, preferences, bookmarks];
+  List<Object?> get props => [surah, preferences, bookmarks, isFullyLoaded];
 }
 
 // ─── Word-by-Word Mode ─────────────────────────
@@ -65,28 +69,32 @@ class SurahWordByWordLoaded extends QuranState {
   final List<Ayah> ayahs;  // Words ke saath
   final ReadingPreferences preferences;
   final List<String> bookmarks;
+  final bool isFullyLoaded;
 
   const SurahWordByWordLoaded({
     required this.surahMeta,
     required this.ayahs,
     required this.preferences,
     required this.bookmarks,
+    this.isFullyLoaded = true,
   });
 
   SurahWordByWordLoaded copyWith({
     ReadingPreferences? preferences,
     List<String>? bookmarks,
+    bool? isFullyLoaded,
   }) {
     return SurahWordByWordLoaded(
       surahMeta: surahMeta,
       ayahs: ayahs,
       preferences: preferences ?? this.preferences,
       bookmarks: bookmarks ?? this.bookmarks,
+      isFullyLoaded: isFullyLoaded ?? this.isFullyLoaded,
     );
   }
 
   @override
-  List<Object?> get props => [surahMeta, ayahs, preferences, bookmarks];
+  List<Object?> get props => [surahMeta, ayahs, preferences, bookmarks, isFullyLoaded];
 }
 
 // ─── Search Results ────────────────────────────

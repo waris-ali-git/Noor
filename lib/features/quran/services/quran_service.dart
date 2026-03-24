@@ -22,6 +22,11 @@ class QuranService {
   // Quran.com audio reciters
   static const int _defaultReciterId = 7; // Mishari Rashid Al-Afasy
 
+  // ─── In-Memory Caches (performance) ─────────
+  List<Surah>? _surahsMemoryCache;
+  final Map<String, Surah> _surahDetailCache = {};
+  static const int _maxCachedSurahs = 5;
+
   QuranService(this._dio, this._cacheBox, this._wbwDbService);
 
   // ─────────────────────────────────────────────
@@ -58,13 +63,18 @@ class QuranService {
   }
 
   Future<List<Surah>> getAllSurahs() async {
+    // Memory cache — instant return (no deserialization)
+    if (_surahsMemoryCache != null) return _surahsMemoryCache!;
+
     const cacheKey = 'all_surahs';
     try {
       final cached = _cacheBox.get(cacheKey);
       if (cached != null) {
-        return (cached as List)
+        final surahs = (cached as List)
             .map((e) => Surah.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList();
+        _surahsMemoryCache = surahs;
+        return surahs;
       }
 
       final res = await _dio.get('$_alQuranBase/surah');
@@ -72,18 +82,47 @@ class QuranService {
         final data = res.data['data'] as List;
         final surahs = data.map((e) => Surah.fromJson(Map<String, dynamic>.from(e as Map))).toList();
         await _cacheBox.put(cacheKey, data);
+        _surahsMemoryCache = surahs;
         return surahs;
       }
       throw Exception('Surah list load nahi hua');
     } on DioException catch (e) {
       final cached = _cacheBox.get(cacheKey);
       if (cached != null) {
-        return (cached as List)
+        final surahs = (cached as List)
             .map((e) => Surah.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList();
+        _surahsMemoryCache = surahs;
+        return surahs;
       }
       throw Exception('Network error: ${e.message}');
     }
+  }
+
+  /// Returns cached surah instantly if available, null otherwise (no API call)
+  Surah? getCachedSurah(int surahNumber, String translationEdition) {
+    // Memory cache first
+    final memKey = 'surah_${surahNumber}_$translationEdition';
+    if (_surahDetailCache.containsKey(memKey)) {
+      return _surahDetailCache[memKey];
+    }
+    // Hive cache
+    final cacheKey = 'surah_v2_${surahNumber}_${translationEdition}_ur_maududi';
+    final cached = _cacheBox.get(cacheKey);
+    if (cached != null) {
+      final surah = Surah.fromJson(Map<String, dynamic>.from(cached as Map));
+      _addToDetailCache(memKey, surah);
+      return surah;
+    }
+    return null;
+  }
+
+  /// Add surah to in-memory LRU cache (keeps last 5)
+  void _addToDetailCache(String key, Surah surah) {
+    if (_surahDetailCache.length >= _maxCachedSurahs) {
+      _surahDetailCache.remove(_surahDetailCache.keys.first);
+    }
+    _surahDetailCache[key] = surah;
   }
 
   // ─────────────────────────────────────────────

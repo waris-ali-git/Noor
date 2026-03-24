@@ -9,6 +9,7 @@ import '../features/hadith/services/hadith_service.dart';
 import '../features/hadith/state/hadith_bloc.dart';
 import '../features/quran/services/preferences_service.dart';
 import '../features/quran/services/wbw_database_service.dart';
+import '../features/qibla/services/qibla_service.dart';
 import 'services/translation_service.dart';
 import 'state/language_cubit.dart';
 
@@ -18,10 +19,14 @@ Future<void> setupDependencies() async {
   // ─── Preferences ───────────────────────────
   await PreferencesService().init();
 
-  // ─── Hive ──────────────────────────────────
+  // ─── Hive (parallel init for faster startup) ─
   await Hive.initFlutter();
-  final quranCacheBox = await Hive.openBox<dynamic>('quran_cache');
-  final hadithCacheBox = await Hive.openBox<dynamic>('hadith_cache');
+  final boxes = await Future.wait([
+    Hive.openBox<dynamic>('quran_cache'),
+    Hive.openBox<dynamic>('hadith_cache'),
+  ]);
+  final quranCacheBox = boxes[0];
+  final hadithCacheBox = boxes[1];
 
   // ─── Dio ───────────────────────────────────
   final dio = Dio(BaseOptions(
@@ -56,6 +61,9 @@ Future<void> setupDependencies() async {
   );
   sl.registerLazySingleton<TranslationService>(
         () => TranslationService(dio),
+  );
+  sl.registerLazySingleton<QiblaService>(
+        () => QiblaService(),
   );
 
   // ─── BLoCs ─────────────────────────────────

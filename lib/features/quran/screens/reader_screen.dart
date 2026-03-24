@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../services/audio_service.dart';
@@ -30,6 +31,7 @@ class ReaderScreen extends StatefulWidget {
 
 class _ReaderScreenState extends State<ReaderScreen> {
   final ScrollController _scrollController = ScrollController();
+  Timer? _lastReadDebouncer;
 
   @override
   void initState() {
@@ -48,6 +50,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   @override
   void dispose() {
+    _lastReadDebouncer?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -272,6 +275,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     if (prefs.displayMode == ReadingDisplayMode.arabicOnly) {
       return CustomScrollView(
         controller: _scrollController,
+        cacheExtent: 500, // Pre-render 500px above/below viewport
         slivers: [
           SliverToBoxAdapter(child: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -286,6 +290,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
     return CustomScrollView(
       controller: _scrollController,
+      cacheExtent: 500, // Pre-render 500px above/below viewport
       slivers: [
         // Bismillah header
         SliverToBoxAdapter(child: _BismillahHeader()),
@@ -302,7 +307,37 @@ class _ReaderScreenState extends State<ReaderScreen> {
               // Tajweed mode
               if (prefs.displayMode == ReadingDisplayMode.tajweed ||
                   prefs.showTajweed) {
-                return TajweedAyahWidget(
+                return RepaintBoundary(
+                  child: TajweedAyahWidget(
+                    ayah: ayah,
+                    surahNumber: surah.number,
+                    preferences: prefs,
+                    isBookmarked: isBookmarked,
+                    onBookmarkToggle: () => _toggleBookmark(
+                      context,
+                      surah.number,
+                      ayah.numberInSurah,
+                      isBookmarked,
+                    ),
+                    onVisible: () {
+                      _lastReadDebouncer?.cancel();
+                      _lastReadDebouncer = Timer(const Duration(seconds: 2), () {
+                        context.read<QuranBloc>().add(
+                          SaveLastReadEvent(
+                            surahNumber: surah.number,
+                            ayahNumber: ayah.numberInSurah,
+                          ),
+                        );
+                      });
+                    },
+                    onTafseerTap: () => _showTafseer(context, ayah),
+                  ),
+                );
+              }
+
+              // Arabic Only / Arabic + Translation
+              return RepaintBoundary(
+                child: _StandardAyahCard(
                   ayah: ayah,
                   surahNumber: surah.number,
                   preferences: prefs,
@@ -313,32 +348,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     ayah.numberInSurah,
                     isBookmarked,
                   ),
-                  onVisible: () => context.read<QuranBloc>().add(
-                    SaveLastReadEvent(
-                      surahNumber: surah.number,
-                      ayahNumber: ayah.numberInSurah,
-                    ),
-                  ),
                   onTafseerTap: () => _showTafseer(context, ayah),
-                );
-              }
-
-              // Arabic Only / Arabic + Translation
-              return _StandardAyahCard(
-                ayah: ayah,
-                surahNumber: surah.number,
-                preferences: prefs,
-                isBookmarked: isBookmarked,
-                onBookmarkToggle: () => _toggleBookmark(
-                  context,
-                  surah.number,
-                  ayah.numberInSurah,
-                  isBookmarked,
                 ),
-                onTafseerTap: () => _showTafseer(context, ayah),
               );
             },
             childCount: ayahs.length,
+            addAutomaticKeepAlives: true,
+            addRepaintBoundaries: true,
           ),
         ),
 
@@ -359,6 +375,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
       ) {
     return CustomScrollView(
       controller: _scrollController,
+      cacheExtent: 500, // Pre-render 500px above/below viewport
       slivers: [
         SliverToBoxAdapter(child: _BismillahHeader()),
 
@@ -370,21 +387,25 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 '${surahMeta.number}:${ayah.numberInSurah}',
               );
 
-              return WordByWordAyahWidget(
-                ayah: ayah,
-                surahNumber: surahMeta.number,
-                preferences: prefs,
-                isBookmarked: isBookmarked,
-                onBookmarkToggle: () => _toggleBookmark(
-                  context,
-                  surahMeta.number,
-                  ayah.numberInSurah,
-                  isBookmarked,
+              return RepaintBoundary(
+                child: WordByWordAyahWidget(
+                  ayah: ayah,
+                  surahNumber: surahMeta.number,
+                  preferences: prefs,
+                  isBookmarked: isBookmarked,
+                  onBookmarkToggle: () => _toggleBookmark(
+                    context,
+                    surahMeta.number,
+                    ayah.numberInSurah,
+                    isBookmarked,
+                  ),
+                  onTafseerTap: () => _showTafseer(context, ayah),
                 ),
-                onTafseerTap: () => _showTafseer(context, ayah),
               );
             },
             childCount: ayahs.length,
+            addAutomaticKeepAlives: true,
+            addRepaintBoundaries: true,
           ),
         ),
 
@@ -507,11 +528,11 @@ class _StandardAyahCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black12,
             blurRadius: 4,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 1),
           ),
         ],
       ),
