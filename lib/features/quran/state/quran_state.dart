@@ -21,14 +21,16 @@ class QuranLoading extends QuranState {
 class SurahsLoaded extends QuranState {
   final List<Surah> surahs;
   final Map<String, dynamic>? lastRead;
+  final Map<int, int> surahProgress;
 
   const SurahsLoaded({
     required this.surahs,
     this.lastRead,
+    this.surahProgress = const {},
   });
 
   @override
-  List<Object?> get props => [surahs, lastRead];
+  List<Object?> get props => [surahs, lastRead, surahProgress];
 }
 
 // ─── Single Surah Loaded (Reader screen) ───────
@@ -61,6 +63,40 @@ class SurahLoaded extends QuranState {
 
   @override
   List<Object?> get props => [surah, preferences, bookmarks, isFullyLoaded];
+}
+
+// ─── Surah Streaming (Progressive load — skeleton fill) ─
+class SurahStreaming extends QuranState {
+  final Surah surahMeta;         // Name, number — instantly available
+  final List<Ayah> loadedAyahs; // Ayahs received so far
+  final int totalAyahs;          // Expected total (for skeleton count)
+  final ReadingPreferences preferences;
+  final List<String> bookmarks;
+
+  const SurahStreaming({
+    required this.surahMeta,
+    required this.loadedAyahs,
+    required this.totalAyahs,
+    required this.preferences,
+    required this.bookmarks,
+  });
+
+  int get remainingAyahs => (totalAyahs - loadedAyahs.length).clamp(0, totalAyahs);
+
+  SurahStreaming copyWith({
+    List<Ayah>? loadedAyahs,
+  }) {
+    return SurahStreaming(
+      surahMeta: surahMeta,
+      loadedAyahs: loadedAyahs ?? this.loadedAyahs,
+      totalAyahs: totalAyahs,
+      preferences: preferences,
+      bookmarks: bookmarks,
+    );
+  }
+
+  @override
+  List<Object?> get props => [surahMeta, loadedAyahs, totalAyahs, preferences, bookmarks];
 }
 
 // ─── Word-by-Word Mode ─────────────────────────

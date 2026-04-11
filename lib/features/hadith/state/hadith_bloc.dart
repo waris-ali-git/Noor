@@ -63,20 +63,40 @@ class HadithBloc extends Bloc<HadithEvent, HadithState> {
   Future<void> _onSelectSection(SelectHadithSectionEvent event, Emitter<HadithState> emit) async {
     if (_currentBook == null || _currentTranslation == null) return;
     
-    emit(HadithLoading());
     try {
       _currentSection = event.section;
-      final hadiths = await _hadithService.getHadithsBySection(
-        _currentTranslation!.name,
-        _currentSection!,
-      );
+      
+      final totalExpected = _currentSection!.lastHadith > 0 && _currentSection!.firstHadith > 0 
+          ? (_currentSection!.lastHadith - _currentSection!.firstHadith) + 1 
+          : 50; // Fallback estimate if info missing
 
-      emit(HadithsLoaded(
-        selectedBook: _currentBook!,
-        selectedTranslation: _currentTranslation!,
-        selectedSection: _currentSection!,
-        hadiths: hadiths,
-      ));
+      await emit.forEach<List<HadithItem>>(
+        _hadithService.getHadithsStream(_currentTranslation!.name, _currentSection!),
+        onData: (hadiths) {
+          // If we receive the full list (or more than expected), finish streaming
+          if (hadiths.length >= totalExpected || hadiths.isNotEmpty && hadiths.length == hadiths.last.hadithNumber) {
+            return HadithsLoaded(
+              selectedBook: _currentBook!,
+              selectedTranslation: _currentTranslation!,
+              selectedSection: _currentSection!,
+              hadiths: hadiths,
+            );
+          }
+          
+          // Emit progressive streaming state
+          return HadithsStreaming(
+            selectedBook: _currentBook!,
+            selectedTranslation: _currentTranslation!,
+            selectedSection: _currentSection!,
+            loadedHadiths: hadiths,
+            totalHadiths: totalExpected,
+          );
+        },
+        onError: (e, st) {
+          debugPrint('Hadith stream error: $e');
+          return HadithError(message: e.toString());
+        },
+      );
     } catch (e) {
       emit(HadithError(message: e.toString()));
     }
@@ -92,22 +112,37 @@ class HadithBloc extends Bloc<HadithEvent, HadithState> {
 
     _currentTranslation = newTranslation;
 
-    if (state is HadithsLoaded && _currentSection != null) {
-      emit(HadithLoading());
-      try {
-        final hadiths = await _hadithService.getHadithsBySection(
-          _currentTranslation!.name,
-          _currentSection!,
-        );
+    if (state is HadithsLoaded || state is HadithsStreaming) {
+      if (_currentSection != null) {
+        try {
+          final totalExpected = _currentSection!.lastHadith > 0 && _currentSection!.firstHadith > 0 
+              ? (_currentSection!.lastHadith - _currentSection!.firstHadith) + 1 
+              : 50;
 
-        emit(HadithsLoaded(
-          selectedBook: _currentBook!,
-          selectedTranslation: _currentTranslation!,
-          selectedSection: _currentSection!,
-          hadiths: hadiths,
-        ));
-      } catch (e) {
-        emit(HadithError(message: e.toString()));
+          await emit.forEach<List<HadithItem>>(
+            _hadithService.getHadithsStream(_currentTranslation!.name, _currentSection!),
+            onData: (hadiths) {
+              if (hadiths.length >= totalExpected) {
+                return HadithsLoaded(
+                  selectedBook: _currentBook!,
+                  selectedTranslation: _currentTranslation!,
+                  selectedSection: _currentSection!,
+                  hadiths: hadiths,
+                );
+              }
+              return HadithsStreaming(
+                selectedBook: _currentBook!,
+                selectedTranslation: _currentTranslation!,
+                selectedSection: _currentSection!,
+                loadedHadiths: hadiths,
+                totalHadiths: totalExpected,
+              );
+            },
+            onError: (e, st) => HadithError(message: e.toString()),
+          );
+        } catch (e) {
+          emit(HadithError(message: e.toString()));
+        }
       }
     } else if (state is HadithSectionsLoaded || state is HadithsLoaded) {
       emit(HadithLoading());
@@ -132,10 +167,20 @@ class HadithBloc extends Bloc<HadithEvent, HadithState> {
   Future<void> _onLoadAllTranslations(
       LoadAllTranslationsForSectionEvent event, Emitter<HadithState> emit) async {
     if (_currentBook == null) return;
-    emit(HadithLoading());
+    
+    // Immediately emit an empty "All Translations Streaming" state so the UI transitions instantly from the section list 
+    // and displays the header + skeletons while the heavy parallel network calls happen.
+    _currentSection = event.section;
+    emit(HadithAllTranslationsStreaming(
+      selectedBook: _currentBook!,
+      selectedSection: event.section,
+      loadedHadiths: const [],
+      availableLanguages: const [],
+      selectedLanguages: const {},
+      totalHadiths: 10, // Placeholder count for skeleton items
+    ));
 
     try {
-      _currentSection = event.section;
       final editions = _currentBook!.editions;
 
       // Sort: Arabic first, then English, then Urdu, then rest alphabetically

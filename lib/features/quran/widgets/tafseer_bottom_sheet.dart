@@ -22,20 +22,37 @@ class TafseerBottomSheet extends StatefulWidget {
   State<TafseerBottomSheet> createState() => _TafseerBottomSheetState();
 }
 
+enum TafseerMode { text, audio }
+
 class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
   late TafseerService _tafseerService;
-  TafseerSource _selectedSource = TafseerSource.availableSources.first;
-  String _selectedLanguage = TafseerSource.availableSources.first.languageLabel;
+  
+  late TafseerSource _selectedTextSource;
+  late TafseerSource _selectedAudioSource;
+  late String _selectedTextLanguage;
+  late String _selectedAudioLanguage;
+
+  TafseerMode _currentMode = TafseerMode.text;
 
   Map<int, String> _tafseerTextMap = {};
   bool _isLoading = false;
   String? _errorMessage;
   bool _isLoadingAudio = false;
 
+  TafseerSource get _selectedSource => _currentMode == TafseerMode.text ? _selectedTextSource : _selectedAudioSource;
+  String get _selectedLanguage => _currentMode == TafseerMode.text ? _selectedTextLanguage : _selectedAudioLanguage;
+
   @override
   void initState() {
     super.initState();
     _tafseerService = sl<TafseerService>();
+    
+    _selectedTextSource = TafseerSource.availableSources.firstWhere((s) => s.type == TafseerType.text || s.type == TafseerType.mixed);
+    _selectedTextLanguage = _selectedTextSource.languageLabel;
+    
+    _selectedAudioSource = TafseerSource.availableSources.firstWhere((s) => s.type == TafseerType.audio || s.type == TafseerType.mixed);
+    _selectedAudioLanguage = _selectedAudioSource.languageLabel;
+
     _loadTafseerText();
   }
 
@@ -52,7 +69,7 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
         _isLoading = false;
         _errorMessage = null; 
       });
-      // Pre-load audio if needed or just prepare UI
+      // Pre-load audio info but DON'T play yet
       _prepareAudio();
       return;
     }
@@ -121,42 +138,12 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
       // Remove the primary URL from fallback list
       fallbackUrls.remove(url);
       
-      // If NOT currently playing this EXACT ayah's tafseer, play/load it
-      if (audioService.currentTafseerUrl != url || 
-          audioService.tafseerSurahName != widget.surahName ||
-          audioService.tafseerScholarName != _selectedSource.name) {
-         try {
-           await audioService.playTafseer(
-             url: url,
-             surahName: widget.surahName,
-             scholarName: _selectedSource.name,
-             fallbackUrls: fallbackUrls,
-           );
-           if (mounted) {
-             setState(() {
-               _isLoadingAudio = false;
-               _errorMessage = null;
-             });
-           }
-         } catch (e) {
-           debugPrint("❌ Error in _prepareAudio: $e");
-           if (mounted) {
-             setState(() {
-               _isLoadingAudio = false;
-               // Don't show error as blocking message - audio is optional
-               // Just log it, user can still read text tafseer
-               _errorMessage = null; // Clear error, audio is optional
-             });
-           }
-           // Log error for debugging but don't block UI
-           debugPrint("⚠️ Tafseer audio not available for this source. Text tafseer is still available below.");
-         }
-      } else {
-        if (mounted) {
-          setState(() {
-            _isLoadingAudio = false;
-          });
-        }
+      // The player widget will handle starting playback when user clicks play.
+      if (mounted) {
+        setState(() {
+          _isLoadingAudio = false;
+          _errorMessage = null;
+        });
       }
     } else {
        if (mounted) {
@@ -172,7 +159,11 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
     if (source != null && source != _selectedSource) {
       QuranAudioService().stopTafseer(); // stop previous source
       setState(() {
-        _selectedSource = source;
+        if (_currentMode == TafseerMode.text) {
+          _selectedTextSource = source;
+        } else {
+          _selectedAudioSource = source;
+        }
       });
       _loadTafseerText();
     }
@@ -232,7 +223,41 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
+            
+            // Mode Selector (Top Level)
+            SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<TafseerMode>(
+                segments: const [
+                  ButtonSegment<TafseerMode>(
+                    value: TafseerMode.text,
+                    label: Text('Text'),
+                    icon: Icon(Icons.description, size: 16),
+                  ),
+                  ButtonSegment<TafseerMode>(
+                    value: TafseerMode.audio,
+                    label: Text('Audio'),
+                    icon: Icon(Icons.headphones, size: 16),
+                  ),
+                ],
+                selected: {_currentMode},
+                onSelectionChanged: (Set<TafseerMode> newSelection) {
+                  if (_currentMode != newSelection.first) {
+                    setState(() {
+                      _currentMode = newSelection.first;
+                    });
+                    _loadTafseerText();
+                  }
+                },
+                style: SegmentedButton.styleFrom(
+                  selectedBackgroundColor: const Color(0xFF1B5E20),
+                  selectedForegroundColor: Colors.white,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
 
             // Language filter chips
             SizedBox(
@@ -240,6 +265,14 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: TafseerSource.availableLanguages.map((lang) {
+                  // Only show languge chips that have sources for the CURRENT mode
+                  final hasSourcesForMode = TafseerSource.getSourcesByLanguage(lang).any((s) => 
+                     _currentMode == TafseerMode.text 
+                       ? (s.type == TafseerType.text || s.type == TafseerType.mixed)
+                       : (s.type == TafseerType.audio || s.type == TafseerType.mixed)
+                  );
+                  if (!hasSourcesForMode) return const SizedBox.shrink();
+
                   final isSelected = _selectedLanguage == lang;
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
@@ -250,9 +283,17 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
                       backgroundColor: Colors.grey[200],
                       onSelected: (_) {
                         setState(() {
-                          _selectedLanguage = lang;
-                          // Auto-select first source of that language
-                          final sources = TafseerSource.getSourcesByLanguage(lang);
+                          if (_currentMode == TafseerMode.text) {
+                            _selectedTextLanguage = lang;
+                          } else {
+                            _selectedAudioLanguage = lang;
+                          }
+                          // Auto-select first source of that language & mode
+                          final sources = TafseerSource.getSourcesByLanguage(lang).where((s) => 
+                            _currentMode == TafseerMode.text 
+                              ? (s.type == TafseerType.text || s.type == TafseerType.mixed)
+                              : (s.type == TafseerType.audio || s.type == TafseerType.mixed)
+                          ).toList();
                           if (sources.isNotEmpty && !sources.contains(_selectedSource)) {
                             _onSourceChanged(sources.first);
                           }
@@ -265,18 +306,28 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
             ),
             const SizedBox(height: 6),
 
-            // Tafseer source dropdown (filtered by language)
-            SizedBox(
-              width: double.infinity,
-              child: DropdownButton<TafseerSource>(
-                value: TafseerSource.getSourcesByLanguage(_selectedLanguage).contains(_selectedSource)
-                    ? _selectedSource
-                    : TafseerSource.getSourcesByLanguage(_selectedLanguage).first,
-                onChanged: _onSourceChanged,
-                isExpanded: true,
-                underline: Container(height: 1, color: const Color(0xFF1B5E20)),
-                icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF1B5E20)),
-                items: TafseerSource.getSourcesByLanguage(_selectedLanguage).map((s) {
+            // Tafseer source dropdown (filtered by language and mode)
+            Builder(
+              builder: (context) {
+                final filteredSources = TafseerSource.getSourcesByLanguage(_selectedLanguage).where((s) => 
+                  _currentMode == TafseerMode.text 
+                    ? (s.type == TafseerType.text || s.type == TafseerType.mixed)
+                    : (s.type == TafseerType.audio || s.type == TafseerType.mixed)
+                ).toList();
+
+                final activeSource = filteredSources.contains(_selectedSource) 
+                    ? _selectedSource 
+                    : (filteredSources.isNotEmpty ? filteredSources.first : _selectedSource);
+
+                return SizedBox(
+                  width: double.infinity,
+                  child: DropdownButton<TafseerSource>(
+                    value: activeSource,
+                    onChanged: _onSourceChanged,
+                    isExpanded: true,
+                    underline: Container(height: 1, color: const Color(0xFF1B5E20)),
+                    icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF1B5E20)),
+                    items: filteredSources.map((s) {
                   return DropdownMenuItem(
                     value: s,
                     child: Row(
@@ -300,39 +351,11 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
                     ),
                   );
                 }).toList(),
-              ),
+                  ),
+                );
+              }
             ),
             
-            const Divider(),
-
-            // Audio Player Control (if applicable)
-            if (_selectedSource.type == TafseerType.audio || _selectedSource.type == TafseerType.mixed)
-            _buildAudioPlayer(),
-
-            // Info message if audio source might not be available
-            if (_selectedSource.type == TafseerType.audio || _selectedSource.type == TafseerType.mixed)
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Note: Tafseer audio may not be available for all sources. Text tafseer is always available below.',
-                      style: TextStyle(fontSize: 11, color: Colors.blue[900]),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            if (_selectedSource.type == TafseerType.audio || _selectedSource.type == TafseerType.mixed)
             const Divider(),
 
             // Content Area
@@ -341,8 +364,25 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
                   ? const Center(child: CircularProgressIndicator(color: Color(0xFF1B5E20)))
                   : _errorMessage != null
                       ? Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)))
-                      : _selectedSource.type == TafseerType.audio
-                          ? const Center(child: Text("Audio Only Mode. Use the player above.", style: TextStyle(color: Colors.grey)))
+                      : _currentMode == TafseerMode.audio
+                          ? Column(
+                              children: [
+                                const SizedBox(height: 10),
+                                _buildAudioPlayer(),
+                                const SizedBox(height: 20),
+                                const Icon(Icons.headphones, size: 64, color: Colors.grey),
+                                const SizedBox(height: 10),
+                                Text(
+                                  "Audio Tafseer mode active.",
+                                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                                ),
+                                Text(
+                                  "Use the player above to listen to ${_selectedSource.name}.",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                                ),
+                              ],
+                            )
                           : SingleChildScrollView(
                               controller: controller,
                               child: Column(
@@ -378,7 +418,7 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
                                       height: 1.8,
                                       color: Colors.black87,
                                       fontFamily: const {'ur', 'ar', 'fa', 'ps', 'sd', 'ku'}.contains(_selectedSource.language)
-                                          ? 'JameelNooriNastaleeq'
+                                          ? 'Jameel Noori'
                                           : null,
                                     ),
                                   ),
@@ -483,13 +523,23 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
     });
   }
 
-  void _showTanzeemPartsSheet(BuildContext context) {
-    final parts = widget.tafseerService.getTanzeemSegmentsForSurah(widget.surahNumber);
+  void _showSegmentedPartsSheet(BuildContext context) {
+    final List<TafseerAudioSegment> parts;
+    final String sourceLabel;
+    
+    if (widget.selectedSource.id == 'ur-taqi-usmani-audio') {
+      parts = widget.tafseerService.getTaqiUsmaniSegmentsForSurah(widget.surahNumber);
+      sourceLabel = 'Mufti Taqi Usmani';
+    } else {
+      parts = widget.tafseerService.getTanzeemSegmentsForSurah(widget.surahNumber);
+      sourceLabel = 'Dr. Israr Ahmed (Tanzeem.org)';
+    }
+
     if (parts.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No Tanzeem.org parts found for this Surah.'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text('No parts found for this Surah.'),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
@@ -535,7 +585,7 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
                     await audioService.playTafseer(
                       url: p.url,
                       surahName: '${widget.surahName} - ${p.title}',
-                      scholarName: 'Dr. Israr Ahmed (Tanzeem.org)',
+                      scholarName: sourceLabel,
                     );
                   } finally {
                     if (mounted) {
@@ -554,8 +604,9 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final hasTanzeemAudio = widget.selectedSource.id == 'ur-israr-tanzeem-04198' || 
-                            widget.selectedSource.id == 'ur-tafsir-bayan-ul-quran';
+    final hasSegmentedAudio = widget.selectedSource.id == 'ur-israr-tanzeem-04198' || 
+                              widget.selectedSource.id == 'ur-tafsir-bayan-ul-quran' ||
+                              widget.selectedSource.id == 'ur-taqi-usmani-audio';
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -574,17 +625,55 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
                   : Icon(_isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled),
                 color: const Color(0xFF1B5E20),
                 iconSize: 40,
-                onPressed: () {
+                onPressed: () async {
                   final audioService = QuranAudioService();
                   if (_isPlaying) {
                      audioService.pauseTafseer();
                   } else {
-                     if (audioService.currentTafseerUrl != null) {
+                     if (audioService.currentTafseerUrl != null && audioService.tafseerScholarName == widget.selectedSource.name) {
                        audioService.playTafseer(
                          url: audioService.currentTafseerUrl!,
                          surahName: widget.surahName,
                          scholarName: widget.selectedSource.name,
                        );
+                     } else {
+                       try {
+                         if (mounted) {
+                           setState(() => _isLoadingAudio = true);
+                           widget.onLoadingAudioChanged(true);
+                         }
+                         final url = widget.tafseerService.getPerAyahAudioUrl(
+                           widget.selectedSource,
+                           widget.surahNumber,
+                           widget.ayah.numberInSurah,
+                           surahName: widget.surahName,
+                           globalAyahNumber: widget.ayah.number,
+                         );
+                         if (url != null) {
+                           final fallbackUrls = widget.tafseerService.getFallbackUrls(
+                             widget.selectedSource,
+                             widget.surahNumber,
+                             widget.ayah.numberInSurah,
+                             surahName: widget.surahName,
+                           );
+                           fallbackUrls.remove(url);
+                           await audioService.playTafseer(
+                             url: url,
+                             surahName: widget.surahName,
+                             scholarName: widget.selectedSource.name,
+                             fallbackUrls: fallbackUrls,
+                           );
+                         } else {
+                           if (mounted) {
+                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Audio not available')));
+                           }
+                         }
+                       } finally {
+                         if (mounted) {
+                           setState(() => _isLoadingAudio = false);
+                           widget.onLoadingAudioChanged(false);
+                         }
+                       }
                      }
                   }
                 },
@@ -606,11 +695,11 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
                   ],
                 ),
               ),
-              if (hasTanzeemAudio)
+              if (hasSegmentedAudio)
                 IconButton(
                   icon: const Icon(Icons.list, color: Color(0xFF1B5E20)),
                   tooltip: 'All Parts for this Surah',
-                  onPressed: () => _showTanzeemPartsSheet(context),
+                  onPressed: () => _showSegmentedPartsSheet(context),
                 ),
             ],
           ),
@@ -675,3 +764,4 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
     return '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
   }
 }
+

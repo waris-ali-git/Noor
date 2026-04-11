@@ -9,7 +9,7 @@ import '../features/hadith/services/hadith_service.dart';
 import '../features/hadith/state/hadith_bloc.dart';
 import '../features/quran/services/preferences_service.dart';
 import '../features/quran/services/wbw_database_service.dart';
-import '../features/qibla/services/qibla_service.dart';
+
 import 'services/translation_service.dart';
 import 'state/language_cubit.dart';
 
@@ -62,9 +62,6 @@ Future<void> setupDependencies() async {
   sl.registerLazySingleton<TranslationService>(
         () => TranslationService(dio),
   );
-  sl.registerLazySingleton<QiblaService>(
-        () => QiblaService(),
-  );
 
   // ─── BLoCs ─────────────────────────────────
   sl.registerFactory<LanguageCubit>(
@@ -76,4 +73,5 @@ Future<void> setupDependencies() async {
   sl.registerFactory<HadithBloc>(
         () => HadithBloc(sl<HadithService>()),
   );
+
 }

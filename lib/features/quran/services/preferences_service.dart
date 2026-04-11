@@ -11,6 +11,10 @@ import '../models/reciter.dart';
 class PreferencesService {
   static const String _selectedReciterId = 'selected_reciter_id';
   static const String _selectedTafseerScholarId = 'selected_tafseer_scholar_id';
+  // Qibla Cache
+  static const String _cachedQiblaDirection = 'cached_qibla_direction';
+  static const String _cachedQiblaLat = 'cached_qibla_lat';
+  static const String _cachedQiblaLng = 'cached_qibla_lng';
 
   static final PreferencesService _instance = PreferencesService._internal();
   late SharedPreferences _prefs;
@@ -73,6 +77,26 @@ class PreferencesService {
   /// Save the selected tafseer scholar
   Future<void> setSelectedTafseerScholar(Reciter scholar) async {
     await setSelectedTafseerScholarId(scholar.id);
+  }
+
+  // ─── Qibla Cache ───────────────────────────
+
+  double? getCachedQiblaDirection() {
+    return _prefs.getDouble(_cachedQiblaDirection);
+  }
+
+  double? getCachedQiblaLatitude() {
+    return _prefs.getDouble(_cachedQiblaLat);
+  }
+
+  double? getCachedQiblaLongitude() {
+    return _prefs.getDouble(_cachedQiblaLng);
+  }
+
+  Future<void> saveQiblaCache(double direction, double lat, double lng) async {
+    await _prefs.setDouble(_cachedQiblaDirection, direction);
+    await _prefs.setDouble(_cachedQiblaLat, lat);
+    await _prefs.setDouble(_cachedQiblaLng, lng);
   }
 }
 

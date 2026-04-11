@@ -81,10 +81,14 @@ class _TranslatedTextState extends State<TranslatedText> {
   @override
   Widget build(BuildContext context) {
     final bool isArabic = _currentLang == 'ar';
+    final bool isUrdu = _currentLang == 'ur';
     final effectiveStyle = isArabic
         ? (widget.style?.copyWith(fontFamily: 'DigitalKhatt') ??
             const TextStyle(fontFamily: 'DigitalKhatt'))
-        : widget.style;
+        : isUrdu
+            ? (widget.style?.copyWith(fontFamily: 'Jameel Noori') ??
+                const TextStyle(fontFamily: 'Jameel Noori'))
+            : widget.style;
 
     if (_translatedText == null) {
       // Show original text with slight opacity while loading to avoid layout jumping

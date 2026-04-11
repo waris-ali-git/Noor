@@ -280,4 +280,70 @@ class HadithService {
     }
     return [];
   }
+
+  // ─── STREAMING (Progressive Loading) ───
+  Stream<List<HadithItem>> getHadithsStream(String editionIdentifier, HadithSection section) async* {
+    final sectionCacheKey = 'hadith_section_${editionIdentifier}_${section.id}_v1';
+    
+    // 1) Fast path: return immediately from cache if available
+    final cached = _cacheBox.get(sectionCacheKey);
+    if (cached != null) {
+      final dynamic data = jsonDecode(cached.toString());
+      final fullList = _parseHadithListFromSectionJson(data);
+      yield fullList;
+      return;
+    }
+
+    // 2) Network path: fetch from API, then stream progressively
+    List<HadithItem> fullList = [];
+    final sectionId = section.id;
+    final urls = [
+      '$_baseUrl/editions/$editionIdentifier/sections/$sectionId.min.json',
+      '$_baseUrl/editions/$editionIdentifier/sections/$sectionId.json',
+    ];
+
+    bool success = false;
+    for (final url in urls) {
+      try {
+        final res = await _dio.get(url);
+        if (res.statusCode == 200) {
+          final dynamic data = res.data is String ? jsonDecode(res.data) : res.data;
+          await _cacheBox.put(sectionCacheKey, jsonEncode(data));
+          fullList = _parseHadithListFromSectionJson(data);
+          success = true;
+          break;
+        }
+      } catch (_) { }
+    }
+
+    // 3) Fallback
+    if (!success) {
+      fullList = await _getHadithsFromEditionJsonFallback(editionIdentifier, section);
+    }
+
+    if (fullList.isEmpty) {
+      yield fullList;
+      return;
+    }
+
+    // Progressive streaming: Yield the first 5 immediately for quick UI header & top cards
+    final initialBatchSize = 5;
+    if (fullList.length <= initialBatchSize) {
+      yield fullList;
+      return;
+    }
+
+    yield fullList.sublist(0, initialBatchSize);
+
+    // Stream the rest in chunks of 5 with a slight delay to allow UI to render (staggered animation)
+    List<HadithItem> currentList = fullList.sublist(0, initialBatchSize);
+    for (int i = initialBatchSize; i < fullList.length; i += 5) {
+      // Simulate slight processing/rendering delay
+      await Future.delayed(const Duration(milliseconds: 30)); 
+      
+      final end = (i + 5 > fullList.length) ? fullList.length : i + 5;
+      currentList = List.from(currentList)..addAll(fullList.sublist(i, end));
+      yield currentList;
+    }
+  }
 }

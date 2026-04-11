@@ -111,14 +111,14 @@ class QuranService {
     final cached = _cacheBox.get(cacheKey);
     if (cached != null) {
       final surah = Surah.fromJson(Map<String, dynamic>.from(cached as Map));
-      _addToDetailCache(memKey, surah);
+      cacheDetailSurah(memKey, surah);
       return surah;
     }
     return null;
   }
 
-  /// Add surah to in-memory LRU cache (keeps last 5)
-  void _addToDetailCache(String key, Surah surah) {
+  /// Add surah to in-memory LRU cache (keeps last 10). Public so Bloc can also update it.
+  void cacheDetailSurah(String key, Surah surah) {
     if (_surahDetailCache.length >= _maxCachedSurahs) {
       _surahDetailCache.remove(_surahDetailCache.keys.first);
     }
@@ -193,6 +193,92 @@ class QuranService {
   }
 
   // ─────────────────────────────────────────────
+  // 2b. SURAH STREAMING  (Progressive pipe)
+  // ─────────────────────────────────────────────
+
+  /// Surah header immediately, then streams partial ayah lists as they parse.
+  /// Yields: first an empty Surah (meta only), then progressively filled Surahs.
+  Stream<Surah> getSurahStream(
+    int surahNumber,
+    String translationEdition,
+  ) async* {
+    final cacheKey = 'surah_v2_${surahNumber}_${translationEdition}_ur_maududi';
+
+    // Check Hive cache first — instant yield, no spinner
+    final cached = _cacheBox.get(cacheKey);
+    if (cached != null) {
+      yield Surah.fromJson(Map<String, dynamic>.from(cached as Map));
+      return;
+    }
+
+    // Memory cache check
+    final memKey = 'surah_${surahNumber}_$translationEdition';
+    if (_surahDetailCache.containsKey(memKey)) {
+      yield _surahDetailCache[memKey]!;
+      return;
+    }
+
+    try {
+      final editions = 'quran-uthmani,quran-tajweed,$translationEdition,ur.maududi';
+      final res = await _dio.get('$_alQuranBase/surah/$surahNumber/editions/$editions');
+
+      if (res.statusCode != 200) throw Exception('Surah load nahi hua');
+
+      final data = res.data['data'] as List;
+      final arabicData = Map<String, dynamic>.from(data[0] as Map);
+      final tajweedData = Map<String, dynamic>.from(data[1] as Map);
+      final translData  = Map<String, dynamic>.from(data[2] as Map);
+      final tafseerData = Map<String, dynamic>.from(data[3] as Map);
+
+      final baseSurah   = Surah.fromJson(arabicData);
+      final tajweedAyahs = tajweedData['ayahs'] as List;
+      final translAyahs  = translData['ayahs'] as List;
+      final tafseerAyahs = tafseerData['ayahs'] as List;
+
+      // Yield meta-only (empty ayahs) immediately so reader builds header + skeletons
+      yield baseSurah.copyWith(ayahs: []);
+
+      // Parse and yield ayahs in batches of 10
+      const batchSize = 10;
+      final accumulated = <Ayah>[];
+
+      for (int i = 0; i < baseSurah.ayahs!.length; i++) {
+        final ar = baseSurah.ayahs![i];
+        final tr = Map<String, dynamic>.from(translAyahs[i] as Map);
+        final tj = Map<String, dynamic>.from(tajweedAyahs[i] as Map);
+        final tf = Map<String, dynamic>.from(tafseerAyahs[i] as Map);
+        final rawTrans = tr['text'] as String?;
+        final cleanTrans = rawTrans?.replaceAll(RegExp(r'<[^>]*>'), '').trim();
+
+        accumulated.add(ar.copyWith(
+          translation: cleanTrans,
+          tajweedText: tj['text'] as String?,
+          tafseerText: tf['text'] as String?,
+        ));
+
+        // Yield first batch of 5 immediately, then every 10
+        final yieldAt = i == 4 || ((i + 1) % batchSize == 0) || (i == baseSurah.ayahs!.length - 1);
+        if (yieldAt) {
+          yield baseSurah.copyWith(ayahs: List.unmodifiable(accumulated));
+        }
+      }
+
+      // Cache the final result
+      final finalSurah = baseSurah.copyWith(ayahs: accumulated);
+      await _cacheBox.put(cacheKey, finalSurah.toJson());
+      cacheDetailSurah(memKey, finalSurah);
+    } on DioException catch (e) {
+      // Return cached on network failure
+      final cached = _cacheBox.get(cacheKey);
+      if (cached != null) {
+        yield Surah.fromJson(Map<String, dynamic>.from(cached as Map));
+        return;
+      }
+      throw Exception('Network error: ${e.message}');
+    }
+  }
+
+  // ─────────────────────────────────────────────
   // 3. WORD-BY-WORD + TAJWEED  (Quran.com v4)
   // ─────────────────────────────────────────────
 
@@ -202,7 +288,7 @@ class QuranService {
       int surahNumber, {
         String languageCode = 'ur',
       }) async {
-    final cacheKey = 'surah_wbw_v3_${surahNumber}_${languageCode}_sqlite2';
+    final cacheKey = 'surah_wbw_v6_${surahNumber}_${languageCode}_audio';
     try {
       final cached = _cacheBox.get(cacheKey);
       if (cached != null) {
@@ -220,16 +306,21 @@ class QuranService {
           '$_quranComBase/verses/by_chapter/$surahNumber',
           queryParameters: {
             'words': true,
-            'word_fields': 'text_uthmani,transliteration,tajweed',
-            'per_page': 50,
+            'word_fields': 'text_uthmani,transliteration,tajweed,audio',
+            'word_translation_language': languageCode == 'ur' ? 'ur' : 'en',
+            'per_page': 300, // Fetch up to 300 verses (Baqarah has 286)
             'page': page,
           },
         );
 
         if (res.statusCode == 200) {
           final verses = res.data['verses'] as List;
-          final meta = res.data['meta'] as Map<String, dynamic>? ?? {};
-          final totalPages = meta['total_pages'] as int? ?? 1;
+          
+          // Quran.com v4 pagination can be in top-level 'pagination' or 'meta'
+          final dynamic paginationData = res.data['pagination'] ?? res.data['meta']?['pagination'];
+          final int totalPages = paginationData?['total_pages'] as int? 
+              ?? res.data['meta']?['total_pages'] as int? 
+              ?? 1;
 
           for (final v in verses) {
             final ayah = Ayah.fromQuranComJson(Map<String, dynamic>.from(v as Map));
@@ -269,16 +360,18 @@ class QuranService {
             final key = '${ayah.numberInSurah}:${word.position}';
             final localTrans = localTranslations[key];
 
-            final diagnosticTrans = localTranslations.isEmpty 
-                ? '[DB EMPTY/ERR]' 
-                : '[NO MATCH ${ayah.numberInSurah}:${word.position}]';
+            // Use local DB first, then API translation as fallback
+            final finalTranslation = localTrans 
+                ?? word.translation  // API translation (already parsed)
+                ?? '';
 
             return AyahWord(
               position: word.position,
               arabic: word.arabic,
-              translation: localTrans ?? diagnosticTrans,
+              translation: finalTranslation,
               transliteration: word.transliteration,
               tajweedSegments: word.tajweedSegments,
+              audioUrl: word.audioUrl,  // Preserve audio URL from API
             );
           }).toList();
           ayahs[i] = ayah.copyWith(words: updatedWords);
@@ -418,17 +511,30 @@ class QuranService {
   // ─────────────────────────────────────────────
 
   Future<void> saveLastRead(int surahNumber, int ayahNumber) async {
+    // 1. Global last read (for Home/Banner)
     await _cacheBox.put('last_read', {
       'surahNumber': surahNumber,
       'ayahNumber': ayahNumber,
       'timestamp': DateTime.now().toIso8601String(),
     });
+
+    // 2. Per-Surah progress (for List Tiles)
+    final Map<int, int> progressMap = Map<int, int>.from(
+        _cacheBox.get('surah_progress', defaultValue: <int, int>{}) as Map);
+    progressMap[surahNumber] = ayahNumber;
+    await _cacheBox.put('surah_progress', progressMap);
   }
 
   Future<Map<String, dynamic>?> getLastRead() async {
     final data = _cacheBox.get('last_read');
     if (data == null) return null;
     return Map<String, dynamic>.from(data as Map);
+  }
+
+  Future<Map<int, int>> getAllSurahProgress() async {
+    final data = _cacheBox.get('surah_progress');
+    if (data == null) return {};
+    return Map<int, int>.from(data as Map);
   }
 
   // ─────────────────────────────────────────────

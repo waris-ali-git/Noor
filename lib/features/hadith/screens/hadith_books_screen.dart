@@ -25,7 +25,7 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const TranslatedText('Ahadeeth (احادیث)', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const TranslatedText('Ahadeeth (احادیث)', style: TextStyle(fontFamily: 'Jameel Noori', fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: const [
           LanguageSelectorButton(),
@@ -44,17 +44,19 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
 
           if (state is HadithError && bloc.books.isEmpty) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                  const SizedBox(height: 16),
-                  Text(state.message),
-                  TextButton(
-                    onPressed: () => bloc.add(const LoadHadithBooksEvent()),
-                    child: const Text('Retry'),
-                  ),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const SizedBox(height: 16),
+                    Text(state.message),
+                    TextButton(
+                      onPressed: () => bloc.add(const LoadHadithBooksEvent()),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -112,6 +114,8 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
                         child: TranslatedText(
                           book.name,
                           textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -126,9 +130,12 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
                             '${book.editions.length} ',
                             style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                           ),
-                          TranslatedText(
-                            'Translations',
-                            style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                          Flexible(
+                            child: TranslatedText(
+                              'Translations',
+                              style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
                       ),

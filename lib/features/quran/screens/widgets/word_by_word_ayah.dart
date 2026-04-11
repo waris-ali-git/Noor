@@ -108,10 +108,12 @@ class WordByWordAyahWidget extends StatelessWidget {
               child: Text(
                 '(${ayah.numberInSurah}) ${ayah.translation!}',
                 style: TextStyle(
+                  fontFamily: preferences.selectedTranslation.startsWith('ur') ? 'Jameel Noori' : null,
                   fontSize: preferences.translationFontSize,
                   height: 1.6,
                   color: Colors.black87,
                 ),
+                textDirection: preferences.selectedTranslation.startsWith('ur') ? TextDirection.rtl : TextDirection.ltr,
               ),
             ),
         ],
@@ -153,6 +155,7 @@ class _WordByWordGrid extends StatelessWidget {
             translationFontSize: preferences.translationFontSize,
             showTransliteration: preferences.showTransliteration,
             showTajweed: preferences.showTajweed,
+            isUrdu: preferences.selectedTranslation.startsWith('ur'),
           );
         }),
       ),
@@ -168,6 +171,7 @@ class _WordCard extends StatelessWidget {
   final double translationFontSize;
   final bool showTransliteration;
   final bool showTajweed;
+  final bool isUrdu;
 
   const _WordCard({
     required this.word,
@@ -176,6 +180,7 @@ class _WordCard extends StatelessWidget {
     required this.translationFontSize,
     required this.showTransliteration,
     required this.showTajweed,
+    required this.isUrdu,
   });
 
   @override
@@ -232,6 +237,7 @@ class _WordCard extends StatelessWidget {
             Text(
               word.translation!,
               style: TextStyle(
+                fontFamily: isUrdu ? 'Jameel Noori' : null,
                 color: Colors.black54,
                 fontWeight: FontWeight.w500,
                 fontSize: translationFontSize - 2,
@@ -239,6 +245,7 @@ class _WordCard extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 4,
               overflow: TextOverflow.visible,
+              textDirection: isUrdu ? TextDirection.rtl : TextDirection.ltr,
             ),
         ],
       ),

@@ -13,16 +13,19 @@ import 'widgets/word_by_word_ayah.dart';
 import 'widgets/reciter_selection_sheet.dart';
 import 'widgets/ayah_toolbar.dart';
 import 'widgets/mushaf_page_preview.dart';
+import 'widgets/surah_skeleton.dart';
 import 'package:just_audio/just_audio.dart';
 
 class ReaderScreen extends StatefulWidget {
   final Surah surah;
   final ReadingDisplayMode initialMode;
+  final int? initialAyah;
 
   const ReaderScreen({
     super.key,
     required this.surah,
     required this.initialMode,
+    this.initialAyah,
   });
 
   @override
@@ -31,12 +34,67 @@ class ReaderScreen extends StatefulWidget {
 
 class _ReaderScreenState extends State<ReaderScreen> {
   final ScrollController _scrollController = ScrollController();
+  final ValueNotifier<double> _scrollProgress = ValueNotifier(0.0);
   Timer? _lastReadDebouncer;
+  Timer? _scrollPauseTimer;
+  bool _showMarkAsReadOverlay = false;
+  int _overlayTriggerCount = 0; // limit to first 3 times per session
 
   @override
   void initState() {
     super.initState();
     _loadSurah();
+    _scrollController.addListener(_onScroll);
+
+    if (widget.initialAyah != null && widget.initialAyah! > 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          // Approximate jump: Bismillah header (~100px) + (ayah index * ~150px avg height)
+          // This is a naive scroll just to get them close to the spot without a complex item-scroll package
+          final estimatedTargetListIndex = widget.initialAyah! - 1; 
+          final estimatedOffset = 100.0 + (estimatedTargetListIndex * 150.0);
+          
+          final maxOffset = _scrollController.position.maxScrollExtent;
+          _scrollController.jumpTo(estimatedOffset.clamp(0.0, maxOffset));
+        }
+      });
+    }
+  }
+
+  void _onScroll() {
+    if (_scrollController.hasClients) {
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.position.pixels;
+      if (maxScroll > 0) {
+        _scrollProgress.value = (currentScroll / maxScroll).clamp(0.0, 1.0);
+      } else {
+        _scrollProgress.value = 0.0;
+      }
+
+      // Hide overlay as soon as user starts scrolling again
+      if (_showMarkAsReadOverlay) {
+        setState(() => _showMarkAsReadOverlay = false);
+      }
+
+      // Check for pause to show overlay
+      _scrollPauseTimer?.cancel();
+      if (_overlayTriggerCount < 3 && _scrollProgress.value > 0.5 && widget.initialMode == ReadingDisplayMode.arabicOnly) {
+        _scrollPauseTimer = Timer(const Duration(milliseconds: 1500), () {
+          if (mounted && _scrollProgress.value > 0.5) {
+            setState(() {
+              _showMarkAsReadOverlay = true;
+              _overlayTriggerCount++;
+            });
+            // Auto hide after 3 seconds
+            Timer(const Duration(seconds: 3), () {
+              if (mounted && _showMarkAsReadOverlay) {
+                setState(() => _showMarkAsReadOverlay = false);
+              }
+            });
+          }
+        });
+      }
+    }
   }
 
   void _loadSurah() {
@@ -51,7 +109,10 @@ class _ReaderScreenState extends State<ReaderScreen> {
   @override
   void dispose() {
     _lastReadDebouncer?.cancel();
+    _scrollPauseTimer?.cancel();
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _scrollProgress.dispose();
     super.dispose();
   }
 
@@ -75,36 +136,71 @@ class _ReaderScreenState extends State<ReaderScreen> {
           }
         },
         builder: (context, state) {
-          if (state is QuranLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF1B5E20)),
-            );
+          // Progressive streaming state — show loaded ayahs + skeleton cards for the rest
+          if (state is SurahStreaming) {
+            return _buildStreamingContent(context, state);
           }
+
 
           if (state is QuranError) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                  const SizedBox(height: 12),
-                  Text(state.message),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _loadSurah,
-                    child: const Text('دوبارہ کوشش کریں'),
-                  ),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    const SizedBox(height: 12),
+                    Text(state.message),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _loadSurah,
+                      child: const Text('دوبارہ کوشش کریں'),
+                    ),
+                  ],
+                ),
               ),
             );
           }
 
           if (state is SurahLoaded) {
-            return _buildSurahContent(
-              context,
-              state.surah,
-              state.preferences,
-              state.bookmarks,
+            return Stack(
+              children: [
+                _buildSurahContent(
+                  context,
+                  state.surah,
+                  state.preferences,
+                  state.bookmarks,
+                ),
+                if (_showMarkAsReadOverlay)
+                  Positioned(
+                    bottom: 40,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1B5E20).withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
+                          ]
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.touch_app, color: Colors.white, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Tap any Ayah circle to mark as read',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             );
           }
 
@@ -118,7 +214,10 @@ class _ReaderScreenState extends State<ReaderScreen> {
             );
           }
 
-          return const SizedBox.shrink();
+          // Fallback: still loading (initial QuranLoading or state not yet emitted)
+          return _buildLoadingSkeletons();
+
+
         },
       ),
       bottomNavigationBar: _buildPersistentAudioPlayer(),
@@ -239,6 +338,20 @@ class _ReaderScreenState extends State<ReaderScreen> {
           onPressed: () => _showSettingsSheet(context),
         ),
       ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(2.0),
+        child: ValueListenableBuilder<double>(
+          valueListenable: _scrollProgress,
+          builder: (context, progress, child) {
+            return LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.transparent,
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF948160)),
+              minHeight: 2.0,
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -279,7 +392,24 @@ class _ReaderScreenState extends State<ReaderScreen> {
         slivers: [
           SliverToBoxAdapter(child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: MushafPagePreview(surah: surah),
+            child: MushafPagePreview(
+              surah: surah,
+              onAyahMarkerTap: (ayahNumber) {
+                context.read<QuranBloc>().add(
+                  SaveLastReadEvent(
+                    surahNumber: surah.number,
+                    ayahNumber: ayahNumber,
+                  ),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Saved Surah ${surah.number}, Ayah $ayahNumber as last read'),
+                    duration: const Duration(seconds: 1),
+                    backgroundColor: const Color(0xFF948160),
+                  ),
+                );
+              },
+            ),
           )),
           const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
         ],
@@ -409,6 +539,81 @@ class _ReaderScreenState extends State<ReaderScreen> {
           ),
         ),
 
+        const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
+      ],
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // STREAMING STATE: Real ayahs + skeleton cards
+  // ─────────────────────────────────────────────
+  Widget _buildStreamingContent(BuildContext context, SurahStreaming state) {
+    final loadedAyahs = state.loadedAyahs;
+    final remainingCount = state.remainingAyahs;
+    final surah = state.surahMeta;
+    final prefs = state.preferences;
+    final bookmarks = state.bookmarks;
+
+    return CustomScrollView(
+      controller: _scrollController,
+      cacheExtent: 500,
+      slivers: [
+        // Bismillah is immediately available
+        SliverToBoxAdapter(child: _BismillahHeader()),
+
+        // Already loaded ayahs — render normally
+        if (loadedAyahs.isNotEmpty)
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final ayah = loadedAyahs[index];
+                final isBookmarked = bookmarks.contains('${surah.number}:${ayah.numberInSurah}');
+                return RepaintBoundary(
+                  child: _StandardAyahCard(
+                    ayah: ayah,
+                    surahNumber: surah.number,
+                    preferences: prefs,
+                    isBookmarked: isBookmarked,
+                    onBookmarkToggle: () => _toggleBookmark(
+                      context, surah.number, ayah.numberInSurah, isBookmarked,
+                    ),
+                    onTafseerTap: () => _showTafseer(context, ayah),
+                  ),
+                );
+              },
+              childCount: loadedAyahs.length,
+              addRepaintBoundaries: true,
+            ),
+          ),
+
+        // Skeleton placeholders for remaining ayahs
+        if (remainingCount > 0)
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => const SurahSkeletonCard(),
+              childCount: remainingCount,
+            ),
+          ),
+
+        const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
+      ],
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // FALLBACK LOADING SKELETONS (pure skeleton)
+  // ─────────────────────────────────────────────
+  Widget _buildLoadingSkeletons() {
+    return CustomScrollView(
+      controller: _scrollController,
+      slivers: [
+        SliverToBoxAdapter(child: _BismillahHeader()),
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) => const SurahSkeletonCard(),
+            childCount: 8, // Show 8 placeholder cards
+          ),
+        ),
         const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
       ],
     );

@@ -50,11 +50,16 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
       final surahs = await _quranService.getAllSurahs();
       _cachedSurahs = surahs; // Cache for WBW meta lookups
       final lastRead = await _quranService.getLastRead();
+      final surahProgress = await _quranService.getAllSurahProgress();
       _preferences = await _quranService.getReadingPreferences();
       _bookmarks = await _quranService.getBookmarks();
       _availableTranslations = await _quranService.getAvailableTranslations();
 
-      emit(SurahsLoaded(surahs: surahs, lastRead: lastRead));
+      emit(SurahsLoaded(
+        surahs: surahs,
+        lastRead: lastRead,
+        surahProgress: surahProgress,
+      ));
     } catch (e) {
       emit(QuranError(message: e.toString(), previousEvent: event));
     }
@@ -80,39 +85,72 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
           bookmarks: _bookmarks,
           isFullyLoaded: true,
         ));
+
+        // For Tajweed/Arabic: merge WBW data in background if not already present
+        if (_preferences.displayMode == ReadingDisplayMode.tajweed ||
+            _preferences.displayMode == ReadingDisplayMode.arabicOnly ||
+            _preferences.showTajweed) {
+          final hasWords = cachedSurah.ayahs?.any((a) => a.ayahWords != null && a.ayahWords!.isNotEmpty) ?? false;
+          if (!hasWords) {
+            try {
+              final wbwAyahs = await _quranService.getSurahWithWordByWord(event.surahNumber);
+              final mergedSurah = _mergeWbwData(cachedSurah, wbwAyahs);
+              final memKey = 'surah_${event.surahNumber}_$edition';
+              _quranService.cacheDetailSurah(memKey, mergedSurah);
+              emit(SurahLoaded(
+                surah: mergedSurah,
+                preferences: _preferences,
+                bookmarks: _bookmarks,
+                isFullyLoaded: true,
+              ));
+            } catch (e) {
+              debugPrint('Background WBW merge failed: $e');
+            }
+          }
+        }
         return;
       }
 
-      // No cache — show loading spinner and fetch
-      emit(const QuranLoading());
-      Surah surah;
+      // ── No cache: stream ayahs progressively — skeleton fills as data arrives ──
+      Surah? fullSurah;
 
-      // Agar Tajweed mode active hai, to WBW data (jisme tajweed info hai) fetch karke merge karo
-      if (_preferences.displayMode == ReadingDisplayMode.tajweed ||
-          _preferences.showTajweed) {
-        try {
-          // Fetch concurrently to avoid extra loading time
-          final results = await Future.wait([
-            _quranService.getSurahWithTranslation(event.surahNumber, edition),
-            _quranService.getSurahWithWordByWord(event.surahNumber),
-          ]);
-          surah = results[0] as Surah;
-          final wbwAyahs = results[1] as List<Ayah>;
-          surah = _mergeWbwData(surah, wbwAyahs);
-        } catch (e) {
-          // WBW fail hone par bhi basic surah show karo, bas tajweed nahi hogi
-          debugPrint('Tajweed data load failed: $e');
-          surah = await _quranService.getSurahWithTranslation(event.surahNumber, edition);
-        }
-      } else {
-        surah = await _quranService.getSurahWithTranslation(event.surahNumber, edition);
+      await emit.forEach<Surah>(
+        _quranService.getSurahStream(event.surahNumber, edition),
+        onData: (surah) {
+          final ayahs = surah.ayahs ?? [];
+          final totalAyahs = surah.numberOfAyahs ?? ayahs.length;
+
+          // All ayahs received → emit final SurahLoaded
+          if (ayahs.length >= totalAyahs && ayahs.isNotEmpty) {
+            fullSurah = surah;
+            return SurahLoaded(
+              surah: surah,
+              preferences: _preferences,
+              bookmarks: _bookmarks,
+              isFullyLoaded: true,
+            );
+          }
+
+          // Partial data → emit SurahStreaming (skeleton cards fill progressively)
+          return SurahStreaming(
+            surahMeta: surah,
+            loadedAyahs: ayahs,
+            totalAyahs: totalAyahs,
+            preferences: _preferences,
+            bookmarks: _bookmarks,
+          );
+        },
+        onError: (e, st) {
+          debugPrint('Surah stream error: $e');
+          return QuranError(message: e.toString(), previousEvent: event);
+        },
+      );
+
+      // Store into memory LRU for instant reopen
+      if (fullSurah != null) {
+        final memKey = 'surah_${event.surahNumber}_$edition';
+        _quranService.cacheDetailSurah(memKey, fullSurah!);
       }
-
-      emit(SurahLoaded(
-        surah: surah,
-        preferences: _preferences,
-        bookmarks: _bookmarks,
-      ));
     } catch (e) {
       emit(QuranError(message: e.toString(), previousEvent: event));
     }

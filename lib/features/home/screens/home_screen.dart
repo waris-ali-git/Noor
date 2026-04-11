@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import '../../quran/screens/surah_list_screen.dart';
 import '../../hadith/screens/hadith_books_screen.dart';
 import '../../worship/screens/worship_home.dart';
+import '../../dua/screens/duas_home_screen.dart';
 import '../../../core/widgets/translated_text.dart';
 import '../../../core/widgets/language_selector_button.dart';
-import '../../qibla/screens/qibla_home.dart';
+import '../../qibla/screens/qibla_compass.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -21,65 +22,80 @@ class HomeScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const SurahListScreen()));
+                },
+                child: const TranslatedText('Al-Quran', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               ),
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const SurahListScreen()));
-              },
-              child: const TranslatedText('Al-Quran', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+              const SizedBox(height: 24),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                  foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                ),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const HadithBooksScreen()));
+                },
+                child: const TranslatedText('Hadith', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               ),
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const HadithBooksScreen()));
-              },
-              child: const TranslatedText('Hadith', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
-                foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
+              const SizedBox(height: 24),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+                  foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
+                ),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const WorshipHomeScreen()));
+                },
+                child: const TranslatedText('Worship', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               ),
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const WorshipHomeScreen()));
-              },
-              child: const TranslatedText('Worship', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                backgroundColor: Colors.teal.shade50,
-                foregroundColor: Colors.teal.shade900,
+              const SizedBox(height: 24),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  backgroundColor: Colors.teal.shade50,
+                  foregroundColor: Colors.teal.shade900,
+                ),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaCompassScreen()));
+                },
+                child: const TranslatedText('Qibla Compass', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               ),
-              onPressed: () {
-                // Ignore lint for direct push without context check because we are in a simple stateless widget 
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaHomeScreen()));
-              },
-              child: const TranslatedText('Qibla Compass', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            ),
-          ],
+              const SizedBox(height: 24),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  backgroundColor: Colors.indigo.shade50,
+                  foregroundColor: Colors.indigo.shade900,
+                ),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const DuasHomeScreen()));
+                },
+                child: const TranslatedText('Duas', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+

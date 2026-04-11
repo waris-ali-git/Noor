@@ -113,6 +113,24 @@ class AyahWord extends Equatable {
       translationText = json['translation'] as String?;
     }
 
+    String? rawAudio = json['audio_url'] as String?;
+    if (rawAudio == null && json['audio'] is Map) {
+      rawAudio = (json['audio'] as Map)['url'] as String?;
+    }
+
+    String? fullAudioUrl;
+    if (rawAudio != null && rawAudio.isNotEmpty) {
+      if (rawAudio.startsWith('http')) {
+        fullAudioUrl = rawAudio;
+      } else if (rawAudio.startsWith('//')) {
+        fullAudioUrl = 'https:$rawAudio';
+      } else {
+        // Ensure no double slashes if rawAudio already starts with one
+        final path = rawAudio.startsWith('/') ? rawAudio.substring(1) : rawAudio;
+        fullAudioUrl = 'https://audio.qurancdn.com/$path';
+      }
+    }
+
     return AyahWord(
       position: json['position'] as int? ?? json['char_type_id'] as int? ?? 0,
       arabic: arabicText,
@@ -121,6 +139,7 @@ class AyahWord extends Equatable {
           ? (json['transliteration'] as Map)['text'] as String?
           : json['transliteration'] as String?,
       tajweedSegments: segments,
+      audioUrl: fullAudioUrl,
     );
   }
 
@@ -131,6 +150,7 @@ class AyahWord extends Equatable {
       arabic: json['text'] as String? ?? '',
       translation: json['translation'] as String?,
       transliteration: json['transliteration'] as String?,
+      audioUrl: json['audio_url'] as String?,
     );
   }
 
@@ -206,6 +226,7 @@ class AyahWord extends Equatable {
     'text': arabic,
     'translation': translation,
     'transliteration': transliteration,
+    'audio_url': audioUrl,
   };
 
   @override

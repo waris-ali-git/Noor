@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/quran/state/quran_bloc.dart';
 import 'features/hadith/state/hadith_bloc.dart';
+
 import 'features/home/screens/home_screen.dart';
 import 'core/state/language_cubit.dart';
 import 'core/di.dart';
@@ -23,6 +24,7 @@ class IslamicApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<LanguageCubit>()),
         BlocProvider(create: (_) => sl<QuranBloc>()),
         BlocProvider(create: (_) => sl<HadithBloc>()),
+
       ],
       child: BlocBuilder<LanguageCubit, String>(
         builder: (context, currentLang) {
@@ -43,3 +45,4 @@ class IslamicApp extends StatelessWidget {
     );
   }
 }
+

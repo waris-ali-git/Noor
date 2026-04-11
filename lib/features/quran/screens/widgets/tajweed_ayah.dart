@@ -68,7 +68,7 @@ class TajweedAyahWidget extends StatelessWidget {
                     ? TajweedService.parseTajweedTextToSpans(
                         ayah.tajweedText!,
                         preferences.arabicFontSize,
-                        'UthmanicHafs',
+                        'TajweedFont',
                       )
                     : allSegments.map((seg) {
                         return TextSpan(
@@ -76,7 +76,7 @@ class TajweedAyahWidget extends StatelessWidget {
                           style: TextStyle(
                             color: TajweedService.getTajweedColor(seg.rule),
                             fontSize: preferences.arabicFontSize,
-                            fontFamily: 'UthmanicHafs',
+                            fontFamily: 'TajweedFont',
                             height: 2.0,
                           ),
                         );

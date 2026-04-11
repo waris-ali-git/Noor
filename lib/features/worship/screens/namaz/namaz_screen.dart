@@ -91,20 +91,22 @@ class _TimingsTabState extends State<_TimingsTab> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            TranslatedText('Fetching precise timings for your location...'),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              TranslatedText('Fetching precise timings for your location...'),
+            ],
+          ),
         ),
       );
     }
 
     if (_errorMessage.isNotEmpty || _timing == null) {
       return Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -286,7 +288,7 @@ class _TariqaTabState extends State<_TariqaTab> {
                           textAlign: TextAlign.right,
                           textDirection: TextDirection.rtl,
                           style: const TextStyle(
-                            fontFamily: 'DigitalKhatt',
+                            fontFamily: 'Jameel Noori',
                             fontSize: 22,
                             height: 1.8,
                           ),

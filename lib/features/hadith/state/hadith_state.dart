@@ -58,6 +58,56 @@ class HadithError extends HadithState {
   List<Object?> get props => [message];
 }
 
+// ─── PROGRESSIVE STREAMING STATES ───
+
+class HadithsStreaming extends HadithState {
+  final HadithBook selectedBook;
+  final HadithEdition selectedTranslation;
+  final HadithSection selectedSection;
+  final List<HadithItem> loadedHadiths;
+  final int totalHadiths;
+
+  const HadithsStreaming({
+    required this.selectedBook,
+    required this.selectedTranslation,
+    required this.selectedSection,
+    required this.loadedHadiths,
+    required this.totalHadiths,
+  });
+
+  int get remainingHadiths => totalHadiths > loadedHadiths.length 
+      ? totalHadiths - loadedHadiths.length 
+      : 0;
+
+  @override
+  List<Object?> get props => [selectedBook, selectedTranslation, selectedSection, loadedHadiths, totalHadiths];
+}
+
+class HadithAllTranslationsStreaming extends HadithState {
+  final HadithBook selectedBook;
+  final HadithSection selectedSection;
+  final List<MultiTranslationHadith> loadedHadiths;
+  final List<String> availableLanguages;
+  final Set<String> selectedLanguages;
+  final int totalHadiths;
+
+  const HadithAllTranslationsStreaming({
+    required this.selectedBook,
+    required this.selectedSection,
+    required this.loadedHadiths,
+    required this.availableLanguages,
+    required this.selectedLanguages,
+    required this.totalHadiths,
+  });
+
+  int get remainingHadiths => totalHadiths > loadedHadiths.length 
+      ? totalHadiths - loadedHadiths.length 
+      : 0;
+
+  @override
+  List<Object?> get props => [selectedBook, selectedSection, loadedHadiths, availableLanguages, selectedLanguages, totalHadiths];
+}
+
 /// State when all translations of hadiths for a section are loaded
 class HadithAllTranslationsLoaded extends HadithState {
   final HadithBook selectedBook;

@@ -51,6 +51,13 @@ class TafseerSource {
       audioPatternType: AudioPatternType.perAyah,
     ),
     TafseerSource(
+      id: 'ur-taqi-usmani-audio',
+      name: 'Tafseer-e-Usmani — Mufti Taqi Usmani',
+      language: 'ur', languageLabel: 'اردو',
+      type: TafseerType.audio,
+      audioPatternType: AudioPatternType.perAyah,
+    ),
+    TafseerSource(
       id: 'ur-ibn-kathir-qurancom',
       name: 'Tafsir Ibn Kathir',
       language: 'ur', languageLabel: 'اردو',

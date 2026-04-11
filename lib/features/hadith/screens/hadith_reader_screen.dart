@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../models/hadith.dart';
 import '../state/hadith_bloc.dart';
+import 'widgets/hadith_skeleton.dart';
 
 class HadithReaderScreen extends StatefulWidget {
   final HadithBook book;
@@ -133,6 +134,20 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
         lower.startsWith('hebrew');
   }
 
+  bool _isUrduSelection(HadithState state) {
+    if (state is HadithsLoaded) {
+      return state.selectedTranslation.language.toLowerCase().contains('urdu');
+    }
+    if (state is HadithAllTranslationsLoaded) {
+      return state.selectedLanguages.any((l) => l.toLowerCase().contains('urdu'));
+    }
+    if (state is HadithSectionsLoaded) {
+      // If we're looking at sections, we check if the book has an Urdu edition
+      return widget.book.editions.any((e) => e.language.toLowerCase().contains('urdu'));
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -176,31 +191,35 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
       body: BlocBuilder<HadithBloc, HadithState>(
         builder: (context, state) {
           if (state is HadithLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return _buildLoadingSkeletons();
           }
           if (state is HadithError) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text('Error: ${state.message}', textAlign: TextAlign.center),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.read<HadithBloc>().add(SelectHadithBookEvent(book: widget.book)),
-                    child: const Text('Retry'),
-                  ),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text('Error: ${state.message}', textAlign: TextAlign.center),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.read<HadithBloc>().add(SelectHadithBookEvent(book: widget.book)),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
               ),
             );
           }
           if (state is HadithSectionsLoaded) return _buildSectionsList(state);
-          if (state is HadithsLoaded) return _buildSingleTranslationView(state);
+          if (state is HadithsLoaded) return _buildSingleTranslationView(state.selectedSection.name, state.selectedBook, state.selectedTranslation, state.hadiths);
+          if (state is HadithsStreaming) return _buildStreamingTranslationView(state);
           if (state is HadithAllTranslationsLoaded) return _buildAllTranslationsView(state);
+          if (state is HadithAllTranslationsStreaming) return _buildStreamingAllTranslationsView(state);
           return const SizedBox();
         },
       ),
@@ -220,7 +239,13 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            title: Text(section.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(
+              section.name, 
+              style: TextStyle(
+                fontFamily: _isUrduSelection(state) ? 'Jameel Noori' : null,
+                fontWeight: FontWeight.bold
+              )
+            ),
             subtitle: section.firstHadith > 0
                 ? Text('Hadiths: ${section.firstHadith} – ${section.lastHadith}',
                     style: TextStyle(color: Colors.grey[600], fontSize: 13))
@@ -239,18 +264,18 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
     );
   }
 
-  // ═══════ SINGLE TRANSLATION VIEW ═══════
-  Widget _buildSingleTranslationView(HadithsLoaded state) {
+  // ═══════ SINGLE TRANSLATION VIEW (Loaded) ═══════
+  Widget _buildSingleTranslationView(String sectionName, HadithBook book, HadithEdition translation, List<HadithItem> hadiths) {
     return Column(
       children: [
-        _buildSectionHeader(state.selectedSection.name, state.selectedBook),
+        _buildSectionHeader(sectionName, book),
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
-            itemCount: state.hadiths.length,
+            itemCount: hadiths.length,
             separatorBuilder: (_, __) => const Divider(height: 32),
             itemBuilder: (context, index) {
-              final hadith = state.hadiths[index];
+              final hadith = hadiths[index];
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -258,9 +283,16 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                   const SizedBox(height: 12),
                   Text(
                     hadith.text,
-                    style: const TextStyle(fontSize: 18, height: 1.6),
-                    textAlign: state.selectedTranslation.direction == 'rtl' ? TextAlign.right : TextAlign.left,
-                    textDirection: state.selectedTranslation.direction == 'rtl' ? TextDirection.rtl : TextDirection.ltr,
+                    style: TextStyle(
+                      fontFamily: (translation.language.toLowerCase().contains('urdu') || 
+                                   translation.language.toLowerCase().contains('arabic'))
+                        ? 'Jameel Noori' 
+                        : null,
+                      fontSize: translation.language.toLowerCase().contains('arabic') ? 22 : 18, 
+                      height: translation.language.toLowerCase().contains('arabic') ? 2.0 : 1.6
+                    ),
+                    textAlign: translation.direction == 'rtl' ? TextAlign.right : TextAlign.left,
+                    textDirection: translation.direction == 'rtl' ? TextDirection.rtl : TextDirection.ltr,
                   ),
                   if (hadith.grades.isNotEmpty) ...[
                     const SizedBox(height: 12),
@@ -269,6 +301,90 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                 ],
               );
             },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ═══════ SINGLE TRANSLATION VIEW (Streaming / Partial) ═══════
+  Widget _buildStreamingTranslationView(HadithsStreaming state) {
+    // Show loaded items + skeletons for the remaining
+    final isArabic = state.selectedTranslation.language.toLowerCase().contains('arabic');
+    final loaded = state.loadedHadiths.length;
+    final remaining = state.remainingHadiths;
+    final totalChildCount = loaded + remaining;
+
+    return Column(
+      children: [
+        _buildSectionHeader(state.selectedSection.name, state.selectedBook),
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: totalChildCount,
+            separatorBuilder: (_, __) => const Divider(height: 32),
+            itemBuilder: (context, index) {
+              if (index < loaded) {
+                // Rendering loaded hadith
+                final hadith = state.loadedHadiths[index];
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildHadithNumberBadge(hadith.hadithNumber),
+                    const SizedBox(height: 12),
+                    Text(
+                      hadith.text,
+                      style: TextStyle(
+                        fontFamily: (state.selectedTranslation.language.toLowerCase().contains('urdu') || 
+                                     state.selectedTranslation.language.toLowerCase().contains('arabic'))
+                          ? 'Jameel Noori' 
+                          : null,
+                        fontSize: state.selectedTranslation.language.toLowerCase().contains('arabic') ? 22 : 18, 
+                        height: state.selectedTranslation.language.toLowerCase().contains('arabic') ? 2.0 : 1.6
+                      ),
+                      textAlign: state.selectedTranslation.direction == 'rtl' ? TextAlign.right : TextAlign.left,
+                      textDirection: state.selectedTranslation.direction == 'rtl' ? TextDirection.rtl : TextDirection.ltr,
+                    ),
+                    if (hadith.grades.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      _buildGradeChips(hadith.grades),
+                    ],
+                  ],
+                );
+              } else {
+                // Rendering skeleton
+                return HadithSkeletonCard(isArabic: isArabic);
+              }
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ═══════ SKELETON LOADERS (Fallback for HadithLoading) ═══════
+  Widget _buildLoadingSkeletons() {
+    return Column(
+      children: [
+        // Fake Header Skeleton
+        Container(
+          padding: const EdgeInsets.all(12),
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(height: 18, color: Colors.grey[300]),
+              ),
+              const SizedBox(width: 40),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: 6, // Fake count
+            separatorBuilder: (_, __) => const Divider(height: 32),
+            itemBuilder: (context, index) => const HadithSkeletonCard(),
           ),
         ),
       ],
@@ -402,6 +518,10 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                     textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
                     textAlign: isRtl ? TextAlign.right : TextAlign.left,
                     style: TextStyle(
+                      fontFamily: (lang.toLowerCase().contains('urdu') || 
+                                   lang.toLowerCase().contains('arabic'))
+                          ? 'Jameel Noori' 
+                          : null,
                       fontSize: isArabic ? 22 : 16,
                       height: isArabic ? 2.0 : 1.6,
                       color: Colors.black87,
@@ -417,6 +537,34 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
     );
   }
 
+  // ═══════ ALL TRANSLATIONS VIEW (Streaming) ═══════
+  Widget _buildStreamingAllTranslationsView(HadithAllTranslationsStreaming state) {
+    return Column(
+      children: [
+        _buildSectionHeader(state.selectedSection.name, state.selectedBook),
+        // Fake language filter strip to maintain layout
+        Container(
+          height: 46,
+          color: Colors.grey[50],
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: state.totalHadiths,
+            separatorBuilder: (_, __) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Divider(height: 2, thickness: 2, color: Colors.grey[300]),
+            ),
+            itemBuilder: (context, index) {
+               return const HadithSkeletonCard(isArabic: true);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   // ═══════ SHARED WIDGETS ═══════
   Widget _buildSectionHeader(String sectionName, HadithBook book) {
     return Container(
@@ -425,7 +573,18 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
       child: Row(
         children: [
           Expanded(
-            child: Text(sectionName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            child: BlocBuilder<HadithBloc, HadithState>(
+              builder: (context, state) {
+                return Text(
+                  sectionName, 
+                  style: TextStyle(
+                    fontFamily: _isUrduSelection(state) ? 'Jameel Noori' : null,
+                    fontWeight: FontWeight.bold, 
+                    fontSize: 15
+                  )
+                );
+              },
+            ),
           ),
           TextButton.icon(
             icon: const Icon(Icons.list, size: 18),

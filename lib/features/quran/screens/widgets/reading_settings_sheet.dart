@@ -54,7 +54,7 @@ class ReadingSettingsSheet extends StatelessWidget {
 
                     const Text(
                       'پڑھنے کی ترتیبات',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontFamily: 'Jameel Noori', fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const Divider(height: 24),
 
@@ -130,7 +130,7 @@ class ReadingSettingsSheet extends StatelessWidget {
                       min: 12,
                       max: 24,
                       previewText: 'اللہ کے نام سے',
-                      previewFontFamily: null,
+                      previewFontFamily: 'Jameel Noori',
                       onChanged: (val) {
                         context.read<QuranBloc>().add(ChangeFontSizeEvent(
                           arabicSize: prefs.arabicFontSize,
@@ -220,13 +220,14 @@ class _ReadingModeSelector extends StatelessWidget {
                       Text(
                         m.$3,
                         style: TextStyle(
+                          fontFamily: 'Jameel Noori',
                           fontWeight: FontWeight.bold,
                           color: isSelected ? const Color(0xFF1B5E20) : Colors.black87,
                         ),
                       ),
                       Text(
                         m.$4,
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        style: TextStyle(fontFamily: 'Jameel Noori', fontSize: 12, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -369,8 +370,8 @@ class _ToggleTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF1B5E20)),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+      title: Text(title, style: const TextStyle(fontFamily: 'Jameel Noori', fontWeight: FontWeight.w500)),
+      subtitle: Text(subtitle, style: const TextStyle(fontFamily: 'Jameel Noori', fontSize: 12)),
       trailing: Switch(
         value: value,
         onChanged: onChanged,
@@ -392,6 +393,7 @@ class _SectionTitle extends StatelessWidget {
     return Text(
       title,
       style: const TextStyle(
+        fontFamily: 'Jameel Noori',
         fontWeight: FontWeight.bold,
         fontSize: 14,
         color: Colors.grey,
