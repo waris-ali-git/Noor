@@ -16,11 +16,7 @@ extension ArabicStringExtension on String {
     t = t.replaceAll('\u06DF', '\u0652'); // Sifr Mustadeer 
     t = t.replaceAll('\u06E0', '\u0652'); // Sifr Mustateel (Tall Zero) -> map to circle if unsupported
     
-    // 3. Fix Small High Alif/Waw/Yeh rendering on dotted circles due to stacked diacritics
-    t = t.replaceAll('\u064E\u0670', '\u0670'); // Fatha + Small Alif -> Small Alif
-    t = t.replaceAll('\u064F\u06E2', '\u06E2'); // Damma + Small Waw -> Small Waw
-    t = t.replaceAll('\u0650\u06E3', '\u06E3'); // Kasra + Small Yeh -> Small Yeh
-
+    // Removed the stripping of Fatha before Small Alif as it breaks Khari Zabar rendering in Uthmanic fonts
     // 4. Fix Alif Khanjariyah issues (اَلْخَنْجَرِيَّة)
     // These are combining marks that should render properly or be normalized
     t = t.replaceAll('\u0653', 'ٓ'); // Maddah above -> normalize to standard form

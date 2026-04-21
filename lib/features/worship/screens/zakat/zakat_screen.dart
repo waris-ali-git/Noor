@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/translated_text.dart';
 import '../../../../core/widgets/language_selector_button.dart';
+import '../../../../shared/widgets/custom_button.dart';
 
 class ZakatScreen extends StatefulWidget {
   const ZakatScreen({super.key});
@@ -289,33 +290,7 @@ class _ZakatScreenState extends State<ZakatScreen> {
             ],
           ),
           
-          const SizedBox(height: 24),
-          
-          // Pay Zakat Button
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: () {
-                // Future payment integration logic
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF0F5A4A),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 0,
-              ),
-              child: const TranslatedText(
-                "Pay Zakat Now",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
+          // The Pay Zakat button has been removed as per user request.
         ],
       ),
     );

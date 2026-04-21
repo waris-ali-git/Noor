@@ -102,6 +102,12 @@ flutter:
     - family: Jameel Noori
       fonts:
         - asset: 'lib/assets/fonts/Jameel Noori Nastaleeq Kasheeda.ttf'
+    - family: CustomIcons
+      fonts:
+        - asset: lib/assets/icons/homepage.ttf
+    - family: AsmaUlHusna
+      fonts:
+        - asset: lib/assets/fonts/alqlm-asma-ul-husna.ttf
 
 
   # To add assets to your application, add an assets section, like this:
@@ -119,6 +125,11 @@ flutter:
     - lib/assets/data/quran/wbw_translations/
     - lib/assets/data/worship/kalmas.json
     - lib/assets/data/worship/namaz_steps.json
+    - lib/assets/images/reciters/
+    - lib/assets/images/homepic.png
+    - lib/assets/images/quran.png
+    - lib/assets/images/allah_name.png
+    - lib/assets/images/muhammad_name.png
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a

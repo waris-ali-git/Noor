@@ -9,6 +9,7 @@ import '../state/quran_bloc.dart';
 import '../models/surah.dart';
 import '../models/reading_mode.dart';
 import 'reader_screen.dart';
+import '../../../shared/widgets/custom_button.dart';
 
 class SurahListScreen extends StatefulWidget {
   const SurahListScreen({super.key});
@@ -197,37 +198,15 @@ class _SurahListScreenState extends State<SurahListScreen> {
                                       fontSize: 18, color: Colors.grey),
                                 ),
                                 const SizedBox(height: 8),
-                                TextButton.icon(
-                                  onPressed: () {
+                                LiquidGlassButton(
+                                  label: 'Search in Quran text',
+                                  icon: const Icon(Icons.menu_book, size: 18, color: Color(0xFF948160)),
+                                  textStyle: const TextStyle(color: Color(0xFF948160), fontSize: 13),
+                                  onTap: () {
                                     context.read<QuranBloc>().add(
                                         SearchQuranEvent(
                                             query: _searchController.text));
                                   },
-                                  icon: const Icon(Icons.menu_book,
-                                      color: Color(0xFF948160)),
-                                  label: Flexible(
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Flexible(
-                                          child: TranslatedText(
-                                            'قرآن کی آیات میں تلاش کریں:',
-                                            style: TextStyle(
-                                                color: Color(0xFF948160)),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        Flexible(
-                                          child: Text(
-                                            ' "${_searchController.text}"',
-                                            style: const TextStyle(
-                                                color: Color(0xFF948160)),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
                                 ),
                               ],
                             ),
@@ -406,14 +385,12 @@ class _ErrorWidget extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const TranslatedText('دوبارہ کوشش کریں'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF948160),
-                foregroundColor: Colors.white,
-              ),
+            LiquidGlassButton(
+              label: 'Retry',
+              icon: const Icon(Icons.refresh, size: 18, color: Colors.white),
+              textStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              glassColor: const Color(0x33948160),
+              onTap: onRetry,
             ),
           ],
         ),
@@ -457,107 +434,118 @@ class _LastReadBanner extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F1ED),
         borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.bookmark,
-                        color: Color(0xFF948160), size: 16),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        'LAST READ',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFF948160),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.5,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '$percentage%',
-                style: GoogleFonts.plusJakartaSans(
-                  color: const Color(0xFF948160),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w200,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            surahName,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF2D2D2D),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subText,
-            style: GoogleFonts.plusJakartaSans(
-              color: const Color(0xFF7B7B7B),
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: const Color(0xFFD6D6D6),
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFF948160)),
-              minHeight: 6,
-            ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: onContinue,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF9F8D6F),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: Text(
-                'Continue Reading',
-                style: GoogleFonts.plusJakartaSans(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
-              ),
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            // Background Image
+            Positioned.fill(
+              child: Image.asset(
+                'lib/assets/images/quran.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.bookmark,
+                                color: Colors.white, size: 16),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                'LAST READ',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.5,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '$percentage%',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w200,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    surahName,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subText,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 16),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: Colors.white.withValues(alpha: 0.2),
+                      valueColor:
+                          const AlwaysStoppedAnimation<Color>(Colors.white),
+                      minHeight: 6,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  LiquidGlassButton(
+                    label: 'Continue Reading',
+                    width: double.infinity,
+                    height: 52,
+                    textStyle: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w700, fontSize: 16, color: Colors.white),
+                    glassColor: const Color(0x33FFFFFF), // Use translucent white for tint
+                    isTransparent: true, // Enable true glass transparency
+                    onTap: onContinue,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

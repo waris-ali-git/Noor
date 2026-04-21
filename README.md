@@ -14,3 +14,31 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+
+
+---
+### new icons
+- hadith
+- prophet-story
+
+---
+# Things to do:
+### ~~Allah Name~~ ✔
+### ~~Prophet Muhammad(SAWW) name~~ ✔
+### Make a setting page
+### ~~home pic align~~ ✔
+### ~~home pic design~~ ✔
+### home page features
+### Qibla Compass theak 
+### dua page
+- Picture Featues
+- Share
+- Sara quotes wala
+### Prophet Stories Complete
+### Grammer portion
+### Azaan sound on prayer time
+### icons theak karna
+## Sari App ki designing
+### Islamic Calender
+-----

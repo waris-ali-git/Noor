@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../models/hadith.dart';
 import '../state/hadith_bloc.dart';
 import 'widgets/hadith_skeleton.dart';
+import '../../../shared/widgets/custom_button.dart';
 
 class HadithReaderScreen extends StatefulWidget {
   final HadithBook book;
@@ -14,6 +15,8 @@ class HadithReaderScreen extends StatefulWidget {
 }
 
 class _HadithReaderScreenState extends State<HadithReaderScreen> {
+  // All-translations mode: shows all language chips at top with multi-select.
+  // The prior rendering crash has been fixed so this is safe to use as default.
   bool _showAllTranslations = true;
 
   @override
@@ -206,9 +209,10 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                       child: Text('Error: ${state.message}', textAlign: TextAlign.center),
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => context.read<HadithBloc>().add(SelectHadithBookEvent(book: widget.book)),
-                      child: const Text('Retry'),
+                    LiquidGlassButton(
+                      label: 'Retry',
+                      icon: const Icon(Icons.refresh, size: 18),
+                      onTap: () => context.read<HadithBloc>().add(SelectHadithBookEvent(book: widget.book)),
                     ),
                   ],
                 ),
@@ -586,10 +590,13 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
               },
             ),
           ),
-          TextButton.icon(
-            icon: const Icon(Icons.list, size: 18),
-            label: const Text('Chapters', style: TextStyle(fontSize: 13)),
-            onPressed: () => context.read<HadithBloc>().add(SelectHadithBookEvent(book: book)),
+          LiquidGlassButton(
+            label: 'Chapters',
+            icon: const Icon(Icons.list, size: 16),
+            height: 36,
+            width: 110,
+            textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1B5E20)),
+            onTap: () => context.read<HadithBloc>().add(SelectHadithBookEvent(book: book)),
           ),
         ],
       ),

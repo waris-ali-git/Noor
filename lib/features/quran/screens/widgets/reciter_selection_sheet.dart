@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/reciter.dart';
 import '../../services/audio_service.dart';
+import '../../../../shared/widgets/custom_button.dart';
 
 /// Reciter selection bottom sheet
 class ReciterSelectionSheet extends StatefulWidget {
@@ -86,15 +87,27 @@ class _ReciterSelectionSheetState extends State<ReciterSelectionSheet> {
                       child: Row(
                         children: [
                           // Avatar
-                          CircleAvatar(
-                            radius: 28,
-                            backgroundColor: const Color(0xFF1B5E20),
-                            child: Text(
-                              reciter.name[0].toUpperCase(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFF1B5E20),
+                            ),
+                            child: ClipOval(
+                              child: Image.asset(
+                                reciter.avatarUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Center(
+                                  child: Text(
+                                    reciter.name[0].toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -161,26 +174,12 @@ class _ReciterSelectionSheetState extends State<ReciterSelectionSheet> {
           // Close button
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
+            child: LiquidGlassButton(
+              label: 'Done',
               width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1B5E20),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'Done',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+              height: 52,
+              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1B5E20)),
+              onTap: () => Navigator.pop(context),
             ),
           ),
         ],

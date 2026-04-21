@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../state/quran_bloc.dart';
 import '../../models/reading_mode.dart';
+import '../../../../core/widgets/translated_text.dart';
+import '../../../../shared/widgets/custom_button.dart';
 
 class WbwLanguageSelector extends StatelessWidget {
   final ValueChanged<ReadingDisplayMode>? onModeChanged;
@@ -36,8 +38,8 @@ class WbwLanguageSelector extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Select Language\nزبان منتخب کریں',
+                const TranslatedText(
+                  'Select Language',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 18,
@@ -96,9 +98,11 @@ class WbwLanguageSelector extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel / منسوخ کریں'),
+                LiquidGlassButton(
+                  label: 'Cancel',
+                  width: double.infinity,
+                  height: 46,
+                  onTap: () => Navigator.pop(context),
                 ),
               ],
             ),

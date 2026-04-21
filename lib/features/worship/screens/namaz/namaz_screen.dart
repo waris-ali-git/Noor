@@ -8,6 +8,7 @@ import '../../models/prayer_timing.dart';
 import '../../models/namaz_step.dart';
 import '../../models/rakat_info.dart';
 import '../../../quran/models/ayah.dart'; // For ArabicStringExtension
+import '../../../../shared/widgets/custom_button.dart';
 
 class NamazScreen extends StatelessWidget {
   const NamazScreen({super.key});
@@ -115,10 +116,10 @@ class _TimingsTabState extends State<_TimingsTab> {
               const SizedBox(height: 16),
               TranslatedText(_errorMessage, textAlign: TextAlign.center),
               const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: _fetchTimings,
-                icon: const Icon(Icons.refresh),
-                label: const TranslatedText('Retry'),
+              LiquidGlassButton(
+                label: 'Retry',
+                icon: const Icon(Icons.refresh, size: 18),
+                onTap: _fetchTimings,
               )
             ],
           ),

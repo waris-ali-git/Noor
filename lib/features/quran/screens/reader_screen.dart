@@ -15,6 +15,7 @@ import 'widgets/ayah_toolbar.dart';
 import 'widgets/mushaf_page_preview.dart';
 import 'widgets/surah_skeleton.dart';
 import 'package:just_audio/just_audio.dart';
+import '../../../../shared/widgets/custom_button.dart';
 
 class ReaderScreen extends StatefulWidget {
   final Surah surah;
@@ -152,9 +153,10 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     const SizedBox(height: 12),
                     Text(state.message),
                     const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _loadSurah,
-                      child: const Text('دوبارہ کوشش کریں'),
+                    LiquidGlassButton(
+                      label: 'دوبارہ کوشش کریں',
+                      icon: const Icon(Icons.refresh, size: 18),
+                      onTap: _loadSurah,
                     ),
                   ],
                 ),

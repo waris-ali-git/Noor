@@ -4,6 +4,7 @@ import '../../../core/widgets/language_selector_button.dart';
 import '../../../core/widgets/translated_text.dart';
 import '../state/hadith_bloc.dart';
 import 'hadith_reader_screen.dart';
+import '../../../shared/widgets/custom_button.dart';
 
 class HadithBooksScreen extends StatefulWidget {
   const HadithBooksScreen({super.key});
@@ -24,8 +25,11 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF0F0F3), // Neumorphic base color
       appBar: AppBar(
-        title: const TranslatedText('Ahadeeth (احادیث)', style: TextStyle(fontFamily: 'Jameel Noori', fontWeight: FontWeight.bold)),
+        elevation: 0,
+        backgroundColor: const Color(0xFFF0F0F3),
+        title: const TranslatedText('Ahadeeth (احادیث)', style: TextStyle(fontFamily: 'Jameel Noori', fontWeight: FontWeight.bold, color: Color(0xFF1C1C1E))),
         centerTitle: true,
         actions: const [
           LanguageSelectorButton(),
@@ -51,9 +55,10 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
                     const Icon(Icons.error_outline, color: Colors.red, size: 48),
                     const SizedBox(height: 16),
                     Text(state.message),
-                    TextButton(
-                      onPressed: () => bloc.add(const LoadHadithBooksEvent()),
-                      child: const Text('Retry'),
+                    LiquidGlassButton(
+                      label: 'Retry',
+                      icon: const Icon(Icons.refresh, size: 18),
+                      onTap: () => bloc.add(const LoadHadithBooksEvent()),
                     ),
                   ],
                 ),
@@ -78,17 +83,17 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
           });
 
           return GridView.builder(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(20.0),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.85,
+              childAspectRatio: 0.9,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
             ),
             itemCount: sortedBooks.length,
             itemBuilder: (context, index) {
               final book = sortedBooks[index];
-              return InkWell(
+              return GestureDetector(
                 onTap: () {
                   Navigator.push(
                     context,
@@ -97,43 +102,40 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
                     ),
                   );
                 },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
+                child: LiquidGlassContainer(
+                  borderRadius: 20,
+                  padding: const EdgeInsets.all(12),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.menu_book, size: 48, color: Color(0xFF1B5E20)),
-                      const SizedBox(height: 16),
+                      const Icon(Icons.menu_book, size: 36, color: Color(0xFF1B5E20)),
+                      const SizedBox(height: 12),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
                         child: TranslatedText(
                           book.name,
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
+                            color: Color(0xFF1C1C1E),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             '${book.editions.length} ',
-                            style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                            style: TextStyle(fontSize: 10, color: Colors.grey[700]),
                           ),
                           Flexible(
                             child: TranslatedText(
                               'Translations',
-                              style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                              style: TextStyle(fontSize: 10, color: Colors.grey[700]),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),

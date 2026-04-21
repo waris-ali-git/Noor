@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/widgets/translated_text.dart';
 import '../../../core/widgets/language_selector_button.dart';
+import '../../../shared/widgets/custom_button.dart';
 import 'kalma/kalma_screen.dart';
 import 'namaz/namaz_screen.dart';
 import 'roza/roza_screen.dart';
@@ -23,7 +24,7 @@ class WorshipHomeScreen extends StatelessWidget {
       {
         'title': 'Namaz',
         'subtitle': 'The Five Daily Prayers',
-        'icon': Icons.pan_tool_alt_rounded, // Using standard icon as placeholder
+        'icon': Icons.pan_tool_alt_rounded,
         'color': Colors.blue,
         'screen': const NamazScreen(),
       },
@@ -51,104 +52,91 @@ class WorshipHomeScreen extends StatelessWidget {
     ];
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF0F0F3), // Match neumorphic base
       appBar: AppBar(
-        title: const TranslatedText('5 Pillars of Islam', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFFF0F0F3),
+        elevation: 0,
+        title: const TranslatedText('5 Pillars of Islam', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1C1C1E))),
         centerTitle: true,
         actions: const [
           LanguageSelectorButton(),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const TranslatedText(
-              'Explore the foundational acts of worship in Islam.',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 0.9,
-                ),
-                itemCount: pillars.length,
-                itemBuilder: (context, index) {
-                  final pillar = pillars[index];
-                  return _buildPillarCard(context, pillar);
-                },
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: TranslatedText(
+                'Explore the foundational acts of worship in Islam.',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
             ),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.9,
+              ),
+              itemCount: pillars.length,
+              itemBuilder: (context, index) {
+                final pillar = pillars[index];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => pillar['screen'] as Widget),
+                    );
+                  },
+                  child: LiquidGlassContainer(
+                    borderRadius: 24,
+                    padding: const EdgeInsets.all(16),
+                    glassColor: (pillar['color'] as Color).withOpacity(0.12),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: (pillar['color'] as Color).withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            pillar['icon'] as IconData,
+                            color: (pillar['color'] as Color),
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TranslatedText(
+                          pillar['title'] as String,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1C1C1E),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        TranslatedText(
+                          pillar['subtitle'] as String,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: const Color(0xFF1C1C1E).withOpacity(0.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 24),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPillarCard(BuildContext context, Map<String, dynamic> pillar) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => pillar['screen'] as Widget),
-          );
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                (pillar['color'] as MaterialColor).shade100,
-                (pillar['color'] as MaterialColor).shade50,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: (pillar['color'] as MaterialColor).shade200,
-                  child: Icon(
-                    pillar['icon'] as IconData,
-                    size: 30,
-                    color: (pillar['color'] as MaterialColor).shade800,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TranslatedText(
-                  pillar['title'] as String,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: (pillar['color'] as MaterialColor).shade900,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TranslatedText(
-                  pillar['subtitle'] as String,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: (pillar['color'] as MaterialColor).shade700,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );

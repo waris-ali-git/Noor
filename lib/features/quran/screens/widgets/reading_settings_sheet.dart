@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../state/quran_bloc.dart';
 import '../../models/reading_mode.dart';
-import '../widgets/tajweed_ayah.dart';
 import '../translation_selection_screen.dart';
+import '../widgets/tajweed_ayah.dart';
+import '../../../../core/widgets/translated_text.dart';
 import 'wbw_language_selector.dart';
 
 /// Reading Settings Bottom Sheet
@@ -52,14 +53,14 @@ class ReadingSettingsSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
 
-                    const Text(
-                      'پڑھنے کی ترتیبات',
+                    const TranslatedText(
+                      'Reading Settings',
                       style: TextStyle(fontFamily: 'Jameel Noori', fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const Divider(height: 24),
 
                     // ─── Reading Mode ───────────────────────
-                    const _SectionTitle(title: 'پڑھنے کا طریقہ'),
+                    const _SectionTitle(title: 'Reading Mode'),
                     const SizedBox(height: 8),
                     _ReadingModeSelector(
                       current: prefs.displayMode,
@@ -84,8 +85,8 @@ class ReadingSettingsSheet extends StatelessWidget {
                     // ─── Tajweed Toggle ─────────────────────
                     _ToggleTile(
                       icon: Icons.palette,
-                      title: 'تجوید رنگ',
-                      subtitle: 'تجوید قواعد رنگوں سے دکھائیں',
+                      title: 'Tajweed Color',
+                      subtitle: 'Show tajweed rules with colors',
                       value: prefs.showTajweed,
                       onChanged: (_) {
                         context.read<QuranBloc>().add(const ToggleTajweedEvent());
@@ -95,8 +96,8 @@ class ReadingSettingsSheet extends StatelessWidget {
                     // ─── Transliteration Toggle ─────────────
                     _ToggleTile(
                       icon: Icons.translate,
-                      title: 'تلفظ (Transliteration)',
-                      subtitle: 'رومن اردو میں تلفظ دکھائیں',
+                      title: 'Transliteration',
+                      subtitle: 'Show pronunciation in English/Roman',
                       value: prefs.showTransliteration,
                       onChanged: (_) {
                         context.read<QuranBloc>().add(const ToggleTransliterationEvent());
@@ -105,9 +106,9 @@ class ReadingSettingsSheet extends StatelessWidget {
                     const Divider(height: 24),
 
                     // ─── Arabic Font Size ───────────────────
-                    const _SectionTitle(title: 'عربی فونٹ کا سائز'),
+                    const _SectionTitle(title: 'Arabic Font Size'),
                     _FontSizeSlider(
-                      label: 'عربی',
+                      label: 'Arabic',
                       value: prefs.arabicFontSize,
                       min: 18,
                       max: 42,
@@ -123,9 +124,9 @@ class ReadingSettingsSheet extends StatelessWidget {
                     const SizedBox(height: 12),
 
                     // ─── Translation Font Size ──────────────
-                    const _SectionTitle(title: 'ترجمے کا فونٹ سائز'),
+                    const _SectionTitle(title: 'Translation Font Size'),
                     _FontSizeSlider(
-                      label: 'ترجمہ',
+                      label: 'Translation',
                       value: prefs.translationFontSize,
                       min: 12,
                       max: 24,
@@ -141,7 +142,7 @@ class ReadingSettingsSheet extends StatelessWidget {
                     const Divider(height: 24),
 
                     // ─── Translation Language ───────────────
-                    const _SectionTitle(title: 'ترجمے کی زبان'),
+                    const _SectionTitle(title: 'Translation Language'),
                     const SizedBox(height: 8),
                     _TranslationSelector(
                       current: prefs.selectedTranslation,
@@ -156,7 +157,7 @@ class ReadingSettingsSheet extends StatelessWidget {
                     // ─── Tajweed Legend ─────────────────────
                     if (prefs.showTajweed ||
                         prefs.displayMode == ReadingDisplayMode.tajweed) ...[
-                      const _SectionTitle(title: 'تجوید رنگوں کی فہرست'),
+                      const _SectionTitle(title: 'Tajweed Colors List'),
                       const SizedBox(height: 8),
                       const TajweedLegendWidget(),
                     ],
@@ -183,10 +184,10 @@ class _ReadingModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final modes = [
-      (ReadingDisplayMode.arabicWithTranslation, Icons.menu_book, 'عربی + ترجمہ', 'آیت کے نیچے ترجمہ'),
-      (ReadingDisplayMode.wordByWord, Icons.text_fields, 'لفظ بہ لفظ', 'ہر لفظ کے نیچے ترجمہ'),
-      (ReadingDisplayMode.tajweed, Icons.palette, 'تجوید رنگ', 'رنگوں سے تجوید'),
-      (ReadingDisplayMode.arabicOnly, Icons.text_format, 'صرف عربی', 'صرف عربی متن'),
+      (ReadingDisplayMode.arabicWithTranslation, Icons.menu_book, 'Arabic + Translation', 'Translation below ayah'),
+      (ReadingDisplayMode.wordByWord, Icons.text_fields, 'Word by Word', 'Translation below each word'),
+      (ReadingDisplayMode.tajweed, Icons.palette, 'Tajweed Color', 'Tajweed with colors'),
+      (ReadingDisplayMode.arabicOnly, Icons.text_format, 'Arabic Only', 'Only Arabic text'),
     ];
 
     return Column(
@@ -217,7 +218,7 @@ class _ReadingModeSelector extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      TranslatedText(
                         m.$3,
                         style: TextStyle(
                           fontFamily: 'Jameel Noori',
@@ -225,7 +226,7 @@ class _ReadingModeSelector extends StatelessWidget {
                           color: isSelected ? const Color(0xFF1B5E20) : Colors.black87,
                         ),
                       ),
-                      Text(
+                      TranslatedText(
                         m.$4,
                         style: TextStyle(fontFamily: 'Jameel Noori', fontSize: 12, color: Colors.grey[600]),
                       ),
@@ -270,7 +271,7 @@ class _FontSizeSlider extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text('$label: ${value.toInt()}pt'),
+            TranslatedText('$label: ${value.toInt()}pt'),
             const Spacer(),
             Text(
               previewText,
@@ -334,7 +335,7 @@ class _TranslationSelector extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
+                  child: TranslatedText(
                     displayName,
                     style: const TextStyle(fontSize: 16),
                     overflow: TextOverflow.ellipsis,
@@ -370,8 +371,8 @@ class _ToggleTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF1B5E20)),
-      title: Text(title, style: const TextStyle(fontFamily: 'Jameel Noori', fontWeight: FontWeight.w500)),
-      subtitle: Text(subtitle, style: const TextStyle(fontFamily: 'Jameel Noori', fontSize: 12)),
+      title: TranslatedText(title, style: const TextStyle(fontFamily: 'Jameel Noori', fontWeight: FontWeight.w500)),
+      subtitle: TranslatedText(subtitle, style: const TextStyle(fontFamily: 'Jameel Noori', fontSize: 12)),
       trailing: Switch(
         value: value,
         onChanged: onChanged,
@@ -390,7 +391,7 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
+    return TranslatedText(
       title,
       style: const TextStyle(
         fontFamily: 'Jameel Noori',
