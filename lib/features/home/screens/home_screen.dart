@@ -421,7 +421,7 @@ class _HomeTabState extends State<_HomeTab> {
           double screenWidth = MediaQuery.of(context).size.width;
           // The grid has 3 items, the gaps are between them.
           // By giving the gap roughly 1/3 of the width, the buttons slide outward.
-          double spacing = screenWidth * 0.33; 
+          double spacing = (screenWidth * 0.33).clamp(80.0, 200.0); 
           return Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -510,15 +510,18 @@ class _HomeTabState extends State<_HomeTab> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        'رَبِّ زِدْنِي عِلْمًا',
-                        style: GoogleFonts.amiri(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'رَبِّ زِدْنِي عِلْمًا',
+                          style: GoogleFonts.amiri(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                          textAlign: TextAlign.center,
+                          textDirection: TextDirection.rtl,
                         ),
-                        textAlign: TextAlign.center,
-                        textDirection: TextDirection.rtl,
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -543,14 +546,19 @@ class _HomeTabState extends State<_HomeTab> {
                   ),
                   child: Row(children: [
                     Expanded(child: Column(children: [
-                      TranslatedText('REMAINING TIME', style: GoogleFonts.montserrat(
-                        fontSize: 8.5, letterSpacing: 1.3,
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontWeight: FontWeight.w600,
+                      TranslatedText('REMAINING TIME', 
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 8.5, letterSpacing: 1.3,
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontWeight: FontWeight.w600,
                       )),
                       const SizedBox(height: 2),
                       Text(
                         '$_next  $_remStr',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.montserrat(
                           fontSize: 13, fontWeight: FontWeight.w400, color: Colors.white,
                         ),

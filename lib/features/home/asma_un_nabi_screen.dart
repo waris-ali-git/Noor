@@ -329,6 +329,8 @@ class _NameCard extends StatelessWidget {
                     child: Center(
                       child: Text(
                         data['arabic']!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontFamily: 'Jameel Noori',
                           fontSize: 34,

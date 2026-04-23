@@ -257,19 +257,26 @@ class _ProphetDetailScreenState extends State<ProphetDetailScreen>
                       ),
                       const SizedBox(height: 12),
                       // Arabic name
-                      Text(
-                        widget.prophet.arabicName,
-                        style: TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white.withOpacity(0.9),
-                          height: 1.2,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          widget.prophet.arabicName,
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white.withOpacity(0.9),
+                            height: 1.2,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 4),
                       // English name
                       Text(
                         widget.prophet.englishName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w600,
@@ -280,6 +287,8 @@ class _ProphetDetailScreenState extends State<ProphetDetailScreen>
                       // Title
                       Text(
                         widget.prophet.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white.withOpacity(0.8),

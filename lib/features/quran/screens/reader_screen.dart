@@ -743,6 +743,7 @@ class _StandardAyahCard extends StatelessWidget {
           ),
         ],
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -760,6 +761,7 @@ class _StandardAyahCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
               ayah.text.cleanArabic,
+              softWrap: true,
               style: TextStyle(
                 fontFamily: 'UthmanicHafs',
                 fontSize: preferences.arabicFontSize,
@@ -800,9 +802,16 @@ class _StandardAyahCard extends StatelessWidget {
               ),
               child: Text(
                 ayah.translation!,
+                textAlign: preferences.selectedTranslation.startsWith('ar') || preferences.selectedTranslation.startsWith('ur') ? TextAlign.right : TextAlign.left,
+                textDirection: preferences.selectedTranslation.startsWith('ar') || preferences.selectedTranslation.startsWith('ur') ? TextDirection.rtl : TextDirection.ltr,
                 style: TextStyle(
-                  fontSize: preferences.translationFontSize,
-                  height: 1.6,
+                  fontFamily: preferences.selectedTranslation.startsWith('ur') 
+                    ? 'Jameel Noori' 
+                    : (preferences.selectedTranslation.startsWith('ar') ? 'DigitalKhatt' : null),
+                  fontSize: preferences.selectedTranslation.startsWith('ar') 
+                    ? preferences.translationFontSize + 4 
+                    : preferences.translationFontSize,
+                  height: preferences.selectedTranslation.startsWith('ar') ? 2.0 : 1.6,
                   color: Colors.black87,
                 ),
               ),

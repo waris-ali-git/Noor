@@ -200,8 +200,10 @@ class _SurahListScreenState extends State<SurahListScreen> {
                                 const SizedBox(height: 8),
                                 LiquidGlassButton(
                                   label: 'Search in Quran text',
-                                  icon: const Icon(Icons.menu_book, size: 18, color: Color(0xFF948160)),
-                                  textStyle: const TextStyle(color: Color(0xFF948160), fontSize: 13),
+                                  icon: const Icon(Icons.menu_book,
+                                      size: 18, color: Color(0xFF948160)),
+                                  textStyle: const TextStyle(
+                                      color: Color(0xFF948160), fontSize: 13),
                                   onTap: () {
                                     context.read<QuranBloc>().add(
                                         SearchQuranEvent(
@@ -388,7 +390,8 @@ class _ErrorWidget extends StatelessWidget {
             LiquidGlassButton(
               label: 'Retry',
               icon: const Icon(Icons.refresh, size: 18, color: Colors.white),
-              textStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              textStyle: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold),
               glassColor: const Color(0x33948160),
               onTap: onRetry,
             ),
@@ -536,9 +539,13 @@ class _LastReadBanner extends StatelessWidget {
                     width: double.infinity,
                     height: 52,
                     textStyle: GoogleFonts.plusJakartaSans(
-                        fontWeight: FontWeight.w700, fontSize: 16, color: Colors.white),
-                    glassColor: const Color(0x33FFFFFF), // Use translucent white for tint
-                    isTransparent: true, // Enable true glass transparency
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: Colors.white),
+                    glassColor: const Color(0x33FFFFFF),
+                    // Use translucent white for tint
+                    isTransparent: true,
+                    // Enable true glass transparency
                     onTap: onContinue,
                   ),
                 ],
@@ -609,69 +616,75 @@ class _SurahListTile extends StatelessWidget {
       onTap: () => _showModeSelector(context),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        child: Row(
-          children: [
-            // Number
-            SizedBox(
-              width: 36,
-              child: Text(
-                surah.number.toString().padLeft(2, '0'),
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800, // Surah List Index Number
-                  color: const Color(0xFFD6D6D6),
-                ),
+        child: Row(children: [
+          // Number
+          SizedBox(
+            width: 36,
+            child: Text(
+              surah.number.toString().padLeft(2, '0'),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 18,
+                fontWeight: FontWeight.w800, // Surah List Index Number
+                color: const Color(0xFFD6D6D6),
               ),
             ),
-            const SizedBox(width: 12),
-            // Middle Details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                   Text(
-                    surah.englishName,
-                    style: GoogleFonts.lexend(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500, // Main Surah Name in List
-                      color: const Color(0xFF2D2D2D),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${surah.englishNameTranslation.toUpperCase()} • ${surah.numberOfAyahs} VERSES',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF8E8E8E),
-                      letterSpacing: 0.5,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            // Arabic Name & Progress Bar Column
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+          ),
+          const SizedBox(width: 12),
+          // Middle Details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'surah${surah.number.toString().padLeft(3, '0')}',
-                  style: const TextStyle(
-                    fontFamily: 'surah-name-v2-icon',
-                    fontSize: 32,
-                    color: Color(0xFF2D2D2D),
-                    fontFeatures: [FontFeature.enable('liga')],
+                  surah.englishName,
+                  style: GoogleFonts.lexend(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500, // Main Surah Name in List
+                    color: const Color(0xFF2D2D2D),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${surah.englishNameTranslation.toUpperCase()} • ${surah.numberOfAyahs} VERSES',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF8E8E8E),
+                    letterSpacing: 0.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          // Arabic Name & Progress Bar Column
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 100),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    'surah${surah.number.toString().padLeft(3, '0')}',
+                    style: const TextStyle(
+                      fontFamily: 'surah-name-v2-icon',
+                      fontSize: 32,
+                      color: Color(0xFF2D2D2D),
+                      fontFeatures: [FontFeature.enable('liga')],
+                    ),
                   ),
                 ),
                 if (completionPercentage != null &&
                     completionPercentage! > 0) ...[
                   const SizedBox(height: 4),
                   SizedBox(
-                    width: 50, // Match typical width of the arabic name icon
+                    width: 50,
+                    // Match typical width of the arabic name icon
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(2),
                       child: LinearProgressIndicator(
@@ -687,8 +700,8 @@ class _SurahListTile extends StatelessWidget {
                 ],
               ],
             ),
-          ],
-        ),
+          ),
+        ]),
       ),
     );
   }

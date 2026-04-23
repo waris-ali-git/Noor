@@ -112,21 +112,29 @@ class WorshipHomeScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        TranslatedText(
-                          pillar['title'] as String,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1C1C1E),
+                        Flexible(
+                          child: TranslatedText(
+                            pillar['title'] as String,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1C1C1E),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 4),
-                        TranslatedText(
-                          pillar['subtitle'] as String,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: const Color(0xFF1C1C1E).withOpacity(0.5),
+                        Flexible(
+                          child: TranslatedText(
+                            pillar['subtitle'] as String,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: const Color(0xFF1C1C1E).withOpacity(0.5),
+                            ),
                           ),
                         ),
                       ],

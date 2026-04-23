@@ -9,6 +9,8 @@ import '../features/hadith/services/hadith_service.dart';
 import '../features/hadith/state/hadith_bloc.dart';
 import '../features/quran/services/preferences_service.dart';
 import '../features/quran/services/wbw_database_service.dart';
+import '../features/dua/services/dua_service.dart';
+import '../features/dua/state/dua_bloc.dart';
 
 import 'services/translation_service.dart';
 import 'state/language_cubit.dart';
@@ -72,6 +74,14 @@ Future<void> setupDependencies() async {
   );
   sl.registerFactory<HadithBloc>(
         () => HadithBloc(sl<HadithService>()),
+  );
+
+  // ─── Dua ───────────────────────────────────
+  sl.registerLazySingleton<DuaService>(
+        () => DuaService.instance,
+  );
+  sl.registerFactory<DuaBloc>(
+        () => DuaBloc(sl<DuaService>()),
   );
 
 }

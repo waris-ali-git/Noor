@@ -542,6 +542,8 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
                   ? '${_qiblaAngle!.toStringAsFixed(2)}° from North  •  $_statusMsg'
                   + (_locationSource.isNotEmpty ? '  via $_locationSource' : '')
                   : _statusMsg,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.cormorantGaramond(
                   fontSize: 13, color: _textGold, letterSpacing: 0.3),
             ),

@@ -82,29 +82,18 @@ class _ProphetsListScreenState extends State<ProphetsListScreen>
       flexibleSpace: FlexibleSpaceBar(
         stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
         titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            TranslatedText(
-              'قصص الأنبياء',
-              style: TextStyle(
-                fontSize: 16,
-                color: Color(0xFF1C1C1E),
-                fontWeight: FontWeight.w400,
-                fontFamily: 'UthmanicHafs',
-              ),
+        title: const FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.bottomLeft,
+          child: TranslatedText(
+            'Stories of Prophets',
+            style: TextStyle(
+              fontSize: 18,
+              color: Color(0xFF1C1C1E),
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.3,
             ),
-            TranslatedText(
-              'Stories of Prophets',
-              style: TextStyle(
-                fontSize: 18,
-                color: Color(0xFF1C1C1E),
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.3,
-              ),
-            ),
-          ],
+          ),
         ),
         background: Container(
           decoration: const BoxDecoration(
@@ -134,6 +123,19 @@ class _ProphetsListScreenState extends State<ProphetsListScreen>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white.withOpacity(0.3),
+                  ),
+                ),
+              ),
+              const Positioned(
+                left: 20,
+                bottom: 42,
+                child: TranslatedText(
+                  'قصص الأنبياء',
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Color(0xFF1C1C1E),
+                    fontWeight: FontWeight.w400,
+                    fontFamily: 'UthmanicHafs',
                   ),
                 ),
               ),

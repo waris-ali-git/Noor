@@ -151,6 +151,20 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
     return false;
   }
 
+  bool _isArabicSelection(HadithState state) {
+    if (state is HadithsLoaded) {
+      return state.selectedTranslation.language.toLowerCase().contains('arabic');
+    }
+    if (state is HadithAllTranslationsLoaded) {
+      return state.selectedLanguages.any((l) => l.toLowerCase().contains('arabic'));
+    }
+    if (state is HadithSectionsLoaded) {
+      // If we're looking at sections, we check if the book has an Arabic edition
+      return widget.book.editions.any((e) => e.language.toLowerCase().contains('arabic'));
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -246,7 +260,7 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
             title: Text(
               section.name, 
               style: TextStyle(
-                fontFamily: _isUrduSelection(state) ? 'Jameel Noori' : null,
+                fontFamily: _isUrduSelection(state) ? 'Jameel Noori' : (_isArabicSelection(state) ? 'DigitalKhatt' : null),
                 fontWeight: FontWeight.bold
               )
             ),
@@ -288,10 +302,9 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                   Text(
                     hadith.text,
                     style: TextStyle(
-                      fontFamily: (translation.language.toLowerCase().contains('urdu') || 
-                                   translation.language.toLowerCase().contains('arabic'))
+                      fontFamily: translation.language.toLowerCase().contains('urdu') 
                         ? 'Jameel Noori' 
-                        : null,
+                        : (translation.language.toLowerCase().contains('arabic') ? 'DigitalKhatt' : null),
                       fontSize: translation.language.toLowerCase().contains('arabic') ? 22 : 18, 
                       height: translation.language.toLowerCase().contains('arabic') ? 2.0 : 1.6
                     ),
@@ -339,10 +352,9 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                     Text(
                       hadith.text,
                       style: TextStyle(
-                        fontFamily: (state.selectedTranslation.language.toLowerCase().contains('urdu') || 
-                                     state.selectedTranslation.language.toLowerCase().contains('arabic'))
+                        fontFamily: state.selectedTranslation.language.toLowerCase().contains('urdu') 
                           ? 'Jameel Noori' 
-                          : null,
+                          : (state.selectedTranslation.language.toLowerCase().contains('arabic') ? 'DigitalKhatt' : null),
                         fontSize: state.selectedTranslation.language.toLowerCase().contains('arabic') ? 22 : 18, 
                         height: state.selectedTranslation.language.toLowerCase().contains('arabic') ? 2.0 : 1.6
                       ),
@@ -522,10 +534,9 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                     textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
                     textAlign: isRtl ? TextAlign.right : TextAlign.left,
                     style: TextStyle(
-                      fontFamily: (lang.toLowerCase().contains('urdu') || 
-                                   lang.toLowerCase().contains('arabic'))
+                      fontFamily: lang.toLowerCase().contains('urdu')
                           ? 'Jameel Noori' 
-                          : null,
+                          : (lang.toLowerCase().contains('arabic') ? 'DigitalKhatt' : null),
                       fontSize: isArabic ? 22 : 16,
                       height: isArabic ? 2.0 : 1.6,
                       color: Colors.black87,
@@ -581,8 +592,10 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
               builder: (context, state) {
                 return Text(
                   sectionName, 
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontFamily: _isUrduSelection(state) ? 'Jameel Noori' : null,
+                    fontFamily: _isUrduSelection(state) ? 'Jameel Noori' : (_isArabicSelection(state) ? 'DigitalKhatt' : null),
                     fontWeight: FontWeight.bold, 
                     fontSize: 15
                   )
@@ -590,13 +603,16 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
               },
             ),
           ),
-          LiquidGlassButton(
-            label: 'Chapters',
-            icon: const Icon(Icons.list, size: 16),
-            height: 36,
-            width: 110,
-            textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1B5E20)),
-            onTap: () => context.read<HadithBloc>().add(SelectHadithBookEvent(book: book)),
+          const SizedBox(width: 8),
+          Flexible(
+            flex: 0,
+            child: LiquidGlassButton(
+              label: 'Chapters',
+              icon: const Icon(Icons.list, size: 16),
+              height: 36,
+              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1B5E20)),
+              onTap: () => context.read<HadithBloc>().add(SelectHadithBookEvent(book: book)),
+            ),
           ),
         ],
       ),

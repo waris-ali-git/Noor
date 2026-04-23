@@ -54,6 +54,7 @@ dependencies:
   share_plus: ^10.1.4
   syncfusion_flutter_pdfviewer: ^33.1.46
   shimmer: ^3.0.0
+  screenshot: ^3.0.0
 
 
 dev_dependencies:
@@ -108,7 +109,9 @@ flutter:
     - family: AsmaUlHusna
       fonts:
         - asset: lib/assets/fonts/alqlm-asma-ul-husna.ttf
-
+    - family: Thuluth
+      fonts:
+        - asset: 'lib/assets/fonts/A Thuluth Regular.ttf'
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -123,6 +126,7 @@ flutter:
   assets:
     - lib/assets/data/qpc-v1-15-lines.db
     - lib/assets/data/quran/wbw_translations/
+    - lib/assets/data/duas_database.json
     - lib/assets/data/worship/kalmas.json
     - lib/assets/data/worship/namaz_steps.json
     - lib/assets/images/reciters/

@@ -286,7 +286,24 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
       ) async {
     _preferences = _preferences.copyWith(selectedTranslation: event.edition);
     await _quranService.saveReadingPreferences(_preferences);
-    _emitPreferencesUpdate(emit);
+    
+    // Auto-reload current surah to reflect translation change immediately
+    final current = state;
+    if (current is SurahLoaded) {
+      add(LoadSurahEvent(
+        surahNumber: current.surah.number,
+        translationEdition: event.edition,
+      ));
+    } else if (current is SurahWordByWordLoaded) {
+      add(LoadSurahWordByWordEvent(surahNumber: current.surahMeta.number));
+    } else if (current is SurahStreaming) {
+      add(LoadSurahEvent(
+        surahNumber: current.surahMeta.number,
+        translationEdition: event.edition,
+      ));
+    } else {
+      _emitPreferencesUpdate(emit);
+    }
   }
 
   // ─────────────────────────────────────────────

@@ -107,13 +107,18 @@ class WordByWordAyahWidget extends StatelessWidget {
               ),
               child: Text(
                 '(${ayah.numberInSurah}) ${ayah.translation!}',
+                textAlign: preferences.selectedTranslation.startsWith('ar') || preferences.selectedTranslation.startsWith('ur') ? TextAlign.right : TextAlign.left,
+                textDirection: preferences.selectedTranslation.startsWith('ar') || preferences.selectedTranslation.startsWith('ur') ? TextDirection.rtl : TextDirection.ltr,
                 style: TextStyle(
-                  fontFamily: preferences.selectedTranslation.startsWith('ur') ? 'Jameel Noori' : null,
-                  fontSize: preferences.translationFontSize,
-                  height: 1.6,
+                  fontFamily: preferences.selectedTranslation.startsWith('ur') 
+                    ? 'Jameel Noori' 
+                    : (preferences.selectedTranslation.startsWith('ar') ? 'DigitalKhatt' : null),
+                  fontSize: preferences.selectedTranslation.startsWith('ar') 
+                    ? preferences.translationFontSize + 4 
+                    : preferences.translationFontSize,
+                  height: preferences.selectedTranslation.startsWith('ar') ? 2.0 : 1.6,
                   color: Colors.black87,
                 ),
-                textDirection: preferences.selectedTranslation.startsWith('ur') ? TextDirection.rtl : TextDirection.ltr,
               ),
             ),
         ],
@@ -155,7 +160,7 @@ class _WordByWordGrid extends StatelessWidget {
             translationFontSize: preferences.translationFontSize,
             showTransliteration: preferences.showTransliteration,
             showTajweed: preferences.showTajweed,
-            isUrdu: preferences.selectedTranslation.startsWith('ur'),
+            wbwLanguage: preferences.wbwLanguage,
           );
         }),
       ),
@@ -171,7 +176,7 @@ class _WordCard extends StatelessWidget {
   final double translationFontSize;
   final bool showTransliteration;
   final bool showTajweed;
-  final bool isUrdu;
+  final String wbwLanguage;
 
   const _WordCard({
     required this.word,
@@ -180,7 +185,7 @@ class _WordCard extends StatelessWidget {
     required this.translationFontSize,
     required this.showTransliteration,
     required this.showTajweed,
-    required this.isUrdu,
+    required this.wbwLanguage,
   });
 
   @override
@@ -232,20 +237,20 @@ class _WordCard extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
 
-          // Word-level Urdu/English translation
+          // Word-level Custom Language Translation
           if (word.translation != null && word.translation!.isNotEmpty)
             Text(
               word.translation!,
               style: TextStyle(
-                fontFamily: isUrdu ? 'Jameel Noori' : null,
+                fontFamily: wbwLanguage.startsWith('ur') ? 'Jameel Noori' : (wbwLanguage.startsWith('ar') ? 'DigitalKhatt' : null),
                 color: Colors.black54,
                 fontWeight: FontWeight.w500,
-                fontSize: translationFontSize - 2,
+                fontSize: wbwLanguage.startsWith('ar') ? translationFontSize : translationFontSize - 2,
               ),
               textAlign: TextAlign.center,
               maxLines: 4,
               overflow: TextOverflow.visible,
-              textDirection: isUrdu ? TextDirection.rtl : TextDirection.ltr,
+              textDirection: wbwLanguage.startsWith('ur') || wbwLanguage.startsWith('ar') ? TextDirection.rtl : TextDirection.ltr,
             ),
         ],
       ),

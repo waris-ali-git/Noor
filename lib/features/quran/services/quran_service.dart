@@ -40,13 +40,18 @@ class QuranService {
       if (cached != null) {
         return (cached as List)
             .map((e) => TranslationEdition.fromJson(Map<String, dynamic>.from(e as Map)))
+            .where((e) => !_isBuck(e)) // Filter out buck editions
             .toList();
       }
 
       final res = await _dio.get('$_alQuranBase/edition/type/translation');
       if (res.statusCode == 200) {
         final data = res.data['data'] as List;
-        final editions = data.map((e) => TranslationEdition.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+        final editions = data
+            .map((e) => TranslationEdition.fromJson(Map<String, dynamic>.from(e as Map)))
+            .where((e) => e.format == 'text') // Exclude audio-only editions
+            .where((e) => !_isBuck(e)) // Filter out buck editions
+            .toList();
         await _cacheBox.put(cacheKey, data);
         return editions;
       }
@@ -56,6 +61,7 @@ class QuranService {
       if (cached != null) {
         return (cached as List)
             .map((e) => TranslationEdition.fromJson(Map<String, dynamic>.from(e as Map)))
+            .where((e) => !_isBuck(e)) // Filter out buck editions
             .toList();
       }
       return [];
@@ -566,5 +572,11 @@ class QuranService {
       showTransliteration: map['showTransliteration'] as bool? ?? false,
       wbwLanguage: map['wbwLanguage'] as String? ?? 'ur',
     );
+  }
+
+  bool _isBuck(TranslationEdition edition) {
+    final searchStr =
+        ('${edition.identifier} ${edition.name} ${edition.englishName}').toLowerCase();
+    return searchStr.contains('buck');
   }
 }

@@ -14,6 +14,25 @@ class HadithBooksScreen extends StatefulWidget {
 }
 
 class _HadithBooksScreenState extends State<HadithBooksScreen> {
+  final Map<String, String> _arabicBookNames = {
+    'bukhari': 'صحيح البخاري',
+    'muslim': 'صحيح مسلم',
+    'tirmidhi': 'جامع الترمذي',
+    'abudawud': 'سنن أبي داود',
+    'nasai': 'سنن النسائي',
+    'ibnmajah': 'سنن ابن ماجه',
+    'malik': 'موطأ مالك',
+    'darimi': 'سنن الدارمي',
+    'nawawi40': 'الأربعون النووية',
+    'nawawi': 'الأربعون النووية',
+    'bulugh': 'بلوغ المرام',
+    'hisn': 'حصن المسلم',
+  };
+
+  String _getArabicName(String id) {
+    return _arabicBookNames[id.toLowerCase()] ?? 'كتاب الحديث';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -110,6 +129,27 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
                     children: [
                       const Icon(Icons.menu_book, size: 36, color: Color(0xFF1B5E20)),
                       const SizedBox(height: 12),
+                      // Arabic Title in Thuluth
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: Text(
+                            _getArabicName(book.id),
+                            textAlign: TextAlign.center,
+                            textDirection: TextDirection.rtl,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontFamily: 'Thuluth',
+                              fontSize: 18,
+                              color: Color(0xFF1B5E20),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      // English/Translated Title
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4.0),
                         child: TranslatedText(
@@ -118,7 +158,7 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 15,
+                            fontSize: 13,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1C1C1E),
                           ),

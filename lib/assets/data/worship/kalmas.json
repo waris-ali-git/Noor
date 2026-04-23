@@ -2,7 +2,7 @@
   {
     "id": 1,
     "name": "First Kalma (Tayyab)",
-    "arabic": "لَا إِلٰهَ إِلَّا الله مُحَمَّدٌ رَسُولُ الله",
+    "arabic": "لَا إِلٰهَ إِلَّا اللّٰه مُحَمَّدٌ رَسُولُ اللّٰه",
     "transliteration": "La ilaha illallah muhammadur rasulullah",
     "translation": "There is no God but Allah, and Muhammad is the messenger of Allah.",
     "description": "The declaration of belief and faith in Islam."
@@ -10,7 +10,7 @@
   {
     "id": 2,
     "name": "Second Kalma (Shahadat)",
-    "arabic": "أَشْهَدُ أنْ لا إلَٰهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيْكَ لَهُ وَأشْهَدُ أنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ",
+    "arabic": "أَشْهَدُ أنْ لا إلَٰهَ إِلَّا اللّٰه وَحْدَهُ لَا شَرِيْكَ لَهُ وَأشْهَدُ أنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ",
     "transliteration": "Ash-hadu an la ilaha illallahu wahdahu la sharika lahu, wa ash-hadu anna Muhammadan 'abduhu wa rasuluhu",
     "translation": "I bear witness that there is no deity but Allah alone, without partner or associate, and I bear witness that Muhammad is His slave and Messenger.",
     "description": "The declaration of submission and evidence (Shahada)."
@@ -18,7 +18,7 @@
   {
     "id": 3,
     "name": "Third Kalma (Tamjeed)",
-    "arabic": "سُبْحَانَ اللهِ وَالْحَمْدُ لِلّٰهِ وَلَا إِلٰهَ إِلَّا اللهُ وَاللهُ أَكْبَرُ وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللهِ الْعَلِيِّ الْعَظِيمِ",
+    "arabic": "سُبْحَانَ اللّٰه وَالْحَمْدُ لِلّٰهِ وَلَا إِلٰهَ إِلَّا اللّٰه وَاللّٰهُ أَكْبَرُ وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللّٰه الْعَلِيِّ الْعَظِيمِ",
     "transliteration": "Subhanallahi walhamdulillah, wa la ilaha illallahu wallahu akbar, wa la hawla wa la quwwata illa billahil 'aliyyil 'azeem",
     "translation": "Glory be to Allah and all praise be to Allah, there is none worthy of worship except Allah, and Allah is the Greatest. There is no might or power except from Allah, the Exalted, the Great.",
     "description": "The declaration of Majesty and glorification of Allah."
@@ -26,7 +26,7 @@
   {
     "id": 4,
     "name": "Fourth Kalma (Tauheed)",
-    "arabic": "لَآ اِلٰهَ اِلَّا اللهُ وَحْدَهٗ لَا شَرِيْكَ لَهٗ لَهُ الْمُلْكُ وَ لَهُ الْحَمْدُ يُحْىٖ وَ يُمِيْتُ وَ هُوَحَیٌّ لَّا يَمُوْتُ اَبَدًا اَبَدًاؕ ذُو الْجَلَالِ وَالْاِكْرَامِؕ بِيَدِهِ الْخَيْرُؕ وَهُوَ عَلٰى كُلِّ شَئٍ قَدِيْرٌؕ",
+    "arabic": "لَآ اِلٰهَ اِلَّا اللّٰه وَحْدَهٗ لَا شَرِيْكَ لَهٗ لَهُ الْمُلْكُ وَ لَهُ الْحَمْدُ يُحْىٖ وَ يُمِيْتُ وَ هُوَحَیٌّ لَّا يَمُوْتُ اَبَدًا اَبَدًاؕ ذُو الْجَلَالِ وَالْاِكْرَامِؕ بِيَدِهِ الْخَيْرُؕ وَهُوَ عَلٰى كُلِّ شَئٍ قَدِيْرٌؕ",
     "transliteration": "La ilaha illallahu wahdahu la sharika lahu, lahul mulku wa lahul hamdu yuhyi wa yumitu wa huwa hayyun la yamutu abadan abada, dhul jalali wal ikram, biyadihil khayr, wa huwa 'ala kulli shayin qadeer.",
     "translation": "There is none worthy of worship except Allah. He is alone and has no partner. To Him belongs the Kingdom and for Him is all praise. He gives life and causes death. In His hand is all good and He has power over everything.",
     "description": "The declaration of the Oneness of Allah."
@@ -34,7 +34,7 @@
   {
     "id": 5,
     "name": "Fifth Kalma (Astaghfar)",
-    "arabic": "اَسْتَغْفِرُ اللهَ رَبِّىْ مِنْ كُلِّ ذَنْۢبٍ اَذْنَبْتُهٗ عَمَدًا اَوْ خَطَا ً سِرًّا اَوْ عَلَانِيَةً وَّاَتُوْبُ اِلَيْهِ مِنَ الذَّنْۢبِ الَّذِىْٓ اَعْلَمُ وَ مِنَ الذَّنْۢبِ الَّذِىْ لَآ اَعْلَمُ اِنَّكَ اَنْتَ عَلَّامُ الْغُيُوْبِ وَ سَتَّارُ الْعُيُوْبِ و َغَفَّارُ الذُّنُوْبِ وَ لَا حَوْلَ وَلَا قُوَّةَ اِلَّا بِاللهِ الْعَلِىِّ الْعَظِيْمِؕ",
+    "arabic": "اَسْتَغْفِرُ اللّٰهَ رَبِّىْ مِنْ كُلِّ ذَنْۢبٍ اَذْنَبْتُهٗ عَمَدًا اَوْ خَطَا ً سِرًّا اَوْ عَلَانِيَةً وَّاَتُوْبُ اِلَيْهِ مِنَ الذَّنْۢبِ الَّذِىْٓ اَعْلَمُ وَ مِنَ الذَّنْۢبِ الَّذِىْ لَآ اَعْلَمُ اِنَّكَ اَنْتَ عَلَّامُ الْغُيُوْبِ وَ سَتَّارُ الْعُيُوْبِ و َغَفَّارُ الذُّنُوْبِ وَ لَا حَوْلَ وَلَا قُوَّةَ اِلَّا بِاللّٰهِ الْعَلِىِّ الْعَظِيْمِؕ",
     "transliteration": "Astaghfirullaha Rabbi min kulli dhambin adhnabtuhu amadan aw khata-an sirran aw alaniyyatan wa atubu ilayhi min-adh dhambi-l ladhi a'lamu wa min-adh dhambi-l ladhi la a'lamu innaka anta allamul-ghuyub wa sattarul-uyub wa ghaffarudh-dhunub wa la hawla wa la quwwata illa billahil-aliyyil-azim.",
     "translation": "I seek forgiveness from Allah, my Lord, from every sin I committed knowingly or unknowingly, secretly or openly, and I turn towards Him from the sin that I know and from the sin that I do not know. Certainly You, You are the knower of the hidden things and the Concealer of the mistakes and the Forgiver of the sins. And there is no power and no strength except from Allah, the Most High, the Most Great.",
     "description": "The declaration of penitence and seeking forgiveness."
@@ -42,7 +42,7 @@
   {
     "id": 6,
     "name": "Sixth Kalma (Radde Kufr)",
-    "arabic": "اَللّٰهُمَّ اِنِّىْٓ اَعُوْذُ بِكَ مِنْ اَنْ اُشْرِكَ بِكَ شَيْئًا وَّاَنَا اَعْلَمُ بِهٖ وَ اَسْتَغْفِرُكَ لِمَا لَآ اَعْلَمُ بِهٖ تُبْتُ عَنْهُ وَ تَبَرَّأْتُ مِنَ الْكُفْرِ وَ الشِّرْكِ وَ الْكِذْبِ وَ الْغِيْبَةِ وَ الْبِدْعَةِ وَ النَّمِيْمَةِ وَ الْفَوَاحِشِ وَ الْبُهْتَانِ وَ الْمَعَاصِىْ كُلِّهَا وَ اَسْلَمْتُ وَ اَقُوْلُ لَآ اِلٰهَ اِلَّا اللهُ مُحَمَّدٌ رَّسُوْلُ اللهِؕ",
+    "arabic": "اَللّٰهُمَّ اِنِّىْٓ اَعُوْذُ بِكَ مِنْ اَنْ اُشْرِكَ بِكَ شَيْئًا وَّاَنَا اَعْلَمُ بِهٖ وَ اَسْتَغْفِرُكَ لِمَا لَآ اَعْلَمُ بِهٖ تُبْتُ عَنْهُ وَ تَبَرَّأْتُ مِنَ الْكُفْرِ وَ الشِّرْكِ وَ الْكِذْبِ وَ الْغِيْبَةِ وَ الْبِدْعَةِ وَ النَّمِيْمَةِ وَ الْفَوَاحِشِ وَ الْبُهْتَانِ وَ الْمَعَاصِىْ كُلِّهَا وَ اَسْلَمْتُ وَ اَقُوْلُ لَآ اِلٰهَ اِلَّا اللّٰهُ مُحَمَّدٌ رَّسُوْلُ اللّٰه",
     "transliteration": "Allahumma inni a'udhu bika min an ushrika bika shay'an wa ana a'lamu bihi wa astaghfiruka lima la a'lamu bihi tubtu 'anhu wa tabarra'tu mina-l-kufri wash-shirki wal-kidhbi wal-ghibati wal-bid'ati wan-namimati wal-fawahishi wal-buhtani wal-ma'asi kulliha wa aslamtu wa aqulu la ilaha illallahu Muhammadur rasulullah.",
     "translation": "O Allah! I seek protection in You from that I should not join any partner with You and I have knowledge of it. I seek Your forgiveness from that which I do not know. I repent from it (ignorance) and I reject disbelief and joining partners with You and of falsehood and slandering and innovation in religion and tell-tales and evil deeds and the blame and the disobedience, all of them. I submit to Your will and I believe and I declare: There is none worthy of worship except Allah and Muhammad is His Messenger.",
     "description": "The declaration of rejecting disbelief and polytheism."
