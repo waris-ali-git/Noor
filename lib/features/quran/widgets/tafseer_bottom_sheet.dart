@@ -10,12 +10,14 @@ class TafseerBottomSheet extends StatefulWidget {
   final Ayah ayah;
   final int surahNumber;
   final String surahName;
+  final int totalAyahs;
 
   const TafseerBottomSheet({
     super.key,
     required this.ayah,
     required this.surahNumber,
     required this.surahName,
+    required this.totalAyahs,
   });
 
   @override
@@ -85,6 +87,7 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
         widget.surahNumber,
         quranComTafsirId: _selectedSource.quranComTafsirId,
         quranComTranslationId: _selectedSource.quranComTranslationId,
+        totalAyahs: widget.totalAyahs,
       );
       if (mounted) {
         setState(() {

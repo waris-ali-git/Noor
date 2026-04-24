@@ -9,6 +9,7 @@ import '../state/dua_bloc.dart';
 import '../state/dua_event.dart';
 import '../state/dua_state.dart';
 import 'dua_detail_screen.dart';
+import 'feeling_duas_list_screen.dart';
 
 class DuasHomeScreen extends StatefulWidget {
   const DuasHomeScreen({super.key});
@@ -86,25 +87,64 @@ class _DuasHomeScreenState extends State<DuasHomeScreen> {
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: Container(
-        height: 48,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))],
-        ),
-        child: TextField(
-          controller: _searchController,
-          onChanged: (v) => _bloc.add(v.isEmpty ? ClearSearchEvent() : SearchDuasEvent(v)),
-          style: GoogleFonts.plusJakartaSans(fontSize: 15, color: const Color(0xFF1C1C1E)),
-          decoration: InputDecoration(
-            hintText: 'Search duas...',
-            hintStyle: GoogleFonts.plusJakartaSans(fontSize: 15, color: Colors.grey),
-            prefixIcon: const Icon(Icons.search_rounded, color: Colors.grey, size: 20),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(vertical: 14),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))],
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (v) => _bloc.add(v.isEmpty ? ClearSearchEvent() : SearchDuasEvent(v)),
+                style: GoogleFonts.plusJakartaSans(fontSize: 15, color: const Color(0xFF1C1C1E)),
+                decoration: InputDecoration(
+                  hintText: 'Search duas...',
+                  hintStyle: GoogleFonts.plusJakartaSans(fontSize: 15, color: Colors.grey),
+                  prefixIcon: const Icon(Icons.search_rounded, color: Colors.grey, size: 20),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
           ),
-        ),
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const FeelingDuasListScreen()),
+              );
+            },
+            child: Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF13B0F8), // Pastel purple
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))],
+              ),
+              child: Center(
+                child: Row(
+                  children: [
+                    const SizedBox(width: 6),
+                    Text(
+                      'I am Feeling...',
+                      style: GoogleFonts.rougeScript(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

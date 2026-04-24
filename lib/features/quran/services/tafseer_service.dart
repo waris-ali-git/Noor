@@ -673,13 +673,29 @@ class TafseerService {
   /// If [quranComTafsirId] is provided, fetches from Quran.com Tafsir API.
   /// If [quranComTranslationId] is provided, fetches from Quran.com Translation API.
   /// Otherwise falls back to spa5k API.
-  Future<Map<int, String>> getTafseerText(String id, int surahNumber, {int? quranComTafsirId, int? quranComTranslationId}) async {
+  Future<Map<int, String>> getTafseerText(String id, int surahNumber, {int? quranComTafsirId, int? quranComTranslationId, int? totalAyahs}) async {
     final cacheKey = 'tafseer_text_${id}_$surahNumber';
     
     // 1. Check Cache
     final cached = _cacheBox.get(cacheKey);
     if (cached != null) {
-      return Map<int, String>.from(cached as Map);
+      final cachedMap = Map<int, String>.from(cached as Map);
+      // If we have totalAyahs and the cache is suspiciously small (e.g. only 10 entries for a larger surah),
+      // or if it's smaller than the total ayahs and we need to fill forward, we might want to re-fetch.
+      // However, for sparse tafseers, length might naturally be less than totalAyahs even after fill-forward if it failed.
+      // Let's at least check if it has entries. 
+      // A better heuristic: if we are missing ayahs from 1 to totalAyahs, re-fetch.
+      bool isCacheStale = false;
+      if (totalAyahs != null && cachedMap.isNotEmpty) {
+        final maxKey = cachedMap.keys.reduce((a, b) => a > b ? a : b);
+        if (maxKey < totalAyahs) {
+            isCacheStale = true;
+        }
+      }
+      
+      if (!isCacheStale) {
+        return cachedMap;
+      }
     }
 
     try {
@@ -694,6 +710,22 @@ class TafseerService {
       } else {
         // Fetch from legacy spa5k API
         resultMap = await _fetchTafseerFromSpa5k(id, surahNumber);
+      }
+
+      // Fill-forward: propagate combined tafseer text to subsequent empty ayahs.
+      // Some tafseer sources (e.g., Fi Zilal al-Quran) group multiple ayahs under
+      // a single entry. This ensures all ayahs within a grouped range display
+      // the combined tafseer text instead of "not available".
+      if (resultMap.isNotEmpty) {
+        final maxAyah = totalAyahs ?? resultMap.keys.reduce((a, b) => a > b ? a : b);
+        String? lastAvailableText;
+        for (int i = 1; i <= maxAyah; i++) {
+          if (resultMap.containsKey(i) && resultMap[i]!.isNotEmpty) {
+            lastAvailableText = resultMap[i];
+          } else if (lastAvailableText != null) {
+            resultMap[i] = lastAvailableText;
+          }
+        }
       }
 
       // Save to Cache
@@ -727,33 +759,55 @@ class TafseerService {
     return {};
   }
 
-  /// Fetch tafseer from Quran.com API (ayah-by-ayah for a full surah)
+  /// Fetch tafseer from Quran.com API (paginated — fetches ALL pages)
   Future<Map<int, String>> _fetchTafseerFromQuranCom(int tafsirId, int surahNumber) async {
     final resultMap = <int, String>{};
 
     // Quran.com API: GET /tafsirs/{tafsir_id}/by_chapter/{chapter_number}
-    // This endpoint returns all ayahs for the surah at once
+    // IMPORTANT: This API is paginated (default per_page=10).
+    // We must either request a large per_page or loop through all pages.
     try {
-      final res = await _dio.get(
-        '$_quranComBase/tafsirs/$tafsirId/by_chapter/$surahNumber',
-      );
+      int currentPage = 1;
+      int totalPages = 1;
 
-      if (res.statusCode == 200) {
-        final tafsirs = res.data['tafsirs'] as List?;
-        if (tafsirs != null) {
-          for (final t in tafsirs) {
-            final verseKey = t['verse_key'] as String? ?? '';
-            final parts = verseKey.split(':');
-            final ayahNum = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
-            final rawText = t['text'] as String? ?? '';
-            // Strip HTML tags for clean display
-            final cleanText = rawText.replaceAll(RegExp(r'<[^>]*>'), '').trim();
-            if (ayahNum > 0 && cleanText.isNotEmpty) {
-              resultMap[ayahNum] = cleanText;
+      do {
+        final res = await _dio.get(
+          '$_quranComBase/tafsirs/$tafsirId/by_chapter/$surahNumber',
+          queryParameters: {
+            'per_page': 300, // Max ayahs in any surah is 286
+            'page': currentPage,
+          },
+        );
+
+        if (res.statusCode == 200) {
+          final tafsirs = res.data['tafsirs'] as List?;
+          if (tafsirs != null) {
+            for (final t in tafsirs) {
+              final verseKey = t['verse_key'] as String? ?? '';
+              final parts = verseKey.split(':');
+              final ayahNum = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+              final rawText = t['text'] as String? ?? '';
+              // Strip HTML tags for clean display
+              final cleanText = rawText.replaceAll(RegExp(r'<[^>]*>'), '').trim();
+              if (ayahNum > 0 && cleanText.isNotEmpty) {
+                resultMap[ayahNum] = cleanText;
+              }
             }
           }
+
+          // Check pagination — if API caps per_page, we need to fetch more pages
+          final pagination = res.data['pagination'];
+          if (pagination != null) {
+            totalPages = pagination['total_pages'] as int? ?? 1;
+            currentPage++;
+          } else {
+            break; // No pagination info, assume all data received
+          }
+        } else {
+          break;
         }
-      }
+      } while (currentPage <= totalPages);
+
     } catch (e) {
       // Fallback: try per-ayah endpoint (slower but more reliable)
       debugPrint('Chapter-level tafsir fetch failed, trying per-ayah: $e');
@@ -784,47 +838,67 @@ class TafseerService {
     return resultMap;
   }
 
-  /// Fetch interpretive translation from Quran.com Translations API (ayah-by-ayah for a full surah)
+  /// Fetch interpretive translation from Quran.com Translations API (paginated)
   /// Endpoint: GET /api/v4/quran/translations/{translation_id}?chapter_number={chapter}
   Future<Map<int, String>> _fetchTranslationFromQuranCom(int translationId, int surahNumber) async {
     final resultMap = <int, String>{};
 
     try {
-      final res = await _dio.get(
-        '$_quranComBase/quran/translations/$translationId',
-        queryParameters: {'chapter_number': surahNumber},
-      );
+      int currentPage = 1;
+      int totalPages = 1;
 
-      if (res.statusCode == 200) {
-        final translations = res.data['translations'] as List?;
-        if (translations != null) {
-          for (final t in translations) {
-            // verse_key might be null in this endpoint — use resource_id or index
-            final verseKey = t['verse_key'] as String?;
-            int ayahNum = 0;
+      do {
+        final res = await _dio.get(
+          '$_quranComBase/quran/translations/$translationId',
+          queryParameters: {
+            'chapter_number': surahNumber,
+            'per_page': 300,
+            'page': currentPage,
+          },
+        );
 
-            if (verseKey != null) {
-              final parts = verseKey.split(':');
-              ayahNum = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
-            }
+        if (res.statusCode == 200) {
+          final translations = res.data['translations'] as List?;
+          if (translations != null) {
+            for (final t in translations) {
+              // verse_key might be null in this endpoint — use resource_id or index
+              final verseKey = t['verse_key'] as String?;
+              int ayahNum = 0;
 
-            // Fallback: derive from verse_number or index
-            if (ayahNum == 0) {
-              ayahNum = t['verse_number'] as int? ?? (resultMap.length + 1);
-            }
+              if (verseKey != null) {
+                final parts = verseKey.split(':');
+                ayahNum = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+              }
 
-            final rawText = t['text'] as String? ?? '';
-            // Strip HTML tags and footnote markers for clean display
-            final cleanText = rawText
-                .replaceAll(RegExp(r'<[^>]*>'), '')
-                .replaceAll(RegExp(r'\[\d+\]'), '')
-                .trim();
-            if (ayahNum > 0 && cleanText.isNotEmpty) {
-              resultMap[ayahNum] = cleanText;
+              // Fallback: derive from verse_number or index
+              if (ayahNum == 0) {
+                ayahNum = t['verse_number'] as int? ?? (resultMap.length + 1);
+              }
+
+              final rawText = t['text'] as String? ?? '';
+              // Strip HTML tags and footnote markers for clean display
+              final cleanText = rawText
+                  .replaceAll(RegExp(r'<[^>]*>'), '')
+                  .replaceAll(RegExp(r'\[\d+\]'), '')
+                  .trim();
+              if (ayahNum > 0 && cleanText.isNotEmpty) {
+                resultMap[ayahNum] = cleanText;
+              }
             }
           }
+
+          final pagination = res.data['pagination'];
+          if (pagination != null) {
+            totalPages = pagination['total_pages'] as int? ?? 1;
+            currentPage++;
+          } else {
+            break;
+          }
+        } else {
+          break;
         }
-      }
+      } while (currentPage <= totalPages);
+
     } catch (e) {
       debugPrint('Quran.com translation fetch failed for translation $translationId: $e');
     }

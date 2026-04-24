@@ -369,6 +369,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
         ayah: ayah,
         surahNumber: widget.surah.number,
         surahName: widget.surah.name,
+        totalAyahs: widget.surah.ayahs?.length ?? 286,
       ),
     ).then((_) {
       // Refresh to ensure persistent player shows up if started

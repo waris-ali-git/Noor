@@ -127,6 +127,7 @@ flutter:
     - lib/assets/data/qpc-v1-15-lines.db
     - lib/assets/data/quran/wbw_translations/
     - lib/assets/data/duas_database.json
+    - lib/assets/data/feeling_duas.json
     - lib/assets/data/worship/kalmas.json
     - lib/assets/data/worship/namaz_steps.json
     - lib/assets/images/reciters/
