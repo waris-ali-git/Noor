@@ -35,7 +35,7 @@ samples, guidance on mobile development, and a full API reference.
 - Picture Featues
 - Share
 - Sara quotes wala
-### Prophet Stories Complete
+### ~~Prophet Stories Complete~~ ✔
 ### Grammer portion
 ### Azaan sound on prayer time
 ### icons theak karna
