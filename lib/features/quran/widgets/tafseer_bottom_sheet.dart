@@ -589,6 +589,8 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
                       url: p.url,
                       surahName: '${widget.surahName} - ${p.title}',
                       scholarName: sourceLabel,
+                      surahNumber: widget.surahNumber,
+                      sourceId: widget.selectedSource.id,
                     );
                   } finally {
                     if (mounted) {
@@ -638,6 +640,8 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
                          url: audioService.currentTafseerUrl!,
                          surahName: widget.surahName,
                          scholarName: widget.selectedSource.name,
+                         surahNumber: widget.surahNumber,
+                         sourceId: widget.selectedSource.id,
                        );
                      } else {
                        try {
@@ -664,6 +668,8 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
                              url: url,
                              surahName: widget.surahName,
                              scholarName: widget.selectedSource.name,
+                             surahNumber: widget.surahNumber,
+                             sourceId: widget.selectedSource.id,
                              fallbackUrls: fallbackUrls,
                            );
                          } else {

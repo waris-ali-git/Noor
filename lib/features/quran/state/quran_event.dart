@@ -142,6 +142,20 @@ class SaveLastReadEvent extends QuranEvent {
   List<Object?> get props => [surahNumber, ayahNumber];
 }
 
+/// Last listened VBV position save karo
+class SaveLastListenedVbvEvent extends QuranEvent {
+  final int surahNumber;
+  final int ayahNumber;
+
+  const SaveLastListenedVbvEvent({
+    required this.surahNumber,
+    required this.ayahNumber,
+  });
+
+  @override
+  List<Object?> get props => [surahNumber, ayahNumber];
+}
+
 /// Last read position load karo
 class LoadLastReadEvent extends QuranEvent {
   const LoadLastReadEvent();

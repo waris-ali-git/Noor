@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../state/quran_bloc.dart';
@@ -5,10 +7,18 @@ import '../../models/reading_mode.dart';
 import '../../../../core/widgets/translated_text.dart';
 import '../../../../shared/widgets/custom_button.dart';
 
-class WbwLanguageSelector extends StatelessWidget {
+class WbwLanguageSelector extends StatefulWidget {
   final ValueChanged<ReadingDisplayMode>? onModeChanged;
 
   const WbwLanguageSelector({super.key, this.onModeChanged});
+
+  @override
+  State<WbwLanguageSelector> createState() => _WbwLanguageSelectorState();
+}
+
+class _WbwLanguageSelectorState extends State<WbwLanguageSelector> {
+  String _searchQuery = '';
+  final TextEditingController _searchCtrl = TextEditingController();
 
   static const Map<String, String> _languages = {
     'ur': 'Urdu (اردو)',
@@ -24,6 +34,12 @@ class WbwLanguageSelector extends StatelessWidget {
   };
 
   @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocBuilder<QuranBloc, QuranState>(
       builder: (context, state) {
@@ -31,81 +47,106 @@ class WbwLanguageSelector extends StatelessWidget {
         if (state is SurahLoaded) currentLang = state.preferences.wbwLanguage;
         if (state is SurahWordByWordLoaded) currentLang = state.preferences.wbwLanguage;
 
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const TranslatedText(
-                  'Select Language',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1B5E20),
+        // Filter languages based on search query
+        final filteredLanguages = _languages.entries.where((entry) {
+          final langName = entry.value.toLowerCase();
+          return langName.contains(_searchQuery.toLowerCase());
+        }).toList();
+
+        return LiquidGlassContainer(
+          width: 320,
+          height: 500,
+          borderRadius: 24,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const TranslatedText(
+                'Select Language',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1C1C1E),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Search Bar
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+                    ),
+                    child: TextField(
+                      controller: _searchCtrl,
+                      style: const TextStyle(fontSize: 14),
+                      decoration: const InputDecoration(
+                        hintText: 'Search...',
+                        prefixIcon: Icon(Icons.search, size: 20),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onChanged: (v) => setState(() => _searchQuery = v),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.5,
-                  ),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: _languages.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final langCode = _languages.keys.elementAt(index);
-                      final langName = _languages.values.elementAt(index);
-                      final isSelected = currentLang == langCode;
+              ),
+              const SizedBox(height: 12),
+              const Divider(height: 1),
+              const SizedBox(height: 8),
+              // Language List
+              Expanded(
+                child: filteredLanguages.isEmpty
+                    ? const Center(child: TranslatedText('No results'))
+                    : ListView.builder(
+                        itemCount: filteredLanguages.length,
+                        itemBuilder: (context, index) {
+                          final langEntry = filteredLanguages[index];
+                          final langCode = langEntry.key;
+                          final langName = langEntry.value;
+                          final isSelected = currentLang == langCode;
 
-                      return ListTile(
-                        title: Text(
-                          langName,
-                          style: TextStyle(
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            color: isSelected ? const Color(0xFF1B5E20) : Colors.black87,
-                          ),
-                        ),
-                        trailing: isSelected
-                            ? const Icon(Icons.check_circle, color: Color(0xFF1B5E20))
-                            : null,
-                        onTap: () {
-                          // Change the WBW Language
-                          context.read<QuranBloc>().add(
-                            ChangeWbwLanguageEvent(languageCode: langCode),
+                          return ListTile(
+                            dense: true,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            title: Text(
+                              langName,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                color: isSelected ? Colors.blueAccent : const Color(0xFF1C1C1E),
+                              ),
+                            ),
+                            trailing: isSelected
+                                ? const Icon(Icons.check_circle, size: 18, color: Colors.blueAccent)
+                                : null,
+                            onTap: () {
+                              // Change the WBW Language
+                              context.read<QuranBloc>().add(
+                                ChangeWbwLanguageEvent(languageCode: langCode),
+                              );
+
+                              // Then change the reading mode to Word-By-Word
+                              context.read<QuranBloc>().add(
+                                const ChangeReadingModeEvent(mode: ReadingDisplayMode.wordByWord),
+                              );
+
+                              widget.onModeChanged?.call(ReadingDisplayMode.wordByWord);
+
+                              // Pop the language selector dialog
+                              Navigator.pop(context);
+                            },
                           );
-
-                          // Then change the reading mode to Word-By-Word
-                          context.read<QuranBloc>().add(
-                            const ChangeReadingModeEvent(mode: ReadingDisplayMode.wordByWord),
-                          );
-
-                          onModeChanged?.call(ReadingDisplayMode.wordByWord);
-
-                          // Pop the language selector dialog
-                          Navigator.pop(context);
-                          
-                          // Pop the settings sheet if it was open
-                          // We check if we are returning to the settings sheet or directly to reader
-                          // Settings sheet usually expects 'pop'
-                          Navigator.pop(context);
                         },
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 8),
-                LiquidGlassButton(
-                  label: 'Cancel',
-                  width: double.infinity,
-                  height: 46,
-                  onTap: () => Navigator.pop(context),
-                ),
-              ],
-            ),
+                      ),
+              ),
+            ],
           ),
         );
       },

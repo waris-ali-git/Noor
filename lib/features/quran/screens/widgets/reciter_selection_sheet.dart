@@ -189,8 +189,8 @@ class _ReciterSelectionSheetState extends State<ReciterSelectionSheet> {
 }
 
 /// Show reciter selection bottom sheet
-void showReciterSelectionSheet(BuildContext context) {
-  showModalBottomSheet(
+Future<void> showReciterSelectionSheet(BuildContext context) async {
+  await showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

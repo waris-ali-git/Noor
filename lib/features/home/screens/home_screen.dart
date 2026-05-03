@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +14,9 @@ import '../../hadith/screens/hadith_books_screen.dart';
 import '../../worship/screens/worship_home.dart';
 import '../../dua/screens/duas_home_screen.dart';
 import '../../qibla/screens/qibla_compass.dart';
+import '../../tasbeeh/screens/tasbeeh_home.dart';
+import '../../tasbeeh/state/tasbeeh_bloc.dart';
+import '../../../../shared/icons/icomoon.dart';
 import '../asma_ul_husna_screen.dart';
 import '../asma_un_nabi_screen.dart';
 import '../../prophets/prophets_list_screen.dart';
@@ -169,7 +173,7 @@ class _BottomNav extends StatelessWidget {
               _tile(0, const IconData(0xe906, fontFamily: 'CustomIcons'), 'Home'),
               _tile(1, const IconData(0xe900, fontFamily: 'CustomIcons'), 'Quran'),
               _tile(2, const IconData(0xe903, fontFamily: 'CustomIcons'), 'Qibla'),
-              // Tasbih: opens via Navigator since screen is empty
+              // Tasbih: opens via Navigator
               _tileNav(const IconData(0xe907, fontFamily: 'CustomIcons'), 'Tasbih', context),
             ],
           ),
@@ -204,9 +208,15 @@ class _BottomNav extends StatelessWidget {
   Widget _tileNav(IconData iconData, String label, BuildContext ctx) {
     return GestureDetector(
       onTap: () {
-        // Tasbeeh screen is empty; just show snackbar for now
-        ScaffoldMessenger.of(ctx).showSnackBar(
-          const SnackBar(content: Text('Tasbih coming soon!'), duration: Duration(seconds: 1)),
+        final tasbeehBloc = ctx.read<TasbeehBloc>();
+        Navigator.push(
+          ctx,
+          MaterialPageRoute(
+            builder: (_) => BlocProvider.value(
+              value: tasbeehBloc,
+              child: const TasbeehHomeScreen(),
+            ),
+          ),
         );
       },
       behavior: HitTestBehavior.opaque,
@@ -598,9 +608,9 @@ class _HomeTabState extends State<_HomeTab> {
     final items = [
       _FItem('Quran',    const IconData(0xe900, fontFamily: 'CustomIcons'), () => _nav(const SurahListScreen())),
       _FItem('Worship',  const IconData(0xe904, fontFamily: 'CustomIcons'), () => _nav(const WorshipHomeScreen())),
-      _FItem('Hadith',   const IconData(0xe901, fontFamily: 'CustomIcons'), () => _nav(const HadithBooksScreen())),
+      _FItem('Hadith',   Icomoon.hadith, () => _nav(const HadithBooksScreen())),
       _FItem('Duas',     const IconData(0xe902, fontFamily: 'CustomIcons'), () => _nav(const DuasHomeScreen())),
-      _FItem('Prophets', const IconData(0xe905, fontFamily: 'CustomIcons'), () => _nav(const ProphetsListScreen())),
+      _FItem('Prophets', Icomoon.prophetStory, () => _nav(const ProphetsListScreen())),
       _FItem('Qibla',    const IconData(0xe903, fontFamily: 'CustomIcons'), () => _nav(const QiblaCompassScreen())),
     ];
 

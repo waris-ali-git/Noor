@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../features/quran/services/quran_service.dart';
 import '../features/quran/services/tafseer_service.dart';
+import '../features/quran/services/word_timing_service.dart';
 import '../features/quran/state/quran_bloc.dart';
 import '../features/hadith/services/hadith_service.dart';
 import '../features/hadith/state/hadith_bloc.dart';
@@ -57,6 +58,9 @@ Future<void> setupDependencies() async {
   );
   sl.registerLazySingleton<TafseerService>(
         () => TafseerService(dio, quranCacheBox),
+  );
+  sl.registerLazySingleton<WordTimingService>(
+        () => WordTimingService(dio, quranCacheBox),
   );
   sl.registerLazySingleton<HadithService>(
         () => HadithService(dio, hadithCacheBox),

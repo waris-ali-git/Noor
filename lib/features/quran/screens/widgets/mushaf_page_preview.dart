@@ -3,18 +3,24 @@ import 'package:flutter/gestures.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../models/surah.dart';
 import '../../models/ayah.dart';
+import '../../services/surah_recitation_controller.dart';
 
 /// Renders Surah text in a mushaf-style page layout.
 /// Performance optimised: pre-builds spans once, uses RepaintBoundary,
 /// single shared AudioPlayer with proper stop-before-play.
+///
+/// When [recitationController] is provided, words are highlighted golden
+/// in sync with audio recitation (word-level timing from QDC API).
 class MushafPagePreview extends StatefulWidget {
   final Surah surah;
   final void Function(int ayahNumber)? onAyahMarkerTap;
+  final SurahRecitationController? recitationController;
 
   const MushafPagePreview({
     super.key, 
     required this.surah,
     this.onAyahMarkerTap,
+    this.recitationController,
   });
 
   @override
@@ -90,10 +96,10 @@ class _MushafPagePreviewState extends State<MushafPagePreview> {
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 constraints: const BoxConstraints(maxWidth: 180),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1B5E20),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: const [
-                    BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 3)),
+                    BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
                   ],
                 ),
                 child: Column(
@@ -102,14 +108,14 @@ class _MushafPagePreviewState extends State<MushafPagePreview> {
                     if (word.translation != null && word.translation!.isNotEmpty)
                       Text(
                         word.translation!,
-                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                        style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.w600),
                         textAlign: TextAlign.center,
                       ),
                     if (word.transliteration != null && word.transliteration!.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
                         word.transliteration!,
-                        style: const TextStyle(color: Colors.white70, fontSize: 11, fontStyle: FontStyle.italic),
+                        style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 11, fontStyle: FontStyle.italic, fontWeight: FontWeight.w500),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -196,18 +202,44 @@ class _MushafPagePreviewState extends State<MushafPagePreview> {
 
   List<InlineSpan> _buildWordSpans(List<Ayah> ayahs, {bool stripBismillah = false}) {
     final List<InlineSpan> spans = [];
+    final recState = widget.recitationController?.state;
+
     for (final ayah in ayahs) {
       if (ayah.ayahWords != null && ayah.ayahWords!.isNotEmpty) {
         for (var j = 0; j < ayah.ayahWords!.length; j++) {
           final word = ayah.ayahWords![j];
           final wordKey = '${ayah.number}_${word.position}';
           final isHighlighted = _highlightedWordKey == wordKey;
+
+          // Recitation highlighting
+          final isRecitationActive = recState != null &&
+              recState.isWordActive(ayah.numberInSurah, word.position);
+          final isRecitationFading = recState != null &&
+              recState.isWordFading(ayah.numberInSurah, word.position);
+
+          // Priority: recitation active > tap highlight > fading > default
+          Color wordColor;
+          Color bgColor;
+          if (isRecitationActive) {
+            wordColor = const Color(0xFFD4AF37); // bright golden
+            bgColor = const Color(0xFFFFFDF5);
+          } else if (isHighlighted) {
+            wordColor = const Color(0xFFD4AF37);
+            bgColor = const Color(0xFFFFFDF5);
+          } else if (isRecitationFading) {
+            wordColor = const Color(0xFFD4AF37).withValues(alpha: 0.45); // fading golden
+            bgColor = Colors.transparent;
+          } else {
+            wordColor = Colors.black87;
+            bgColor = Colors.transparent;
+          }
+
           spans.add(
             TextSpan(
               text: word.arabic.cleanArabic,
               style: TextStyle(
-                color: isHighlighted ? const Color(0xFF388E3C) : Colors.black87,
-                backgroundColor: isHighlighted ? const Color(0xFFE8F5E9) : Colors.transparent,
+                color: wordColor,
+                backgroundColor: bgColor,
               ),
               recognizer: TapGestureRecognizer()
                 ..onTapUp = (details) => _handleWordTap(context, word, wordKey, details),
@@ -232,7 +264,7 @@ class _MushafPagePreviewState extends State<MushafPagePreview> {
       // Ayah number marker
       spans.add(TextSpan(
         text: '${_toArabicDigits(ayah.numberInSurah)} ',
-        style: const TextStyle(color: Color(0xFF1B5E20)),
+        style: const TextStyle(color: Color(0xFFD4AF37)),
         recognizer: widget.onAyahMarkerTap != null 
           ? (TapGestureRecognizer()..onTap = () => widget.onAyahMarkerTap!(ayah.numberInSurah))
           : null,
@@ -299,10 +331,8 @@ class _MushafPagePreviewState extends State<MushafPagePreview> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 8),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F8E9),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF1B5E20), width: 1),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE))),
       ),
       child: Text(
         'surah${widget.surah.number.toString().padLeft(3, '0')}',
@@ -310,7 +340,7 @@ class _MushafPagePreviewState extends State<MushafPagePreview> {
         style: const TextStyle(
           fontFamily: 'surah-name-v2-icon',
           fontSize: 40,
-          color: Color(0xFF1B5E20),
+          color: Colors.black87,
           fontFeatures: [FontFeature.enable('liga')],
         ),
       ),
@@ -327,7 +357,7 @@ class _MushafPagePreviewState extends State<MushafPagePreview> {
         style: const TextStyle(
           fontFamily: 'UthmanicHafs',
           fontSize: 24,
-          color: Color(0xFF1B5E20),
+          color: Colors.black87,
         ),
       ),
     );
@@ -415,12 +445,12 @@ class _MushafPagePreviewState extends State<MushafPagePreview> {
   );
 
   static final _pageDecoration = BoxDecoration(
-    color: const Color(0xFFFEFDF6),
+    color: Colors.white,
     borderRadius: BorderRadius.circular(12),
-    border: Border.all(color: const Color(0xFFE8E5D1), width: 2),
+    border: Border.all(color: const Color(0xFFEEEEEE), width: 1),
     boxShadow: [
       BoxShadow(
-        color: Colors.black.withValues(alpha: 0.08),
+        color: Colors.black.withValues(alpha: 0.04),
         blurRadius: 10,
         offset: const Offset(0, 4),
       ),

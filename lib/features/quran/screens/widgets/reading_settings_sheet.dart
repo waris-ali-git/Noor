@@ -6,6 +6,8 @@ import '../translation_selection_screen.dart';
 import '../widgets/tajweed_ayah.dart';
 import '../../../../core/widgets/translated_text.dart';
 import 'wbw_language_selector.dart';
+import '../../../../shared/icons/icomoon.dart';
+import '../../../../shared/icons/custom_icons_v2.dart';
 
 /// Reading Settings Bottom Sheet
 /// - Reading mode select karo
@@ -66,12 +68,33 @@ class ReadingSettingsSheet extends StatelessWidget {
                       current: prefs.displayMode,
                       onChanged: (mode) {
                         if (mode == ReadingDisplayMode.wordByWord) {
-                          showDialog(
+                          showGeneralDialog(
                             context: context,
-                            builder: (ctx) => BlocProvider.value(
-                              value: context.read<QuranBloc>(),
-                              child: WbwLanguageSelector(onModeChanged: onModeChanged),
-                            ),
+                            barrierDismissible: true,
+                            barrierLabel: 'Wbw Language Selector',
+                            barrierColor: Colors.black.withOpacity(0.05),
+                            transitionDuration: const Duration(milliseconds: 300),
+                            pageBuilder: (context, anim1, anim2) {
+                              return Align(
+                                alignment: Alignment.center,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: BlocProvider.value(
+                                    value: context.read<QuranBloc>(),
+                                    child: WbwLanguageSelector(onModeChanged: onModeChanged),
+                                  ),
+                                ),
+                              );
+                            },
+                            transitionBuilder: (context, anim1, anim2, child) {
+                              return FadeTransition(
+                                opacity: anim1,
+                                child: ScaleTransition(
+                                  scale: anim1,
+                                  child: child,
+                                ),
+                              );
+                            },
                           );
                         } else {
                           context.read<QuranBloc>().add(ChangeReadingModeEvent(mode: mode));
@@ -91,11 +114,14 @@ class ReadingSettingsSheet extends StatelessWidget {
                       onChanged: (_) {
                         context.read<QuranBloc>().add(const ToggleTajweedEvent());
                       },
+                      onInfoTap: prefs.showTajweed
+                          ? () => showTajweedLegendDialog(context)
+                          : null,
                     ),
 
                     // ─── Transliteration Toggle ─────────────
                     _ToggleTile(
-                      icon: Icons.translate,
+                      icon: CustomIconsV2.translation,
                       title: 'Transliteration',
                       subtitle: 'Show pronunciation in English/Roman',
                       value: prefs.showTransliteration,
@@ -154,13 +180,7 @@ class ReadingSettingsSheet extends StatelessWidget {
                     ),
                     const Divider(height: 24),
 
-                    // ─── Tajweed Legend ─────────────────────
-                    if (prefs.showTajweed ||
-                        prefs.displayMode == ReadingDisplayMode.tajweed) ...[
-                      const _SectionTitle(title: 'Tajweed Colors List'),
-                      const SizedBox(height: 8),
-                      const TajweedLegendWidget(),
-                    ],
+                    // (Tajweed legend moved to dialog — accessible via palette icon)
 
                     const SizedBox(height: 20),
                   ],
@@ -184,10 +204,10 @@ class _ReadingModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final modes = [
-      (ReadingDisplayMode.arabicWithTranslation, Icons.menu_book, 'Arabic + Translation', 'Translation below ayah'),
-      (ReadingDisplayMode.wordByWord, Icons.text_fields, 'Word by Word', 'Translation below each word'),
+      (ReadingDisplayMode.arabicWithTranslation, CustomIconsV2.translation, 'Arabic + Translation', 'Translation below ayah'),
+      (ReadingDisplayMode.wordByWord, CustomIconsV2.wordByWord, 'Word by Word', 'Translation below each word'),
       (ReadingDisplayMode.tajweed, Icons.palette, 'Tajweed Color', 'Tajweed with colors'),
-      (ReadingDisplayMode.arabicOnly, Icons.text_format, 'Arabic Only', 'Only Arabic text'),
+      (ReadingDisplayMode.arabicOnly, Icomoon.arabicOnly, 'Arabic Only', 'Only Arabic text'),
     ];
 
     return Column(
@@ -358,6 +378,7 @@ class _ToggleTile extends StatelessWidget {
   final String subtitle;
   final bool value;
   final ValueChanged<bool> onChanged;
+  final VoidCallback? onInfoTap;
 
   const _ToggleTile({
     required this.icon,
@@ -365,6 +386,7 @@ class _ToggleTile extends StatelessWidget {
     required this.subtitle,
     required this.value,
     required this.onChanged,
+    this.onInfoTap,
   });
 
   @override
@@ -373,10 +395,38 @@ class _ToggleTile extends StatelessWidget {
       leading: Icon(icon, color: const Color(0xFF1B5E20)),
       title: TranslatedText(title, style: const TextStyle(fontFamily: 'Jameel Noori', fontWeight: FontWeight.w500)),
       subtitle: TranslatedText(subtitle, style: const TextStyle(fontFamily: 'Jameel Noori', fontSize: 12)),
-      trailing: Switch(
-        value: value,
-        onChanged: onChanged,
-        activeThumbColor: const Color(0xFF1B5E20),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Info icon — only when tajweed is ON
+          if (onInfoTap != null) ...[
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: GestureDetector(
+                key: const ValueKey('info_icon'),
+                onTap: onInfoTap,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF1B5E20).withOpacity(0.12),
+                  ),
+                  child: const Icon(
+                    Icons.format_list_bulleted,
+                    size: 18,
+                    color: Color(0xFF1B5E20),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: const Color(0xFF1B5E20),
+          ),
+        ],
       ),
       contentPadding: EdgeInsets.zero,
     );

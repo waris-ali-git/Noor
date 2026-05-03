@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/constants.dart';
 import '../state/tasbeeh_bloc.dart';
 import '../models/counter.dart';
-import '../utils/constants.dart';
-import '../widgets/tasbeeh_widgets.dart';
+import '../tasbeeh_widget.dart';
 
 class TasbeehStatsScreen extends StatefulWidget {
   const TasbeehStatsScreen({super.key});
@@ -23,9 +23,9 @@ class _TasbeehStatsScreenState extends State<TasbeehStatsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TasbeehBloc>(builder: (context, bloc, _) {
-      final stats = bloc.state.stats;
-      final counters = bloc.state.counters;
+    return BlocBuilder<TasbeehBloc, TasbeehState>(builder: (context, state) {
+      final stats = state.stats;
+      final counters = state.counters;
       final mostUsed = stats['mostUsed'] as TasbeehCounter?;
 
       return Scaffold(
@@ -58,10 +58,8 @@ class _TasbeehStatsScreenState extends State<TasbeehStatsScreen> {
         body: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            // ── Overall Stats ───────────────────────────────────────────────
             Text('Overview', style: TasbeehTextStyles.heading),
             const SizedBox(height: 16),
-
             GridView.count(
               crossAxisCount: 2,
               shrinkWrap: true,
@@ -92,10 +90,7 @@ class _TasbeehStatsScreenState extends State<TasbeehStatsScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 28),
-
-            // ── Most Used ────────────────────────────────────────────────────
             if (mostUsed != null) ...[
               Text('Most Recited', style: TasbeehTextStyles.heading),
               const SizedBox(height: 12),
@@ -162,11 +157,8 @@ class _TasbeehStatsScreenState extends State<TasbeehStatsScreen> {
               ),
               const SizedBox(height: 28),
             ],
-
-            // ── Per-counter breakdown ─────────────────────────────────────
             Text('All Dhikr', style: TasbeehTextStyles.heading),
             const SizedBox(height: 12),
-
             ...counters.map((c) => _CounterStatRow(counter: c)),
             const SizedBox(height: 24),
           ],

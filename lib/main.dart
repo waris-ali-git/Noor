@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/quran/state/quran_bloc.dart';
 import 'features/hadith/state/hadith_bloc.dart';
+import 'features/tasbeeh/state/tasbeeh_bloc.dart';
 
 import 'features/home/screens/home_screen.dart';
 import 'core/state/language_cubit.dart';
@@ -24,25 +25,24 @@ class IslamicApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<LanguageCubit>()),
         BlocProvider(create: (_) => sl<QuranBloc>()),
         BlocProvider(create: (_) => sl<HadithBloc>()),
-
+        BlocProvider(create: (_) => TasbeehBloc()),
       ],
       child: BlocBuilder<LanguageCubit, String>(
         builder: (context, currentLang) {
           return MaterialApp(
-        title: 'Islamic App',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF1B5E20),
-            brightness: Brightness.light,
-          ),
-          fontFamily: 'Poppins', // Latin text ke liye
-        ),
-          home: const HomeScreen(),
-        );
-      }),
+            title: 'Islamic App',
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              useMaterial3: true,
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF1B5E20),
+                brightness: Brightness.light,
+              ),
+              fontFamily: 'Poppins',
+            ),
+            home: const HomeScreen(),
+          );
+        }),
     );
   }
 }
-

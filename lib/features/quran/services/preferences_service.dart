@@ -15,6 +15,10 @@ class PreferencesService {
   static const String _cachedQiblaDirection = 'cached_qibla_direction';
   static const String _cachedQiblaLat = 'cached_qibla_lat';
   static const String _cachedQiblaLng = 'cached_qibla_lng';
+  // Verse-by-Verse settings
+  static const String _vbvTranslationEditionId = 'vbv_translation_edition_id';
+  static const String _vbvPlayTranslation = 'vbv_play_translation';
+  static const String _vbvPlayTafseer = 'vbv_play_tafseer';
 
   static final PreferencesService _instance = PreferencesService._internal();
   late SharedPreferences _prefs;
@@ -98,5 +102,31 @@ class PreferencesService {
     await _prefs.setDouble(_cachedQiblaLat, lat);
     await _prefs.setDouble(_cachedQiblaLng, lng);
   }
-}
 
+  // ─── Verse-by-Verse Settings ─────────────────
+
+  /// Get saved translation edition ID (defaults to Urdu Jalandhari)
+  String getVbvTranslationEditionId() {
+    return _prefs.getString(_vbvTranslationEditionId) ?? 'ur-jalandhri';
+  }
+
+  Future<void> setVbvTranslationEditionId(String editionId) async {
+    await _prefs.setString(_vbvTranslationEditionId, editionId);
+  }
+
+  bool getVbvPlayTranslation() {
+    return _prefs.getBool(_vbvPlayTranslation) ?? true;
+  }
+
+  Future<void> setVbvPlayTranslation(bool value) async {
+    await _prefs.setBool(_vbvPlayTranslation, value);
+  }
+
+  bool getVbvPlayTafseer() {
+    return _prefs.getBool(_vbvPlayTafseer) ?? false;
+  }
+
+  Future<void> setVbvPlayTafseer(bool value) async {
+    await _prefs.setBool(_vbvPlayTafseer, value);
+  }
+}

@@ -5,11 +5,15 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/widgets/language_selector_button.dart';
 import '../../../core/widgets/translated_text.dart';
 import '../models/ayah.dart';
+import '../services/audio_service.dart';
 import '../state/quran_bloc.dart';
 import '../models/surah.dart';
 import '../models/reading_mode.dart';
 import 'reader_screen.dart';
 import '../../../shared/widgets/custom_button.dart';
+import '../services/verse_by_verse_controller.dart';
+import '../widgets/global_tafseer_player.dart';
+import 'widgets/verse_playback_bar.dart';
 
 class SurahListScreen extends StatefulWidget {
   const SurahListScreen({super.key});
@@ -21,6 +25,7 @@ class SurahListScreen extends StatefulWidget {
 class _SurahListScreenState extends State<SurahListScreen> {
   final _searchController = TextEditingController();
   Map<String, dynamic>? _lastRead;
+  Map<String, dynamic>? _lastListenedVbv;
   Map<int, int> _surahProgress = {};
   List<Surah> _filteredSurahs = [];
   List<Surah> _allSurahs = [];
@@ -73,10 +78,10 @@ class _SurahListScreenState extends State<SurahListScreen> {
               return _buildSearchResults(state);
             }
 
-            // 2. Data Loaded -> Update Cache
             if (state is SurahsLoaded) {
               _allSurahs = state.surahs;
               _lastRead = state.lastRead;
+              _lastListenedVbv = state.lastListenedVbv;
               _surahProgress = state.surahProgress;
               _applyFilter(_searchController.text);
             }
@@ -96,161 +101,252 @@ class _SurahListScreenState extends State<SurahListScreen> {
             }
 
             // 5. Show List (from Cache or State)
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _SearchBar(
-                  controller: _searchController,
-                  onChanged: _filterSurahs,
-                  onSubmitted: (val) {
-                    if (val.isNotEmpty) {
-                      context
-                          .read<QuranBloc>()
-                          .add(SearchQuranEvent(query: val));
-                    }
-                  },
-                ),
-                Expanded(
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (_lastRead != null &&
-                                _searchController.text.isEmpty)
-                              _LastReadBanner(
-                                lastRead: _lastRead!,
-                                allSurahs: _allSurahs,
-                                onContinue: () {
-                                  final surahNum =
-                                      _lastRead!['surahNumber'] as int;
-                                  final ayahNum =
-                                      _lastRead!['ayahNumber'] as int;
-                                  try {
-                                    final surah = _allSurahs.firstWhere(
-                                        (s) => s.number == surahNum);
-                                    _openSurah(
-                                      context,
-                                      surah,
-                                      ReadingDisplayMode.arabicWithTranslation,
-                                      initialAyah:
-                                          ayahNum, // Pass the exact Ayah
-                                    );
-                                  } catch (_) {}
-                                },
-                              )
-                            else if (_searchController.text.isEmpty)
-                              _NoLastReadPlaceholder(),
-                            if (_searchController.text.isEmpty) ...[
-                              const SizedBox(height: 24),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 24),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        'Revelation', // Section Header
-                                        style: GoogleFonts.plusJakartaSans(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.w700,
-                                          color: const Color(0xFF2D2D2D),
+            return Stack(children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _SearchBar(
+                    controller: _searchController,
+                    onChanged: _filterSurahs,
+                    onSubmitted: (val) {
+                      if (val.isNotEmpty) {
+                        context
+                            .read<QuranBloc>()
+                            .add(SearchQuranEvent(query: val));
+                      }
+                    },
+                  ),
+                  Expanded(
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+
+                              if ((_lastRead != null ||
+                                      _lastListenedVbv != null) &&
+                                  _searchController.text.isEmpty)
+                                _LastReadBanner(
+                                  lastRead: _lastRead,
+                                  lastListenedVbv: _lastListenedVbv,
+                                  allSurahs: _allSurahs,
+                                  onContinue: _lastRead == null
+                                      ? null
+                                      : () {
+                                          final surahNum =
+                                              _lastRead!['surahNumber'] as int;
+                                          final ayahNum =
+                                              _lastRead!['ayahNumber'] as int;
+                                          try {
+                                            final surah = _allSurahs.firstWhere(
+                                                (s) => s.number == surahNum);
+                                            _openSurah(
+                                              context,
+                                              surah,
+                                              ReadingDisplayMode.arabicOnly,
+                                              initialAyah:
+                                                  ayahNum, // Pass the exact Ayah
+                                            );
+                                          } catch (_) {}
+                                        },
+                                  onContinueListening: _lastListenedVbv == null
+                                      ? null
+                                      : () {
+                                          final surahNum =
+                                              _lastListenedVbv!['surahNumber']
+                                                  as int;
+                                          final ayahNum =
+                                              _lastListenedVbv!['ayahNumber']
+                                                  as int;
+                                          try {
+                                            final surah = _allSurahs.firstWhere(
+                                                (s) => s.number == surahNum);
+                                            _openSurah(
+                                              context,
+                                              surah,
+                                              ReadingDisplayMode
+                                                  .arabicWithTranslation,
+                                              // Can be any mode really
+                                              initialAyah: ayahNum,
+                                              startVbvOnLoad: true,
+                                            );
+                                          } catch (_) {}
+                                        },
+                                )
+                              else if (_searchController.text.isEmpty)
+                                _NoLastReadPlaceholder(),
+                              if (_searchController.text.isEmpty) ...[
+                                const SizedBox(height: 24),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 24),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Revelation', // Section Header
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w700,
+                                            color: const Color(0xFF2D2D2D),
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '114 SURAHS', // Surah Count Label
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 1.2,
-                                        color: Colors.grey.shade600,
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '114 SURAHS', // Surah Count Label
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 1.2,
+                                          color: Colors.grey.shade600,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 16),
-                            ],
-                          ],
-                        ),
-                      ),
-                      if (_filteredSurahs.isEmpty &&
-                          _searchController.text.isNotEmpty)
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.search_off,
-                                    size: 64, color: Colors.grey),
                                 const SizedBox(height: 16),
-                                const TranslatedText(
-                                  'یہ نام کسی سورہ ka نہیں ہے',
-                                  style: TextStyle(
-                                      fontSize: 18, color: Colors.grey),
-                                ),
-                                const SizedBox(height: 8),
-                                LiquidGlassButton(
-                                  label: 'Search in Quran text',
-                                  icon: const Icon(Icons.menu_book,
-                                      size: 18, color: Color(0xFF948160)),
-                                  textStyle: const TextStyle(
-                                      color: Color(0xFF948160), fontSize: 13),
-                                  onTap: () {
-                                    context.read<QuranBloc>().add(
-                                        SearchQuranEvent(
-                                            query: _searchController.text));
-                                  },
-                                ),
                               ],
+                            ],
+                          ),
+                        ),
+                        if (_filteredSurahs.isEmpty &&
+                            _searchController.text.isNotEmpty)
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.search_off,
+                                      size: 64, color: Colors.grey),
+                                  const SizedBox(height: 16),
+                                  const TranslatedText(
+                                    'یہ نام کسی سورہ ka نہیں ہے',
+                                    style: TextStyle(
+                                        fontSize: 18, color: Colors.grey),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  LiquidGlassButton(
+                                    label: 'Search in Quran text',
+                                    icon: const Icon(Icons.menu_book,
+                                        size: 18, color: Color(0xFF948160)),
+                                    textStyle: const TextStyle(
+                                        color: Color(0xFF948160), fontSize: 13),
+                                    onTap: () {
+                                      context.read<QuranBloc>().add(
+                                          SearchQuranEvent(
+                                              query: _searchController.text));
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        else
+                          SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final surah = _filteredSurahs[index];
+
+                                // Calculate progress for this surah from the progress map
+                                double? completionPercentage;
+                                final lastAyah = _surahProgress[surah.number];
+                                if (lastAyah != null) {
+                                  final totalAyahs = surah.numberOfAyahs;
+                                  if (totalAyahs > 0) {
+                                    completionPercentage =
+                                        lastAyah / totalAyahs;
+                                    // Clamp between 0 and 1
+                                    completionPercentage =
+                                        completionPercentage.clamp(0.0, 1.0);
+                                  }
+                                }
+
+                                return _SurahListTile(
+                                  surah: surah,
+                                  completionPercentage: completionPercentage,
+                                  onTap: (mode) => _openSurah(
+                                    context,
+                                    surah,
+                                    mode,
+                                  ),
+                                );
+                              },
+                              childCount: _filteredSurahs.length,
                             ),
                           ),
-                        )
-                      else
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final surah = _filteredSurahs[index];
-
-                              // Calculate progress for this surah from the progress map
-                              double? completionPercentage;
-                              final lastAyah = _surahProgress[surah.number];
-                              if (lastAyah != null) {
-                                final totalAyahs = surah.numberOfAyahs;
-                                if (totalAyahs > 0) {
-                                  completionPercentage = lastAyah / totalAyahs;
-                                  // Clamp between 0 and 1
-                                  completionPercentage =
-                                      completionPercentage.clamp(0.0, 1.0);
-                                }
-                              }
-
-                              return _SurahListTile(
-                                surah: surah,
-                                completionPercentage: completionPercentage,
-                                onTap: (mode) => _openSurah(
-                                  context,
-                                  surah,
-                                  mode,
-                                ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: ListenableBuilder(
+                    listenable: VerseByVerseController(),
+                    builder: (context, _) {
+                      final vbvState = VerseByVerseController().state;
+                      if (vbvState.isActive) {
+                        return VersePlaybackBar(
+                          controller: VerseByVerseController(),
+                          onSettingsTap: () {
+                            try {
+                              final surah = _allSurahs.firstWhere(
+                                  (s) => s.number == vbvState.surahNumber);
+                              _openSurah(
+                                context,
+                                surah,
+                                ReadingDisplayMode.arabicWithTranslation,
+                                initialAyah: vbvState.currentAyahInSurah,
+                                startVbvOnLoad: true,
                               );
-                            },
-                            childCount: _filteredSurahs.length,
-                          ),
-                        ),
-                    ],
+                            } catch (_) {}
+                          },
+                          onClose: () => setState(() {}),
+                          onBarTap: () {
+                            try {
+                              final surah = _allSurahs.firstWhere(
+                                  (s) => s.number == vbvState.surahNumber);
+                              _openSurah(
+                                context,
+                                surah,
+                                ReadingDisplayMode.arabicWithTranslation,
+                                initialAyah: vbvState.currentAyahInSurah,
+                                startVbvOnLoad: true,
+                              );
+                            } catch (_) {}
+                          },
+                        );
+                      }
+                      return GlobalTafseerPlayerWidget(
+                        onBarTap: () {
+                          final surahNum = QuranAudioService().tafseerSurahNumber;
+                          if (surahNum != null) {
+                            try {
+                              final surah = _allSurahs.firstWhere(
+                                  (s) => s.number == surahNum);
+                              _openSurah(
+                                context,
+                                surah,
+                                ReadingDisplayMode.arabicWithTranslation,
+                                // We don't have exact ayah, so just go to surah
+                              );
+                            } catch (_) {}
+                          }
+                        },
+                      );
+                    },
                   ),
                 ),
-              ],
-            );
+                ],
+              )
+            ]);
           },
         ),
       ),
@@ -320,7 +416,7 @@ class _SurahListScreenState extends State<SurahListScreen> {
 
   Future<void> _openSurah(
       BuildContext context, Surah surah, ReadingDisplayMode mode,
-      {int? initialAyah}) async {
+      {int? initialAyah, bool startVbvOnLoad = false}) async {
     context.read<QuranBloc>().add(ChangeReadingModeEvent(mode: mode));
     await Navigator.push(
       context,
@@ -328,7 +424,11 @@ class _SurahListScreenState extends State<SurahListScreen> {
         builder: (_) => BlocProvider.value(
           value: context.read<QuranBloc>(),
           child: ReaderScreen(
-              surah: surah, initialMode: mode, initialAyah: initialAyah),
+            surah: surah,
+            initialMode: mode,
+            initialAyah: initialAyah,
+            startVbvOnLoad: startVbvOnLoad,
+          ),
         ),
       ),
     );
@@ -403,21 +503,29 @@ class _ErrorWidget extends StatelessWidget {
 }
 
 class _LastReadBanner extends StatelessWidget {
-  final Map<String, dynamic> lastRead;
+  final Map<String, dynamic>? lastRead;
+  final Map<String, dynamic>? lastListenedVbv;
   final List<Surah> allSurahs;
-  final VoidCallback onContinue;
+  final VoidCallback? onContinue;
+  final VoidCallback? onContinueListening;
 
   const _LastReadBanner({
-    required this.lastRead,
+    this.lastRead,
+    this.lastListenedVbv,
     required this.allSurahs,
-    required this.onContinue,
+    this.onContinue,
+    this.onContinueListening,
   });
 
   @override
   Widget build(BuildContext context) {
-    final surahNum = lastRead['surahNumber'] as int;
-    final ayahNum = lastRead['ayahNumber'] as int;
-    final juzNum = lastRead['juzNumber'] as int?;
+    // Determine the main display info from lastRead or fallback to lastListenedVbv
+    final displayData = lastRead ?? lastListenedVbv;
+    if (displayData == null) return const SizedBox.shrink();
+
+    final surahNum = displayData['surahNumber'] as int;
+    final ayahNum = displayData['ayahNumber'] as int;
+    final juzNum = displayData['juzNumber'] as int?;
 
     String surahName = 'Surah $surahNum';
     int totalAyahs = 1;
@@ -534,19 +642,41 @@ class _LastReadBanner extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  LiquidGlassButton(
-                    label: 'Continue Reading',
-                    width: double.infinity,
-                    height: 52,
-                    textStyle: GoogleFonts.plusJakartaSans(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        color: Colors.white),
-                    glassColor: const Color(0x33FFFFFF),
-                    // Use translucent white for tint
-                    isTransparent: true,
-                    // Enable true glass transparency
-                    onTap: onContinue,
+                  Row(
+                    children: [
+                      if (onContinue != null)
+                        Expanded(
+                          child: LiquidGlassButton(
+                            label: 'Continue Reading',
+                            height: 48,
+                            textStyle: GoogleFonts.plusJakartaSans(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                                color: Colors.white),
+                            glassColor: const Color(0x33FFFFFF),
+                            isTransparent: true,
+                            onTap: onContinue!,
+                          ),
+                        ),
+                      if (onContinue != null && onContinueListening != null)
+                        const SizedBox(width: 12),
+                      if (onContinueListening != null)
+                        Expanded(
+                          child: LiquidGlassButton(
+                            label: 'Continue Audio',
+                            icon: const Icon(Icons.headphones,
+                                color: Colors.white, size: 16),
+                            height: 48,
+                            textStyle: GoogleFonts.plusJakartaSans(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                                color: Colors.white),
+                            glassColor: const Color(0x33FFFFFF),
+                            isTransparent: true,
+                            onTap: onContinueListening!,
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -876,3 +1006,5 @@ class _NoLastReadPlaceholder extends StatelessWidget {
     );
   }
 }
+
+

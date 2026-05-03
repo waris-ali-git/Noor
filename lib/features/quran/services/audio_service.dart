@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import '../models/reciter.dart';
 import 'preferences_service.dart';
 
+import 'verse_by_verse_controller.dart';
+
 class QuranAudioService {
   final AudioPlayer _ayahPlayer = AudioPlayer();
   final AudioPlayer _tafseerPlayer = AudioPlayer();
@@ -26,11 +28,11 @@ class QuranAudioService {
     _selectedTafseerScholar = PreferencesService().getSelectedTafseerScholar();
 
     // When one plays, pause the other to avoid overlapping audio
-    _ayahPlayer.playingStream.listen((playing) {
-      if (playing) _tafseerPlayer.pause();
+    _ayahPlayer.playerStateStream.listen((state) {
+      if (state.playing) _tafseerPlayer.pause();
     });
-    _tafseerPlayer.playingStream.listen((playing) {
-      if (playing) _ayahPlayer.pause();
+    _tafseerPlayer.playerStateStream.listen((state) {
+      if (state.playing) _ayahPlayer.pause();
     });
   }
 
@@ -115,11 +117,15 @@ class QuranAudioService {
 
   String? tafseerSurahName;
   String? tafseerScholarName;
+  int? tafseerSurahNumber;
+  String? tafseerSourceId;
 
   Future<void> playTafseer({
     required String url,
     required String surahName,
     required String scholarName,
+    int? surahNumber,
+    String? sourceId,
     List<String>? fallbackUrls,
   }) async {
     final urlsToTry = [url];
@@ -128,6 +134,9 @@ class QuranAudioService {
     }
     
     Exception? lastError;
+    
+    // Mutual exclusion: stop VbV if starting Tafseer
+    VerseByVerseController().stop();
     
     for (int i = 0; i < urlsToTry.length; i++) {
       final currentUrl = urlsToTry[i];
@@ -147,6 +156,8 @@ class QuranAudioService {
           _currentTafseerUrl = currentUrl;
           tafseerSurahName = surahName;
           tafseerScholarName = scholarName;
+          tafseerSurahNumber = surahNumber;
+          tafseerSourceId = sourceId;
           
           // Set the URL and wait for it to load
           await _tafseerPlayer.setUrl(currentUrl);

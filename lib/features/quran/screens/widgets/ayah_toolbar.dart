@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../models/ayah.dart';
 import '../../services/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
+import '../../../../shared/icons/icomoon.dart';
+import '../../../../shared/icons/custom_icons_v2.dart';
 
 class AyahToolbar extends StatelessWidget {
   final Ayah ayah;
@@ -82,9 +84,9 @@ class AyahToolbar extends StatelessWidget {
                         )
                       : IconButton(
                           icon: Icon(
-                            isMyTranslation && playing == true ? Icons.pause_circle_filled : Icons.translate,
+                            isMyTranslation && playing == true ? Icons.pause_circle_filled : CustomIconsV2.translation,
                             color: isMyTranslation && playing == true ? Colors.amber[800] : Colors.blueGrey,
-                            size: 24,
+                            size: 20, // Adjusted size to match Icomoon
                           ),
                           tooltip: 'Play Urdu Translation',
                           onPressed: () {

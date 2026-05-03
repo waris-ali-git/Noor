@@ -531,6 +531,26 @@ class QuranService {
     await _cacheBox.put('surah_progress', progressMap);
   }
 
+  Future<void> saveLastListenedVbv(int surahNumber, int ayahNumber) async {
+    await _cacheBox.put('last_listened_vbv', {
+      'surahNumber': surahNumber,
+      'ayahNumber': ayahNumber,
+      'timestamp': DateTime.now().toIso8601String(),
+    });
+
+    // Sync with surah_progress for list UI
+    final Map<int, int> progressMap = Map<int, int>.from(
+        _cacheBox.get('surah_progress', defaultValue: <int, int>{}) as Map);
+    progressMap[surahNumber] = ayahNumber;
+    await _cacheBox.put('surah_progress', progressMap);
+  }
+
+  Future<Map<String, dynamic>?> getLastListenedVbv() async {
+    final data = _cacheBox.get('last_listened_vbv');
+    if (data == null) return null;
+    return Map<String, dynamic>.from(data as Map);
+  }
+
   Future<Map<String, dynamic>?> getLastRead() async {
     final data = _cacheBox.get('last_read');
     if (data == null) return null;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/hadith.dart';
 import '../state/hadith_bloc.dart';
 import 'widgets/hadith_skeleton.dart';
@@ -28,21 +29,73 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
   void _showTranslationSelector(BuildContext context, List<HadithEdition> editions) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
       builder: (_) {
-        return ListView.builder(
-          itemCount: editions.length,
-          itemBuilder: (context, index) {
-            final edition = editions[index];
-            return ListTile(
-              title: Text(edition.language),
-              subtitle: Text(edition.name),
-              onTap: () {
-                context.read<HadithBloc>().add(
-                    ChangeHadithTranslationEvent(language: edition.language));
-                Navigator.pop(context);
-              },
-            );
-          },
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40, height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD6D6D6),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Text(
+                  'Select Translation',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF2D2D2D),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: editions.length,
+                    itemBuilder: (context, index) {
+                      final edition = editions[index];
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                        leading: CircleAvatar(
+                          backgroundColor: const Color(0xFFF4F1ED),
+                          child: const Icon(Icons.translate, color: Color(0xFF948160), size: 18),
+                        ),
+                        title: Text(
+                          edition.language,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF2D2D2D),
+                          ),
+                        ),
+                        subtitle: Text(
+                          edition.name,
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        onTap: () {
+                          context.read<HadithBloc>().add(
+                              ChangeHadithTranslationEvent(language: edition.language));
+                          Navigator.pop(context);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -52,8 +105,9 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (_) {
         return StatefulBuilder(
@@ -65,7 +119,7 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
               expand: false,
               builder: (_, scrollController) {
                 return Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -74,24 +128,33 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                           width: 40, height: 4,
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
-                            color: Colors.grey[300],
+                            color: const Color(0xFFD6D6D6),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
                       ),
-                      const Text('Select Languages',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text(
+                        'Select Languages',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF2D2D2D),
+                        ),
+                      ),
                       const SizedBox(height: 4),
                       BlocBuilder<HadithBloc, HadithState>(
                         builder: (context, currentState) {
                           final s = currentState is HadithAllTranslationsLoaded ? currentState : state;
                           return Text(
                             '${s.selectedLanguages.length} of ${s.availableLanguages.length} selected',
-                            style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFF8E8E8E),
+                              fontSize: 13,
+                            ),
                           );
                         },
                       ),
-                      const Divider(),
+                      const Divider(height: 20, color: Color(0xFFEEEEEE)),
                       Expanded(
                         child: BlocBuilder<HadithBloc, HadithState>(
                           builder: (context, currentState) {
@@ -103,9 +166,16 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                                 final lang = s.availableLanguages[index];
                                 final isSelected = s.selectedLanguages.contains(lang);
                                 return CheckboxListTile(
-                                  title: Text(lang),
+                                  title: Text(
+                                    lang,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF2D2D2D),
+                                    ),
+                                  ),
                                   value: isSelected,
-                                  activeColor: const Color(0xFF1B5E20),
+                                  activeColor: const Color(0xFF948160),
+                                  checkColor: Colors.white,
                                   onChanged: (_) {
                                     context.read<HadithBloc>().add(
                                         ToggleHadithLanguageEvent(language: lang));
@@ -168,8 +238,23 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
-        title: Text(widget.book.name, style: const TextStyle(fontSize: 16)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black87),
+        title: Text(
+          widget.book.name,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF2D2D2D),
+          ),
+        ),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1, color: Color(0xFFEEEEEE)),
+        ),
         actions: [
           BlocBuilder<HadithBloc, HadithState>(
             builder: (context, state) {
@@ -180,20 +265,20 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                     IconButton(
                       icon: Icon(
                         _showAllTranslations ? Icons.translate : Icons.language,
-                        color: _showAllTranslations ? const Color(0xFF1B5E20) : null,
+                        color: _showAllTranslations ? const Color(0xFF948160) : Colors.black54,
                       ),
                       tooltip: _showAllTranslations ? 'All Translations (ON)' : 'Single Translation',
                       onPressed: () => setState(() => _showAllTranslations = !_showAllTranslations),
                     ),
                     if (!_showAllTranslations)
                       IconButton(
-                        icon: const Icon(Icons.language),
+                        icon: const Icon(Icons.language, color: Colors.black54),
                         tooltip: 'Change Translation',
                         onPressed: () => _showTranslationSelector(context, widget.book.editions),
                       ),
                     if (_showAllTranslations && state is HadithAllTranslationsLoaded)
                       IconButton(
-                        icon: const Icon(Icons.filter_list),
+                        icon: const Icon(Icons.filter_list, color: Colors.black54),
                         tooltip: 'Filter Languages',
                         onPressed: () => _showLanguageFilter(context, state),
                       ),
@@ -247,35 +332,81 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
   // ═══════ SECTIONS LIST ═══════
   Widget _buildSectionsList(HadithSectionsLoaded state) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       itemCount: state.sections.length,
       itemBuilder: (context, index) {
         final section = state.sections[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          elevation: 1,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            title: Text(
-              section.name, 
-              style: TextStyle(
-                fontFamily: _isUrduSelection(state) ? 'Jameel Noori' : (_isArabicSelection(state) ? 'DigitalKhatt' : null),
-                fontWeight: FontWeight.bold
-              )
-            ),
-            subtitle: section.firstHadith > 0
-                ? Text('Hadiths: ${section.firstHadith} – ${section.lastHadith}',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13))
-                : null,
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              if (_showAllTranslations) {
-                context.read<HadithBloc>().add(LoadAllTranslationsForSectionEvent(section: section));
-              } else {
-                context.read<HadithBloc>().add(SelectHadithSectionEvent(section: section));
-              }
-            },
+        return InkWell(
+          onTap: () {
+            if (_showAllTranslations) {
+              context.read<HadithBloc>().add(LoadAllTranslationsForSectionEvent(section: section));
+            } else {
+              context.read<HadithBloc>().add(SelectHadithSectionEvent(section: section));
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: Row(children: [
+              // Number
+              SizedBox(
+                width: 36,
+                child: Text(
+                  (index + 1).toString().padLeft(2, '0'),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFFD6D6D6),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Middle Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      section.name,
+                      style: GoogleFonts.lexend(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF2D2D2D),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      section.firstHadith > 0
+                          ? 'HADITHS ${section.firstHadith} - ${section.lastHadith}'
+                          : 'CHAPTER ${index + 1}',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 8,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF8E8E8E),
+                        letterSpacing: 0.5,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              // Right side
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 100),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: Color(0xFFE5E5E5),
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
+            ]),
           ),
         );
       },
@@ -284,38 +415,27 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
 
   // ═══════ SINGLE TRANSLATION VIEW (Loaded) ═══════
   Widget _buildSingleTranslationView(String sectionName, HadithBook book, HadithEdition translation, List<HadithItem> hadiths) {
+    final isArabic = translation.language.toLowerCase().contains('arabic');
+    final isUrdu = translation.language.toLowerCase().contains('urdu');
+    final isRtl = translation.direction == 'rtl';
+
     return Column(
       children: [
         _buildSectionHeader(sectionName, book),
+        const Divider(height: 1, color: Color(0xFFEEEEEE)),
         Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.all(16),
+          child: ListView.builder(
+            padding: EdgeInsets.zero,
             itemCount: hadiths.length,
-            separatorBuilder: (_, __) => const Divider(height: 32),
             itemBuilder: (context, index) {
               final hadith = hadiths[index];
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildHadithNumberBadge(hadith.hadithNumber),
-                  const SizedBox(height: 12),
-                  Text(
-                    hadith.text,
-                    style: TextStyle(
-                      fontFamily: translation.language.toLowerCase().contains('urdu') 
-                        ? 'Jameel Noori' 
-                        : (translation.language.toLowerCase().contains('arabic') ? 'DigitalKhatt' : null),
-                      fontSize: translation.language.toLowerCase().contains('arabic') ? 22 : 18, 
-                      height: translation.language.toLowerCase().contains('arabic') ? 2.0 : 1.6
-                    ),
-                    textAlign: translation.direction == 'rtl' ? TextAlign.right : TextAlign.left,
-                    textDirection: translation.direction == 'rtl' ? TextDirection.rtl : TextDirection.ltr,
-                  ),
-                  if (hadith.grades.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    _buildGradeChips(hadith.grades),
-                  ],
-                ],
+              return _HadithVerseCard(
+                hadithNumber: hadith.hadithNumber,
+                text: hadith.text,
+                isArabic: isArabic,
+                isUrdu: isUrdu,
+                isRtl: isRtl,
+                grades: hadith.grades,
               );
             },
           ),
@@ -326,8 +446,9 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
 
   // ═══════ SINGLE TRANSLATION VIEW (Streaming / Partial) ═══════
   Widget _buildStreamingTranslationView(HadithsStreaming state) {
-    // Show loaded items + skeletons for the remaining
     final isArabic = state.selectedTranslation.language.toLowerCase().contains('arabic');
+    final isUrdu = state.selectedTranslation.language.toLowerCase().contains('urdu');
+    final isRtl = state.selectedTranslation.direction == 'rtl';
     final loaded = state.loadedHadiths.length;
     final remaining = state.remainingHadiths;
     final totalChildCount = loaded + remaining;
@@ -335,40 +456,23 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
     return Column(
       children: [
         _buildSectionHeader(state.selectedSection.name, state.selectedBook),
+        const Divider(height: 1, color: Color(0xFFEEEEEE)),
         Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.all(16),
+          child: ListView.builder(
+            padding: EdgeInsets.zero,
             itemCount: totalChildCount,
-            separatorBuilder: (_, __) => const Divider(height: 32),
             itemBuilder: (context, index) {
               if (index < loaded) {
-                // Rendering loaded hadith
                 final hadith = state.loadedHadiths[index];
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildHadithNumberBadge(hadith.hadithNumber),
-                    const SizedBox(height: 12),
-                    Text(
-                      hadith.text,
-                      style: TextStyle(
-                        fontFamily: state.selectedTranslation.language.toLowerCase().contains('urdu') 
-                          ? 'Jameel Noori' 
-                          : (state.selectedTranslation.language.toLowerCase().contains('arabic') ? 'DigitalKhatt' : null),
-                        fontSize: state.selectedTranslation.language.toLowerCase().contains('arabic') ? 22 : 18, 
-                        height: state.selectedTranslation.language.toLowerCase().contains('arabic') ? 2.0 : 1.6
-                      ),
-                      textAlign: state.selectedTranslation.direction == 'rtl' ? TextAlign.right : TextAlign.left,
-                      textDirection: state.selectedTranslation.direction == 'rtl' ? TextDirection.rtl : TextDirection.ltr,
-                    ),
-                    if (hadith.grades.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      _buildGradeChips(hadith.grades),
-                    ],
-                  ],
+                return _HadithVerseCard(
+                  hadithNumber: hadith.hadithNumber,
+                  text: hadith.text,
+                  isArabic: isArabic,
+                  isUrdu: isUrdu,
+                  isRtl: isRtl,
+                  grades: hadith.grades,
                 );
               } else {
-                // Rendering skeleton
                 return HadithSkeletonCard(isArabic: isArabic);
               }
             },
@@ -382,23 +486,29 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
   Widget _buildLoadingSkeletons() {
     return Column(
       children: [
-        // Fake Header Skeleton
         Container(
-          padding: const EdgeInsets.all(12),
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          color: Colors.white,
           child: Row(
             children: [
               Expanded(
-                child: Container(height: 18, color: Colors.grey[300]),
+                child: Container(
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
               const SizedBox(width: 40),
             ],
           ),
         ),
+        const Divider(height: 1, color: Color(0xFFEEEEEE)),
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
-            itemCount: 6, // Fake count
+            itemCount: 6,
             separatorBuilder: (_, __) => const Divider(height: 32),
             itemBuilder: (context, index) => const HadithSkeletonCard(),
           ),
@@ -412,10 +522,10 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
     return Column(
       children: [
         _buildSectionHeader(state.selectedSection.name, state.selectedBook),
-        // Language filter chips
+        // Language filter chips — gold theme
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          color: Colors.grey[50],
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          color: const Color(0xFFFAFAFA),
           child: SizedBox(
             height: 34,
             child: ListView(
@@ -427,12 +537,17 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                   child: FilterChip(
                     label: Text(lang, style: TextStyle(
                       fontSize: 11,
-                      color: isSelected ? Colors.white : Colors.black87,
+                      fontFamily: 'PlusJakartaSans',
+                      color: isSelected ? Colors.white : const Color(0xFF2D2D2D),
                     )),
                     selected: isSelected,
-                    selectedColor: const Color(0xFF1B5E20),
+                    selectedColor: const Color(0xFF948160),
                     checkmarkColor: Colors.white,
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: const Color(0xFFF4F1ED),
+                    side: BorderSide(
+                      color: isSelected ? const Color(0xFF948160) : const Color(0xFFD6D6D6),
+                      width: 1,
+                    ),
                     visualDensity: VisualDensity.compact,
                     onSelected: (_) {
                       context.read<HadithBloc>().add(ToggleHadithLanguageEvent(language: lang));
@@ -443,29 +558,26 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
             ),
           ),
         ),
-        const Divider(height: 1),
+        const Divider(height: 1, color: Color(0xFFEEEEEE)),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          color: Colors.grey[100],
+          color: const Color(0xFFFAFAFA),
           child: Row(
             children: [
-              Icon(Icons.info_outline, size: 14, color: Colors.grey[600]),
+              const Icon(Icons.info_outline, size: 14, color: Color(0xFF8E8E8E)),
               const SizedBox(width: 6),
               Text(
                 '${state.hadiths.length} hadiths • ${state.selectedLanguages.length} languages selected',
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                style: GoogleFonts.plusJakartaSans(fontSize: 12, color: const Color(0xFF8E8E8E)),
               ),
             ],
           ),
         ),
+        const Divider(height: 1, color: Color(0xFFEEEEEE)),
         Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.all(16),
+          child: ListView.builder(
+            padding: EdgeInsets.zero,
             itemCount: state.hadiths.length,
-            separatorBuilder: (_, __) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Divider(height: 2, thickness: 2, color: Colors.grey[300]),
-            ),
             itemBuilder: (context, index) {
               final hadith = state.hadiths[index];
               return _buildMultiTranslationCard(hadith, state.selectedLanguages, state.availableLanguages);
@@ -487,68 +599,83 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
       }
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildHadithNumberBadge(hadith.hadithNumber),
-        const SizedBox(height: 12),
-        ...visibleTranslations.map((entry) {
-          final lang = entry.key;
-          final text = entry.value;
-          final isRtl = _isRtlLanguage(lang);
-          final isArabic = lang.toLowerCase().startsWith('arabic');
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: isArabic ? const Color(0xFFF5F0E8) : Colors.grey[50],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isArabic ? const Color(0xFF2E7D32) : Colors.grey[300]!,
-                  width: isArabic ? 1.2 : 0.8,
+    return Container(
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF948160),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Hadith ${hadith.hadithNumber}',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
                 ),
-              ),
+                if (hadith.grades.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  ..._buildInlineGrades(hadith.grades),
+                ],
+              ],
+            ),
+          ),
+          ...visibleTranslations.map((entry) {
+            final lang = entry.key;
+            final text = entry.value;
+            final isRtl = _isRtlLanguage(lang);
+            final isArabic = lang.toLowerCase().startsWith('arabic');
+            final isUrdu = lang.toLowerCase().contains('urdu');
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
               child: Column(
                 crossAxisAlignment: isRtl ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: isArabic ? const Color(0xFF2E7D32).withValues(alpha: 0.15) : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      lang,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: isArabic ? const Color(0xFF1B5E20) : Colors.grey[700],
+                  if (visibleTranslations.length > 1)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Text(
+                        lang,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: isArabic ? const Color(0xFF948160) : const Color(0xFF8E8E8E),
+                          letterSpacing: 0.4,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
                   SelectableText(
                     text,
                     textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
                     textAlign: isRtl ? TextAlign.right : TextAlign.left,
                     style: TextStyle(
-                      fontFamily: lang.toLowerCase().contains('urdu')
-                          ? 'Jameel Noori' 
-                          : (lang.toLowerCase().contains('arabic') ? 'DigitalKhatt' : null),
-                      fontSize: isArabic ? 22 : 16,
-                      height: isArabic ? 2.0 : 1.6,
+                      fontFamily: isUrdu
+                          ? 'Jameel Noori'
+                          : (isArabic ? 'DigitalKhatt' : null),
+                      fontSize: isArabic ? 24 : 17,
+                      height: isArabic ? 2.0 : 1.7,
                       color: Colors.black87,
                     ),
                   ),
                 ],
               ),
-            ),
-          );
-        }),
-        if (hadith.grades.isNotEmpty) _buildGradeChips(hadith.grades),
-      ],
+            );
+          }),
+          // Bottom divider like Quran card
+          const Divider(height: 1, color: Color(0xFFEEEEEE)),
+        ],
+      ),
     );
   }
 
@@ -557,12 +684,11 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
     return Column(
       children: [
         _buildSectionHeader(state.selectedSection.name, state.selectedBook),
-        // Fake language filter strip to maintain layout
         Container(
-          height: 46,
-          color: Colors.grey[50],
+          height: 50,
+          color: const Color(0xFFFAFAFA),
         ),
-        const Divider(height: 1),
+        const Divider(height: 1, color: Color(0xFFEEEEEE)),
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
@@ -583,22 +709,25 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
   // ═══════ SHARED WIDGETS ═══════
   Widget _buildSectionHeader(String sectionName, HadithBook book) {
     return Container(
-      padding: const EdgeInsets.all(12),
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      color: Colors.white,
       child: Row(
         children: [
           Expanded(
             child: BlocBuilder<HadithBloc, HadithState>(
               builder: (context, state) {
                 return Text(
-                  sectionName, 
+                  sectionName,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontFamily: _isUrduSelection(state) ? 'Jameel Noori' : (_isArabicSelection(state) ? 'DigitalKhatt' : null),
-                    fontWeight: FontWeight.bold, 
-                    fontSize: 15
-                  )
+                    fontFamily: _isUrduSelection(state)
+                        ? 'Jameel Noori'
+                        : (_isArabicSelection(state) ? 'DigitalKhatt' : null),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: const Color(0xFF2D2D2D),
+                  ),
                 );
               },
             ),
@@ -608,9 +737,13 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
             flex: 0,
             child: LiquidGlassButton(
               label: 'Chapters',
-              icon: const Icon(Icons.list, size: 16),
+              icon: const Icon(Icons.list, size: 16, color: Color(0xFF948160)),
               height: 36,
-              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1B5E20)),
+              textStyle: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF948160),
+              ),
               onTap: () => context.read<HadithBloc>().add(SelectHadithBookEvent(book: book)),
             ),
           ),
@@ -619,36 +752,180 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
     );
   }
 
-  Widget _buildHadithNumberBadge(dynamic hadithNumber) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  List<Widget> _buildInlineGrades(List<HadithGrade> grades) {
+    return grades.take(1).map((g) {
+      final isSahih = g.grade.toLowerCase().contains('sahih');
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: const Color(0xFF1B5E20),
-          borderRadius: BorderRadius.circular(8),
+          color: isSahih
+              ? const Color(0xFF948160).withValues(alpha: 0.08)
+              : Colors.orange.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSahih
+                ? const Color(0xFF948160).withValues(alpha: 0.35)
+                : Colors.orange.shade200,
+            width: 1,
+          ),
         ),
         child: Text(
-          'Hadith $hadithNumber',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+          g.grade,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: isSahih ? const Color(0xFF948160) : Colors.orange.shade700,
+          ),
         ),
+      );
+    }).toList();
+  }
+}
+
+// ─────────────────────────────────────────────
+// HADITH VERSE CARD  (matches Quran _StandardAyahCard)
+// ─────────────────────────────────────────────
+class _HadithVerseCard extends StatelessWidget {
+  final dynamic hadithNumber;
+  final String text;
+  final bool isArabic;
+  final bool isUrdu;
+  final bool isRtl;
+  final List<HadithGrade> grades;
+
+  const _HadithVerseCard({
+    required this.hadithNumber,
+    required this.text,
+    required this.isArabic,
+    required this.isUrdu,
+    required this.isRtl,
+    required this.grades,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE))),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // ── Top row: number badge + inline grade ──
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 10),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF948160),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Hadith $hadithNumber',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+                if (grades.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  ..._buildInlineGrade(),
+                ],
+              ],
+            ),
+          ),
+
+          // ── Main hadith text ──
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+            child: SelectableText(
+              text,
+              textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+              textAlign: isRtl ? TextAlign.right : TextAlign.left,
+              style: TextStyle(
+                fontFamily: isUrdu
+                    ? 'Jameel Noori'
+                    : (isArabic ? 'DigitalKhatt' : null),
+                fontSize: isArabic ? 24 : 17,
+                height: isArabic ? 2.0 : 1.7,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+
+          // ── Grade chips below text ──
+          if (grades.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: grades.map((g) {
+                  final isSahih = g.grade.toLowerCase().contains('sahih');
+                  return Chip(
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    visualDensity: VisualDensity.compact,
+                    side: BorderSide(
+                      color: isSahih
+                          ? const Color(0xFF948160).withValues(alpha: 0.4)
+                          : Colors.orange.shade200,
+                      width: 1,
+                    ),
+                    label: Text(
+                      '${g.grade} (${g.name})',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: isSahih
+                            ? const Color(0xFF948160)
+                            : Colors.orange.shade800,
+                      ),
+                    ),
+                    backgroundColor: isSahih
+                        ? const Color(0xFF948160).withValues(alpha: 0.08)
+                        : Colors.orange.shade50,
+                  );
+                }).toList(),
+              ),
+            ),
+        ],
       ),
     );
   }
 
-  Widget _buildGradeChips(List<HadithGrade> grades) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 4,
-      children: grades.map((g) {
-        final isSahih = g.grade.toLowerCase().contains('sahih');
-        return Chip(
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          visualDensity: VisualDensity.compact,
-          label: Text('${g.grade} (${g.name})', style: const TextStyle(fontSize: 11)),
-          backgroundColor: isSahih ? Colors.green[100] : Colors.orange[100],
-        );
-      }).toList(),
-    );
+  List<Widget> _buildInlineGrade() {
+    return grades.take(1).map((g) {
+      final isSahih = g.grade.toLowerCase().contains('sahih');
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSahih
+              ? const Color(0xFF948160).withValues(alpha: 0.08)
+              : Colors.orange.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSahih
+                ? const Color(0xFF948160).withValues(alpha: 0.35)
+                : Colors.orange.shade200,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          g.grade,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: isSahih ? const Color(0xFF948160) : Colors.orange.shade700,
+          ),
+        ),
+      );
+    }).toList();
   }
 }
+

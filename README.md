@@ -40,7 +40,23 @@ samples, guidance on mobile development, and a full API reference.
 ### Azaan sound on prayer time
 ### icons theak karna
 ## Sari App ki designing
+### Auto Tafseer feature
 ### Islamic Calender
 -----
 
-hi
+# Total Features
+## - Authentic Source of Quran (NO COMPROMISE)
+## -Translations, Tafseer, Hadith(jitni bhi hadeeson ki book hai, woh sab hi)
+### -Hadith ki bhi languages ziada add karna 
+## -Sunnah.com mein se help lena
+## -Tajweed colors(words k colors)
+---
+## User should be able to:
+### read normal quran,
+### he should be able to see tajweed colors, 
+### he should be able to see all colored letters easily (like suffix and prefix)
+---
+### "Main cheez to filhal yehi hain k filhal tafseeron pe, or ahadees ki roshni mein or translation ki roshni mein filhaal to yehi hai
+---
+# Addition note:
+### "baqi jo jo samajh mein atay jaye gi, it will be discussed there"

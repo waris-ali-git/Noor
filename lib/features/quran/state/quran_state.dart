@@ -21,16 +21,18 @@ class QuranLoading extends QuranState {
 class SurahsLoaded extends QuranState {
   final List<Surah> surahs;
   final Map<String, dynamic>? lastRead;
+  final Map<String, dynamic>? lastListenedVbv;
   final Map<int, int> surahProgress;
 
   const SurahsLoaded({
     required this.surahs,
     this.lastRead,
+    this.lastListenedVbv,
     this.surahProgress = const {},
   });
 
   @override
-  List<Object?> get props => [surahs, lastRead, surahProgress];
+  List<Object?> get props => [surahs, lastRead, lastListenedVbv, surahProgress];
 }
 
 // ─── Single Surah Loaded (Reader screen) ───────

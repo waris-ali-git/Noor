@@ -35,6 +35,7 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
     on<RemoveBookmarkEvent>(_onRemoveBookmark);
     on<SearchQuranEvent>(_onSearchQuran);
     on<SaveLastReadEvent>(_onSaveLastRead);
+    on<SaveLastListenedVbvEvent>(_onSaveLastListenedVbv);
     on<LoadLastReadEvent>(_onLoadLastRead);
   }
 
@@ -50,6 +51,7 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
       final surahs = await _quranService.getAllSurahs();
       _cachedSurahs = surahs; // Cache for WBW meta lookups
       final lastRead = await _quranService.getLastRead();
+      final lastListenedVbv = await _quranService.getLastListenedVbv();
       final surahProgress = await _quranService.getAllSurahProgress();
       _preferences = await _quranService.getReadingPreferences();
       _bookmarks = await _quranService.getBookmarks();
@@ -58,6 +60,7 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
       emit(SurahsLoaded(
         surahs: surahs,
         lastRead: lastRead,
+        lastListenedVbv: lastListenedVbv,
         surahProgress: surahProgress,
       ));
     } catch (e) {
@@ -365,6 +368,13 @@ class QuranBloc extends Bloc<QuranEvent, QuranState> {
       Emitter<QuranState> emit,
       ) async {
     await _quranService.saveLastRead(event.surahNumber, event.ayahNumber);
+  }
+
+  Future<void> _onSaveLastListenedVbv(
+      SaveLastListenedVbvEvent event,
+      Emitter<QuranState> emit,
+      ) async {
+    await _quranService.saveLastListenedVbv(event.surahNumber, event.ayahNumber);
   }
 
   Future<void> _onLoadLastRead(

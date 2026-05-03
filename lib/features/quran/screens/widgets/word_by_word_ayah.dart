@@ -2,7 +2,17 @@ import 'package:flutter/material.dart';
 import '../../models/ayah.dart';
 import '../../models/reading_mode.dart';
 import '../../services/tajweed_service.dart';
-import './ayah_toolbar.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:just_audio/just_audio.dart';
+import '../../services/audio_service.dart';
+import '../../state/quran_bloc.dart';
+import '../../../../shared/icons/icomoon.dart';
+import '../../../../shared/icons/custom_icons_v2.dart';
+import '../widgets/reciter_selection_sheet.dart';
+import '../../../../shared/widgets/custom_button.dart';
+import '../translation_selection_screen.dart';
+import '../widgets/wbw_language_selector.dart';
+import '../widgets/tajweed_ayah.dart';
 
 /// Word-by-Word Ayah Widget
 /// Bilkul waise jaisa image mein hai:
@@ -41,30 +51,64 @@ class WordByWordAyahWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final words = ayah.ayahWords;
+    final audioService = QuranAudioService();
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 1),
-          ),
-        ],
+        border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE))),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ─── Top Row: Ayah Toolbar ───
-          AyahToolbar(
-            ayah: ayah,
-            surahNumber: surahNumber,
-            isBookmarked: isBookmarked,
-            onBookmarkToggle: onBookmarkToggle,
-            onTafseerTap: onTafseerTap,
+          // ─── Top Toolbar (matching Verse-by-Verse) ───
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Row(
+              children: [
+                Text(
+                  '$surahNumber:${ayah.numberInSurah}',
+                  style: const TextStyle(color: Colors.grey, fontSize: 16),
+                ),
+                const SizedBox(width: 16),
+                StreamBuilder<PlayerState>(
+                  stream: audioService.ayahPlayerStateStream,
+                  builder: (context, snapshot) {
+                    final playing = snapshot.data?.playing == true;
+                    final isMyArabic = audioService.currentAyahNumber == ayah.number;
+                    
+                    return GestureDetector(
+                      onTap: () {
+                        if (isMyArabic && playing) {
+                          audioService.pauseAyah();
+                        } else {
+                          audioService.playAyah(
+                            ayahNumber: ayah.number,
+                            surahNumber: surahNumber,
+                            ayahInSurah: ayah.numberInSurah,
+                          );
+                        }
+                      },
+                      child: Icon(
+                        isMyArabic && playing ? Icons.pause : Icons.play_arrow_outlined,
+                        color: Colors.grey,
+                        size: 24,
+                      ),
+                    );
+                  },
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () {
+                    showReciterSelectionSheet(context);
+                  },
+                  child: const Icon(Icomoon.reciter, color: Colors.grey, size: 20),
+                ),
+                const SizedBox(width: 16),
+                GestureDetector(onTap: onBookmarkToggle, child: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border, color: Colors.grey, size: 20)),
+              ],
+            ),
           ),
 
           // ─── Word-by-Word Grid (RTL) ───────────
@@ -95,18 +139,10 @@ class WordByWordAyahWidget extends StatelessWidget {
 
           // ─── Full Translation at bottom ────────
           if (ayah.translation != null && ayah.translation!.isNotEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF9FBE7),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(16),
-                  bottomRight: Radius.circular(16),
-                ),
-              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               child: Text(
-                '(${ayah.numberInSurah}) ${ayah.translation!}',
+                ayah.translation!,
                 textAlign: preferences.selectedTranslation.startsWith('ar') || preferences.selectedTranslation.startsWith('ur') ? TextAlign.right : TextAlign.left,
                 textDirection: preferences.selectedTranslation.startsWith('ar') || preferences.selectedTranslation.startsWith('ur') ? TextDirection.rtl : TextDirection.ltr,
                 style: TextStyle(
@@ -121,6 +157,80 @@ class WordByWordAyahWidget extends StatelessWidget {
                 ),
               ),
             ),
+
+          // ─── Bottom Toolbar: Tafsirs & Translations ───
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Row(
+              children: [
+                InkWell(
+                  onTap: onTafseerTap,
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icomoon.tafseer, color: Colors.grey, size: 18),
+                      SizedBox(width: 6),
+                      Text('Tafsirs', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 20),
+                // Tajweed Color Guide icon
+                GestureDetector(
+                  onTap: () => showTajweedLegendDialog(context),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.palette, color: Color(0xFFD4AF37), size: 18),
+                      SizedBox(width: 6),
+                      Text('Tajweed', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 14, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                InkWell(
+                  onTap: () {
+                    showGeneralDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      barrierLabel: 'Wbw Language Selector',
+                      barrierColor: Colors.black.withOpacity(0.05),
+                      transitionDuration: const Duration(milliseconds: 300),
+                      pageBuilder: (context, anim1, anim2) {
+                        return Align(
+                          alignment: Alignment.center,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: BlocProvider.value(
+                              value: context.read<QuranBloc>(),
+                              child: const WbwLanguageSelector(),
+                            ),
+                          ),
+                        );
+                      },
+                      transitionBuilder: (context, anim1, anim2, child) {
+                        return FadeTransition(
+                          opacity: anim1,
+                          child: ScaleTransition(
+                            scale: anim1,
+                            child: child,
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(CustomIconsV2.translation, color: Colors.grey, size: 18),
+                      SizedBox(width: 6),
+                      Text('Translations', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -148,23 +258,100 @@ class _WordByWordGrid extends StatelessWidget {
         direction: Axis.horizontal,
         alignment: WrapAlignment.center,
         spacing: 12,
-        runSpacing: 16,
+        runSpacing: 24,
         children: List.generate(words.length, (index) {
           final word = words[index];
           final color = wordColors[index % wordColors.length];
 
-          return _WordCard(
-            word: word,
-            color: color,
-            arabicFontSize: preferences.arabicFontSize,
-            translationFontSize: preferences.translationFontSize,
-            showTransliteration: preferences.showTransliteration,
-            showTajweed: preferences.showTajweed,
-            wbwLanguage: preferences.wbwLanguage,
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapUp: (details) => _showTranslationOverlay(
+              context, 
+              word, 
+              details.globalPosition, 
+              preferences.wbwLanguage, 
+              preferences.translationFontSize
+            ),
+            child: _WordCard(
+              word: word,
+              color: color,
+              arabicFontSize: preferences.arabicFontSize,
+              translationFontSize: preferences.translationFontSize,
+              showTransliteration: preferences.showTransliteration,
+              showTajweed: preferences.showTajweed,
+              wbwLanguage: preferences.wbwLanguage,
+            ),
           );
         }),
       ),
     );
+  }
+
+  void _showTranslationOverlay(BuildContext context, AyahWord word, Offset globalPosition, String wbwLanguage, double translationFontSize) {
+    OverlayEntry? entry;
+    entry = OverlayEntry(
+      builder: (context) {
+        return Stack(
+          children: [
+            GestureDetector(
+              onTap: () => entry?.remove(),
+              child: Container(color: Colors.transparent),
+            ),
+            Positioned(
+              left: globalPosition.dx - 90,
+              top: globalPosition.dy - 100,
+              child: Material(
+                color: Colors.transparent,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 150),
+                  curve: Curves.easeOut,
+                  builder: (context, value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: Transform.scale(scale: 0.9 + (0.1 * value), child: child),
+                    );
+                  },
+                  child: LiquidGlassContainer(
+                    width: 180,
+                    borderRadius: 16,
+                    isTransparent: true,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          word.translation ?? '',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: wbwLanguage.startsWith('ur') ? 'Jameel Noori' : (wbwLanguage.startsWith('ar') ? 'DigitalKhatt' : null),
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
+                        if (word.transliteration != null) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            word.transliteration!,
+                            style: const TextStyle(
+                              color: Color(0xFFD4AF37),
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    Overlay.of(context).insert(entry);
   }
 }
 
@@ -225,33 +412,43 @@ class _WordCard extends StatelessWidget {
               textDirection: TextDirection.rtl,
             ),
 
-          // Transliteration (colored same as Arabic)
+          // Transliteration (Golden color)
           if (showTransliteration && word.transliteration != null)
             Text(
               word.transliteration!,
               style: TextStyle(
-                color: color,
+                color: const Color(0xFFD4AF37), // Golden color defined in app
                 fontSize: translationFontSize - 1,
                 fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
             ),
 
-          // Word-level Custom Language Translation
+          // Word Translation (selected wbw language)
           if (word.translation != null && word.translation!.isNotEmpty)
-            Text(
-              word.translation!,
-              style: TextStyle(
-                fontFamily: wbwLanguage.startsWith('ur') ? 'Jameel Noori' : (wbwLanguage.startsWith('ar') ? 'DigitalKhatt' : null),
-                color: Colors.black54,
-                fontWeight: FontWeight.w500,
-                fontSize: wbwLanguage.startsWith('ar') ? translationFontSize : translationFontSize - 2,
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                word.translation!,
+                style: TextStyle(
+                  fontFamily: wbwLanguage.startsWith('ur')
+                      ? 'Jameel Noori'
+                      : (wbwLanguage.startsWith('ar') ? 'DigitalKhatt' : null),
+                  fontSize: translationFontSize - 2,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w400,
+                  height: wbwLanguage.startsWith('ur') || wbwLanguage.startsWith('ar') ? 1.6 : 1.3,
+                ),
+                textAlign: TextAlign.center,
+                textDirection: wbwLanguage.startsWith('ur') || wbwLanguage.startsWith('ar')
+                    ? TextDirection.rtl
+                    : TextDirection.ltr,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              textAlign: TextAlign.center,
-              maxLines: 4,
-              overflow: TextOverflow.visible,
-              textDirection: wbwLanguage.startsWith('ur') || wbwLanguage.startsWith('ar') ? TextDirection.rtl : TextDirection.ltr,
             ),
+
         ],
       ),
     );

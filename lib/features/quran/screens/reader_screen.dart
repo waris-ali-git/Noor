@@ -1,11 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:just_audio/just_audio.dart';
 import '../services/audio_service.dart';
+import '../services/preferences_service.dart';
+import '../services/word_timing_service.dart';
+import '../services/surah_recitation_controller.dart';
+import '../services/verse_by_verse_controller.dart';
 import '../state/quran_bloc.dart';
 import '../models/surah.dart';
 import '../models/ayah.dart';
 import '../models/reading_mode.dart';
+import '../models/translation_audio_edition.dart';
 import '../widgets/tafseer_bottom_sheet.dart';
 import 'widgets/reading_settings_sheet.dart';
 import 'widgets/tajweed_ayah.dart';
@@ -14,19 +21,26 @@ import 'widgets/reciter_selection_sheet.dart';
 import 'widgets/ayah_toolbar.dart';
 import 'widgets/mushaf_page_preview.dart';
 import 'widgets/surah_skeleton.dart';
-import 'package:just_audio/just_audio.dart';
+import 'widgets/verse_playback_bar.dart';
+import 'widgets/verse_playback_settings_sheet.dart';
+import '../widgets/global_tafseer_player.dart';
 import '../../../../shared/widgets/custom_button.dart';
+import '../../../../shared/icons/icomoon.dart';
+import '../../../../shared/icons/custom_icons_v2.dart';
+import 'translation_selection_screen.dart';
 
 class ReaderScreen extends StatefulWidget {
   final Surah surah;
   final ReadingDisplayMode initialMode;
   final int? initialAyah;
+  final bool startVbvOnLoad;
 
   const ReaderScreen({
     super.key,
     required this.surah,
     required this.initialMode,
     this.initialAyah,
+    this.startVbvOnLoad = false,
   });
 
   @override
@@ -41,22 +55,107 @@ class _ReaderScreenState extends State<ReaderScreen> {
   bool _showMarkAsReadOverlay = false;
   int _overlayTriggerCount = 0; // limit to first 3 times per session
 
+  int _currentPage = 1;
+  int _currentJuz = 1;
+  int _currentHizb = 1;
+
+  // ─── Surah Recitation (Word-Level Highlighting) ───
+  late SurahRecitationController _recitationController;
+  bool _recitationLoaded = false;
+
+  // ─── Verse-by-Verse Sequential Playback ──────────
+  late VerseByVerseController _vbvController;
+  int _lastVbVAyah = -1;
+  /// GlobalKeys per ayah index so we can scroll to the active card.
+  final Map<int, GlobalKey> _ayahKeys = {};
+
+  GlobalKey _keyForAyah(int ayahInSurah) {
+    return _ayahKeys.putIfAbsent(ayahInSurah, () => GlobalKey());
+  }
+
   @override
   void initState() {
     super.initState();
+    _currentPage = widget.surah.ayahs?.isNotEmpty == true ? widget.surah.ayahs!.first.page : 1;
+    _currentJuz = widget.surah.ayahs?.isNotEmpty == true ? widget.surah.ayahs!.first.juz : 1;
+    _currentHizb = widget.surah.ayahs?.isNotEmpty == true ? (widget.surah.ayahs!.first.hizbQuarter ~/ 4 == 0 ? 1 : widget.surah.ayahs!.first.hizbQuarter ~/ 4) : 1;
+
+    // Initialize recitation controller
+    _recitationController = SurahRecitationController(
+      GetIt.instance<WordTimingService>(),
+    );
+    _recitationController.addListener(_onRecitationUpdate);
+
+    // Initialize verse-by-verse controller with saved preferences
+    final vbvPrefs = PreferencesService();
+    final savedEditionId = vbvPrefs.getVbvTranslationEditionId();
+    final savedEdition = TranslationAudioEdition.findById(savedEditionId)
+        ?? TranslationAudioEdition.defaultEdition;
+
+    _vbvController = VerseByVerseController();
+    
+    // Update config if needed
+    _vbvController.updateConfig(VerseByVerseConfig(
+      reciter: QuranAudioService().selectedReciter,
+      translationEdition: savedEdition,
+      playTranslation: vbvPrefs.getVbvPlayTranslation(),
+      playTafseer: vbvPrefs.getVbvPlayTafseer(),
+      tafseerAudioUrlResolver: (surahNumber) {
+        if (surahNumber == 1) {
+          return 'https://archive.org/download/Tafsir-ibne-kaseer-kathir-urdu-----audio-mp3-hq/'
+              '001%20-%20Al-Fatihah%20%28%20The%20Opening%20%29%20-%20%D8%B3%D9%88%D8%B1%D8%A9%20%D8%A7%D9%84%D9%81%D8%A7%D8%AA%D8%AD%D8%A9.mp3';
+        }
+        return null;
+      },
+    ));
+
+    _vbvController.addListener(_onVbVUpdate);
+
+    // Pre-load chapter audio + word segments so play is instant
+    _preloadRecitationData();
+
     _loadSurah();
     _scrollController.addListener(_onScroll);
 
     if (widget.initialAyah != null && widget.initialAyah! > 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (_scrollController.hasClients) {
-          // Approximate jump: Bismillah header (~100px) + (ayah index * ~150px avg height)
-          // This is a naive scroll just to get them close to the spot without a complex item-scroll package
           final estimatedTargetListIndex = widget.initialAyah! - 1; 
           final estimatedOffset = 100.0 + (estimatedTargetListIndex * 150.0);
-          
           final maxOffset = _scrollController.position.maxScrollExtent;
           _scrollController.jumpTo(estimatedOffset.clamp(0.0, maxOffset));
+
+          // Wait a brief moment to allow slivers to render
+          await Future.delayed(const Duration(milliseconds: 100));
+
+          final key = _ayahKeys[widget.initialAyah!];
+          if (key?.currentContext != null) {
+            Scrollable.ensureVisible(
+              key!.currentContext!,
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeInOut,
+              alignment: 0.2, // Show near the top with some padding
+            );
+          }
+        }
+        final isActiveAndPlayingSameSurah = _vbvController.state.isActive && _vbvController.state.surahNumber == widget.surah.number;
+        if (widget.startVbvOnLoad && widget.surah.ayahs != null && !isActiveAndPlayingSameSurah) {
+          _vbvController.start(
+            surahNumber: widget.surah.number,
+            startAyah: widget.initialAyah!,
+            totalAyahs: widget.surah.numberOfAyahs,
+          );
+        }
+      });
+    } else if (widget.startVbvOnLoad && widget.surah.ayahs != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final isActiveAndPlayingSameSurah = _vbvController.state.isActive && _vbvController.state.surahNumber == widget.surah.number;
+        if (!isActiveAndPlayingSameSurah) {
+          _vbvController.start(
+            surahNumber: widget.surah.number,
+            startAyah: widget.initialAyah ?? 1,
+            totalAyahs: widget.surah.numberOfAyahs,
+          );
         }
       });
     }
@@ -68,6 +167,26 @@ class _ReaderScreenState extends State<ReaderScreen> {
       final currentScroll = _scrollController.position.pixels;
       if (maxScroll > 0) {
         _scrollProgress.value = (currentScroll / maxScroll).clamp(0.0, 1.0);
+        
+        // Approximate visible ayah based on scroll progress
+        final state = context.read<QuranBloc>().state;
+        List<Ayah>? ayahs;
+        if (state is SurahLoaded) ayahs = state.surah.ayahs;
+        if (state is SurahWordByWordLoaded) ayahs = state.ayahs;
+        
+        if (ayahs != null && ayahs.isNotEmpty) {
+          final approxIndex = (_scrollProgress.value * (ayahs.length - 1)).round();
+          if (approxIndex >= 0 && approxIndex < ayahs.length) {
+            final visibleAyah = ayahs[approxIndex];
+            if (visibleAyah.page != _currentPage || visibleAyah.juz != _currentJuz) {
+              setState(() {
+                _currentPage = visibleAyah.page;
+                _currentJuz = visibleAyah.juz;
+                _currentHizb = visibleAyah.hizbQuarter ~/ 4 == 0 ? 1 : visibleAyah.hizbQuarter ~/ 4;
+              });
+            }
+          }
+        }
       } else {
         _scrollProgress.value = 0.0;
       }
@@ -107,8 +226,103 @@ class _ReaderScreenState extends State<ReaderScreen> {
     }
   }
 
+  void _onRecitationUpdate() {
+    if (mounted) setState(() {});
+  }
+
+  void _onVbVUpdate() {
+    if (mounted) {
+      setState(() {});
+      final vbvState = _vbvController.state;
+      if (vbvState.isActive && vbvState.surahNumber > 0 && vbvState.currentAyahInSurah > 0) {
+        context.read<QuranBloc>().add(SaveLastListenedVbvEvent(
+          surahNumber: vbvState.surahNumber,
+          ayahNumber: vbvState.currentAyahInSurah,
+        ));
+
+        // Trigger auto-scroll if the ayah changed
+        if (vbvState.surahNumber == widget.surah.number && _lastVbVAyah != vbvState.currentAyahInSurah) {
+          _lastVbVAyah = vbvState.currentAyahInSurah;
+          _onVbVAyahChanged(_lastVbVAyah);
+        }
+      }
+    }
+  }
+
+  /// Called by VbV controller when ayah advances — auto-scroll to the new card.
+  void _onVbVAyahChanged(int ayahInSurah) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final key = _ayahKeys[ayahInSurah];
+      if (key?.currentContext != null) {
+        Scrollable.ensureVisible(
+          key!.currentContext!,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+          alignment: 0.2, // show near the top with some padding
+        );
+      } else if (_scrollController.hasClients) {
+        // Fallback: Jump to an estimated offset if the item is off-screen/unbuilt
+        final estimatedTargetListIndex = ayahInSurah - 1; 
+        final estimatedOffset = 100.0 + (estimatedTargetListIndex * 150.0);
+        final maxOffset = _scrollController.position.maxScrollExtent;
+        _scrollController.jumpTo(estimatedOffset.clamp(0.0, maxOffset));
+
+        await Future.delayed(const Duration(milliseconds: 100));
+        
+        final newKey = _ayahKeys[ayahInSurah];
+        if (newKey?.currentContext != null) {
+          Scrollable.ensureVisible(
+            newKey!.currentContext!,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut,
+            alignment: 0.2,
+          );
+        }
+      }
+    });
+  }
+
+  void _showVersePlaybackSettings() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => VersePlaybackSettingsSheet(
+        initialConfig: _vbvController.config,
+        onConfigChanged: (config) {
+          _vbvController.updateConfig(config);
+          // Persist user choices
+          PreferencesService()
+            ..setVbvTranslationEditionId(config.translationEdition.id)
+            ..setVbvPlayTranslation(config.playTranslation)
+            ..setVbvPlayTafseer(config.playTafseer);
+            
+          // Instantly sync the visual translation text with the newly selected audio translation
+          context.read<QuranBloc>().add(
+            ChangeTranslationEvent(edition: config.translationEdition.textEditionId),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Pre-load chapter audio + word-timing segments in background
+  /// so that play button is instant (no loading delay).
+  Future<void> _preloadRecitationData() async {
+    if (_recitationLoaded) return;
+    final reciterId = QuranAudioService().selectedReciter.id;
+    final ok = await _recitationController.loadChapter(
+      widget.surah.number,
+      reciterId: reciterId,
+    );
+    if (ok) _recitationLoaded = true;
+  }
+
   @override
   void dispose() {
+    _recitationController.removeListener(_onRecitationUpdate);
+    _recitationController.dispose();
+    _vbvController.removeListener(_onVbVUpdate);
     _lastReadDebouncer?.cancel();
     _scrollPauseTimer?.cancel();
     _scrollController.removeListener(_onScroll);
@@ -119,10 +333,19 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<QuranBloc>().state;
+    ReadingPreferences preferences = const ReadingPreferences();
+    if (state is SurahLoaded) {
+      preferences = state.preferences;
+    } else if (state is SurahWordByWordLoaded) {
+      preferences = state.preferences;
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F5F0),
-      appBar: _buildAppBar(context),
-      body: BlocConsumer<QuranBloc, QuranState>(
+      backgroundColor: const Color(0xFFFAFAFA),
+      appBar: _buildAppBar(context, preferences),
+      body: _wrapWithGlobalPlayer(
+        BlocConsumer<QuranBloc, QuranState>(
         listener: (context, state) {
           if (state is BookmarkUpdated) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -218,140 +441,134 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
           // Fallback: still loading (initial QuranLoading or state not yet emitted)
           return _buildLoadingSkeletons();
-
-
         },
       ),
-      bottomNavigationBar: _buildPersistentAudioPlayer(),
+      ),
+      bottomNavigationBar: _buildBottomBar(),
     );
   }
 
-  // ─────────────────────────────────────────────
-  // PERSISTENT TAFSEER PLAYER
-  // ─────────────────────────────────────────────
-  Widget _buildPersistentAudioPlayer() {
-    final audioService = QuranAudioService();
-    return StreamBuilder<PlayerState>(
-      stream: audioService.tafseerPlayerStateStream,
-      builder: (context, snapshot) {
-        if (!audioService.hasTafseerAudio) return const SizedBox.shrink();
-        
-        final playerState = snapshot.data;
-        final playing = playerState?.playing ?? false;
-        
-        return Container(
-          color: const Color(0xFF1B5E20),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: SafeArea(
-            bottom: true,
-            top: false,
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Icon(playing ? Icons.pause : Icons.play_arrow, color: Colors.white),
-                  onPressed: () {
-                    if (playing) {
-                      audioService.pauseTafseer();
-                    } else {
-                      if (audioService.currentTafseerUrl != null) {
-                        audioService.playTafseer(
-                          url: audioService.currentTafseerUrl!, 
-                          surahName: audioService.tafseerSurahName ?? '', 
-                          scholarName: audioService.tafseerScholarName ?? ''
-                        );
-                      }
-                    }
-                  }
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Tafseer: Surah ${audioService.tafseerSurahName ?? ''}",
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        audioService.tafseerScholarName ?? 'Playing',
-                        style: const TextStyle(color: Colors.white70, fontSize: 11),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white70),
-                  onPressed: () {
-                    audioService.stopTafseer();
-                  }
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+  // Helper to wrap entire Scaffold body with floating player
+  Widget _wrapWithGlobalPlayer(Widget body) {
+    return Stack(
+      children: [
+        body,
+        const Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: GlobalTafseerPlayerWidget(),
+        ),
+      ],
     );
+  }
+
+  void _scrollToActiveAyah() {
+    final activeAyah = _vbvController.state.currentAyahInSurah;
+    final key = _ayahKeys[activeAyah];
+    if (key != null && key.currentContext != null) {
+      Scrollable.ensureVisible(
+        key.currentContext!,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOut,
+        alignment: 0.1, // Show a bit of the top
+      );
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // BOTTOM BAR — shows VbV bar when active, else tafseer player
+  // ─────────────────────────────────────────────
+  Widget? _buildBottomBar() {
+    final vbvActive = _vbvController.state.isActive;
+    if (vbvActive) {
+      return VersePlaybackBar(
+        controller: _vbvController,
+        onSettingsTap: _showVersePlaybackSettings,
+        onClose: () => setState(() {}),
+        onBarTap: _scrollToActiveAyah,
+      );
+    }
+    return null;
   }
 
   // ─────────────────────────────────────────────
   // APP BAR
   // ─────────────────────────────────────────────
-  AppBar _buildAppBar(BuildContext context) {
+  AppBar _buildAppBar(BuildContext context, ReadingPreferences preferences) {
     return AppBar(
-      backgroundColor: const Color(0xFF1B5E20),
-      title: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              'surah${widget.surah.number.toString().padLeft(3, '0')}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontFamily: 'surah-name-v2-icon',
-                fontSize: 33,
-                fontFeatures: [FontFeature.enable('liga')],
+      backgroundColor: Colors.white,
+      elevation: 0,
+      iconTheme: const IconThemeData(color: Colors.black87),
+      titleSpacing: 0,
+      title: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.bookmark_border, size: 20, color: Colors.grey),
+                const SizedBox(width: 8),
+                Text(
+                  'Page $_currentPage',
+                  style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.normal),
+                ),
+              ],
+            ),
+            Text(
+              'Juz $_currentJuz / Hizb $_currentHizb',
+              style: const TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.normal),
+            ),
+          ],
+        ),
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(62.0),
+        child: Column(
+          children: [
+            const Divider(height: 1, color: Color(0xFFEEEEEE)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  Text(
+                    '${widget.surah.number}. ${widget.surah.englishName}',
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Icon(Icons.keyboard_arrow_down, color: Colors.grey, size: 18),
+                  const Spacer(),
+                  // ─── Segmented Mode Toggle ───
+                  _buildModeSelector(preferences),
+                  const Spacer(),
+                  IconButton(
+                    iconSize: 17,
+                    constraints: const BoxConstraints(),
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    icon: const Icon(Icons.settings, color: Color(0xFF00BFA5)),
+                    tooltip: 'Settings',
+                    onPressed: () => _showSettingsSheet(context),
+                  ),
+                ],
               ),
             ),
-          ),
-          Text(
-            widget.surah.englishName,
-            style: const TextStyle(color: Colors.white70, fontSize: 12),
-          ),
-          const SizedBox(height: 9),
-        ],
-      ),
-      centerTitle: true,
-      actions: [
-        // Reciter selection button
-        IconButton(
-          icon: const Icon(Icons.person, color: Colors.white),
-          onPressed: () {
-            showReciterSelectionSheet(context);
-            setState(() {}); // Rebuild to show new reciter
-          },
-          tooltip: 'Select Reciter',
-        ),
-        // Settings button
-        IconButton(
-          icon: const Icon(Icons.settings, color: Colors.white),
-          onPressed: () => _showSettingsSheet(context),
-        ),
-      ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(2.0),
-        child: ValueListenableBuilder<double>(
-          valueListenable: _scrollProgress,
-          builder: (context, progress, child) {
-            return LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.transparent,
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF948160)),
-              minHeight: 2.0,
-            );
-          },
+            const Divider(height: 1, color: Color(0xFFEEEEEE)),
+            ValueListenableBuilder<double>(
+              valueListenable: _scrollProgress,
+              builder: (context, progress, child) {
+                return LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: Colors.transparent,
+                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF948160)),
+                  minHeight: 2.0,
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -377,6 +594,51 @@ class _ReaderScreenState extends State<ReaderScreen> {
     });
   }
 
+  Widget _buildModeSelector(ReadingPreferences preferences) {
+    return Container(
+      height: 32,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _modeIcon(ReadingDisplayMode.arabicWithTranslation, Icons.format_list_bulleted, preferences.displayMode),
+          _modeIcon(ReadingDisplayMode.arabicOnly, Icomoon.arabicOnly, preferences.displayMode),
+          _modeIcon(ReadingDisplayMode.wordByWord, CustomIconsV2.wordByWord, preferences.displayMode),
+        ],
+      ),
+    );
+  }
+
+  Widget _modeIcon(ReadingDisplayMode mode, IconData icon, ReadingDisplayMode current) {
+    final isSelected = current == mode;
+    return GestureDetector(
+      onTap: () {
+        context.read<QuranBloc>().add(ChangeReadingModeEvent(mode: mode));
+        if (mode == ReadingDisplayMode.wordByWord) {
+          context.read<QuranBloc>().add(LoadSurahWordByWordEvent(surahNumber: widget.surah.number));
+        } else {
+          context.read<QuranBloc>().add(LoadSurahEvent(surahNumber: widget.surah.number));
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFD4AF37) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Icon(
+          icon,
+          size: 16,
+          color: isSelected ? Colors.white : Colors.black54,
+        ),
+      ),
+    );
+  }
+
   // ─────────────────────────────────────────────
   // ARABIC + TRANSLATION  /  TAJWEED mode
   // ─────────────────────────────────────────────
@@ -389,32 +651,46 @@ class _ReaderScreenState extends State<ReaderScreen> {
     
     // Preview for Arabic Only mode using the Mushaf Layout
     if (prefs.displayMode == ReadingDisplayMode.arabicOnly) {
-      return CustomScrollView(
-        controller: _scrollController,
-        cacheExtent: 500, // Pre-render 500px above/below viewport
-        slivers: [
-          SliverToBoxAdapter(child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: MushafPagePreview(
-              surah: surah,
-              onAyahMarkerTap: (ayahNumber) {
-                context.read<QuranBloc>().add(
-                  SaveLastReadEvent(
-                    surahNumber: surah.number,
-                    ayahNumber: ayahNumber,
-                  ),
-                );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Saved Surah ${surah.number}, Ayah $ayahNumber as last read'),
-                    duration: const Duration(seconds: 1),
-                    backgroundColor: const Color(0xFF948160),
-                  ),
-                );
-              },
+      return Stack(
+        children: [
+          CustomScrollView(
+            controller: _scrollController,
+            cacheExtent: 500,
+            slivers: [
+              SliverToBoxAdapter(child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: MushafPagePreview(
+                  surah: surah,
+                  recitationController: _recitationController,
+                  onAyahMarkerTap: (ayahNumber) {
+                    context.read<QuranBloc>().add(
+                      SaveLastReadEvent(
+                        surahNumber: surah.number,
+                        ayahNumber: ayahNumber,
+                      ),
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Saved Surah ${surah.englishName}, Ayah $ayahNumber as last read'),
+                        duration: const Duration(seconds: 1),
+                        backgroundColor: const Color(0xFF948160),
+                      ),
+                    );
+                  },
+                ),
+              )),
+              const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
+            ],
+          ),
+          // ─── Golden Play FAB ───
+          Positioned(
+            bottom: 24,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: _buildRecitationFab(),
             ),
-          )),
-          const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
+          ),
         ],
       );
     }
@@ -440,8 +716,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
               // Tajweed mode
               if (prefs.displayMode == ReadingDisplayMode.tajweed ||
                   prefs.showTajweed) {
+                final vbvState = _vbvController.state;
+                final isActiveVbV = vbvState.isActive &&
+                    vbvState.surahNumber == surah.number &&
+                    vbvState.currentAyahInSurah == ayah.numberInSurah;
                 return RepaintBoundary(
                   child: TajweedAyahWidget(
+                    key: _keyForAyah(ayah.numberInSurah),
                     ayah: ayah,
                     surahNumber: surah.number,
                     preferences: prefs,
@@ -464,25 +745,76 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       });
                     },
                     onTafseerTap: () => _showTafseer(context, ayah),
+                    isVbVActive: isActiveVbV,
+                    isVbVPlaying: vbvState.isPlaying,
+                    onVbVPlay: () {
+                      if (isActiveVbV && vbvState.isPaused) {
+                        _vbvController.resume();
+                      } else {
+                        QuranAudioService().stopAyah();
+                        QuranAudioService().stopTafseer();
+                        _vbvController.start(
+                          surahNumber: surah.number,
+                          startAyah: ayah.numberInSurah,
+                          totalAyahs: ayahs.length,
+                        );
+                      }
+                    },
+                    onVbVPause: () {
+                      _vbvController.pause();
+                    },
+                    onReciterChanged: () {
+                      _vbvController.updateConfig(
+                        _vbvController.config.copyWith(reciter: QuranAudioService().selectedReciter)
+                      );
+                      if (mounted) setState(() {});
+                    },
                   ),
                 );
               }
 
               // Arabic Only / Arabic + Translation
-              return RepaintBoundary(
-                child: _StandardAyahCard(
-                  ayah: ayah,
-                  surahNumber: surah.number,
-                  preferences: prefs,
-                  isBookmarked: isBookmarked,
-                  onBookmarkToggle: () => _toggleBookmark(
-                    context,
-                    surah.number,
-                    ayah.numberInSurah,
-                    isBookmarked,
-                  ),
-                  onTafseerTap: () => _showTafseer(context, ayah),
+              final vbvState = _vbvController.state;
+              final isActiveVbV = vbvState.isActive &&
+                  vbvState.surahNumber == surah.number &&
+                  vbvState.currentAyahInSurah == ayah.numberInSurah;
+              return _StandardAyahCard(
+                key: _keyForAyah(ayah.numberInSurah),
+                ayah: ayah,
+                surahNumber: surah.number,
+                preferences: prefs,
+                isBookmarked: isBookmarked,
+                onBookmarkToggle: () => _toggleBookmark(
+                  context,
+                  surah.number,
+                  ayah.numberInSurah,
+                  isBookmarked,
                 ),
+                onTafseerTap: () => _showTafseer(context, ayah),
+                isVbVActive: isActiveVbV,
+                isVbVPlaying: vbvState.isPlaying,
+                onVbVPlay: () {
+                  if (isActiveVbV && vbvState.isPaused) {
+                    _vbvController.resume();
+                  } else {
+                    QuranAudioService().stopAyah();
+                    QuranAudioService().stopTafseer();
+                    _vbvController.start(
+                      surahNumber: surah.number,
+                      startAyah: ayah.numberInSurah,
+                      totalAyahs: ayahs.length,
+                    );
+                  }
+                },
+                onVbVPause: () {
+                  _vbvController.pause();
+                },
+                onReciterChanged: () {
+                  _vbvController.updateConfig(
+                    _vbvController.config.copyWith(reciter: QuranAudioService().selectedReciter)
+                  );
+                  if (mounted) setState(() {});
+                },
               );
             },
             childCount: ayahs.length,
@@ -493,6 +825,71 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
         const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
       ],
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // GOLDEN PLAY FAB (Arabic Only Mode)
+  // ─────────────────────────────────────────────
+  Widget _buildRecitationFab() {
+    final isPlaying = _recitationController.state.isPlaying;
+    final isLoading = _recitationController.isLoading;
+
+    return GestureDetector(
+      onTap: () {
+        if (isLoading) return;
+        if (!_recitationLoaded) {
+          // Still loading in background, ignore tap
+          return;
+        }
+        _recitationController.togglePlayPause();
+      },
+      onLongPress: () {
+        // Long press = stop & reset
+        _recitationController.stop();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+        width: isPlaying ? 64 : 56,
+        height: isPlaying ? 64 : 56,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFD4AF37), Color(0xFFB8960C)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFD4AF37).withValues(alpha: isPlaying ? 0.5 : 0.3),
+              blurRadius: isPlaying ? 20 : 12,
+              spreadRadius: isPlaying ? 2 : 0,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Center(
+          child: isLoading
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2.5,
+                  ),
+                )
+              : AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    key: ValueKey(isPlaying),
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
+        ),
+      ),
     );
   }
 
@@ -571,17 +968,45 @@ class _ReaderScreenState extends State<ReaderScreen> {
               (context, index) {
                 final ayah = loadedAyahs[index];
                 final isBookmarked = bookmarks.contains('${surah.number}:${ayah.numberInSurah}');
-                return RepaintBoundary(
-                  child: _StandardAyahCard(
-                    ayah: ayah,
-                    surahNumber: surah.number,
-                    preferences: prefs,
-                    isBookmarked: isBookmarked,
-                    onBookmarkToggle: () => _toggleBookmark(
-                      context, surah.number, ayah.numberInSurah, isBookmarked,
-                    ),
-                    onTafseerTap: () => _showTafseer(context, ayah),
+                final vbvState = _vbvController.state;
+                final isActiveVbV = vbvState.isActive &&
+                    vbvState.surahNumber == surah.number &&
+                    vbvState.currentAyahInSurah == ayah.numberInSurah;
+                return _StandardAyahCard(
+                  key: _keyForAyah(ayah.numberInSurah),
+                  ayah: ayah,
+                  surahNumber: surah.number,
+                  preferences: prefs,
+                  isBookmarked: isBookmarked,
+                  onBookmarkToggle: () => _toggleBookmark(
+                    context, surah.number, ayah.numberInSurah, isBookmarked,
                   ),
+                  onTafseerTap: () => _showTafseer(context, ayah),
+                  isVbVActive: isActiveVbV,
+                  isVbVPlaying: vbvState.isPlaying,
+                  onVbVPlay: () {
+                    if (isActiveVbV && vbvState.isPaused) {
+                      _vbvController.resume();
+                    } else {
+                      QuranAudioService().stopAyah();
+                      QuranAudioService().stopTafseer();
+                      final totalAyahs = loadedAyahs.length;
+                      _vbvController.start(
+                        surahNumber: surah.number,
+                        startAyah: ayah.numberInSurah,
+                        totalAyahs: totalAyahs,
+                      );
+                    }
+                  },
+                  onVbVPause: () {
+                    _vbvController.pause();
+                  },
+                  onReciterChanged: () {
+                    _vbvController.updateConfig(
+                      _vbvController.config.copyWith(reciter: QuranAudioService().selectedReciter)
+                    );
+                    if (mounted) setState(() {});
+                  },
                 );
               },
               childCount: loadedAyahs.length,
@@ -677,32 +1102,15 @@ class _BismillahHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      margin: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1B5E20), Color(0xFF388E3C)],
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: const Text(
+        'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
+        style: TextStyle(
+          fontFamily: 'Thuluth',
+          fontSize: 32,
+          color: Colors.black87,
         ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: const Column(
-        children: [
-          Text(
-            'بِسۡمِ اللّٰہِ الرَّحۡمٰنِ الرَّحِیۡمِ',
-            style: TextStyle(
-              fontFamily: 'UthmanicHafs',
-              fontSize: 26,
-              color: Colors.white,
-              height: 2,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          Text(
-            'In the Name of Allah — the Most Compassionate, Most Merciful',
-            style: TextStyle(color: Colors.white70, fontSize: 12),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -718,66 +1126,157 @@ class _StandardAyahCard extends StatelessWidget {
   final bool isBookmarked;
   final VoidCallback onBookmarkToggle;
   final VoidCallback onTafseerTap;
+  final VoidCallback? onVbVPlay;
+  final VoidCallback? onVbVPause;
+  final bool isVbVActive; // this ayah is currently playing in v-b-v mode
+  final bool isVbVPlaying; // is v-b-v currently playing
+  final VoidCallback? onReciterChanged;
 
   const _StandardAyahCard({
+    Key? key,
     required this.ayah,
     required this.surahNumber,
     required this.preferences,
     required this.isBookmarked,
     required this.onBookmarkToggle,
     required this.onTafseerTap,
-  });
+    this.onVbVPlay,
+    this.onVbVPause,
+    this.isVbVActive = false,
+    this.isVbVPlaying = false,
+    this.onReciterChanged,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    String ayahText = ayah.text.cleanArabic;
+    
+    if (ayah.numberInSurah == 1 && surahNumber != 1 && surahNumber != 9) {
+      final bismillahVariations = [
+        'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
+        'بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ',
+        'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+        'بِسۡمِ اللّٰہِ الرَّحۡمٰنِ الرَّحِیۡمِ',
+      ];
+      for (var bismillah in bismillahVariations) {
+        if (ayahText.startsWith(bismillah)) {
+          ayahText = ayahText.substring(bismillah.length).trim();
+          break;
+        }
+      }
+      if (ayahText.startsWith('ۨ')) ayahText = ayahText.substring(1).trim();
+    }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 1),
-          ),
-        ],
+        color: isVbVActive ? const Color(0xFFFFFDF0) : Colors.white,
+        border: Border(
+          bottom: const BorderSide(color: Color(0xFFEEEEEE)),
+          left: isVbVActive
+              ? const BorderSide(color: Color(0xFFD4AF37), width: 4)
+              : BorderSide.none,
+        ),
+        boxShadow: isVbVActive
+            ? [const BoxShadow(color: Color(0x22D4AF37), blurRadius: 8, offset: Offset(2, 0))]
+            : null,
       ),
-      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Ayah Toolbar
-          AyahToolbar(
-            ayah: ayah,
-            surahNumber: surahNumber,
-            isBookmarked: isBookmarked,
-            onBookmarkToggle: onBookmarkToggle,
-            onTafseerTap: onTafseerTap,
+          // Top Toolbar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Row(
+              children: [
+                Text(
+                  '$surahNumber:${ayah.numberInSurah}',
+                  style: const TextStyle(color: Colors.grey, fontSize: 16),
+                ),
+                const SizedBox(width: 16),
+                // ── Verse-by-verse Play/Pause ──
+                GestureDetector(
+                  onTap: () {
+                    if (isVbVActive && isVbVPlaying) {
+                      onVbVPause?.call();
+                    } else {
+                      onVbVPlay?.call();
+                    }
+                  },
+                  child: Icon(
+                    isVbVActive && isVbVPlaying ? Icons.pause : Icons.play_arrow_outlined,
+                    color: isVbVActive ? const Color(0xFFD4AF37) : Colors.grey,
+                    size: 24,
+                  ),
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () async {
+                    await showReciterSelectionSheet(context);
+                    onReciterChanged?.call();
+                  },
+                  child: const Icon(Icomoon.reciter, color: Colors.grey, size: 20),
+                ),
+                const SizedBox(width: 16),
+                GestureDetector(onTap: onBookmarkToggle, child: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border, color: Colors.grey, size: 20)),
+              ],
+            ),
           ),
 
           // Arabic text (RTL)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              ayah.text.cleanArabic,
-              softWrap: true,
-              style: TextStyle(
-                fontFamily: 'UthmanicHafs',
-                fontSize: preferences.arabicFontSize,
-                height: 2.0,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.right,
-              textDirection: TextDirection.rtl,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  ayahText,
+                  softWrap: true,
+                  style: TextStyle(
+                    fontFamily: 'UthmanicHafs',
+                    fontSize: preferences.arabicFontSize,
+                    height: 2.0,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.right,
+                  textDirection: TextDirection.rtl,
+                ),
+                const SizedBox(height: 8),
+                // Tajweed color icon
+                InkWell(
+                  onTap: () {
+                    context.read<QuranBloc>().add(ChangeReadingModeEvent(
+                      mode: preferences.displayMode == ReadingDisplayMode.tajweed 
+                        ? ReadingDisplayMode.arabicWithTranslation 
+                        : ReadingDisplayMode.tajweed,
+                    ));
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: preferences.displayMode == ReadingDisplayMode.tajweed 
+                          ? const Color(0xFFD4AF37)
+                          : const Color(0xFFD4AF37).withOpacity(0.12),
+                    ),
+                    child: Icon(
+                      Icons.palette,
+                      size: 16,
+                      color: preferences.displayMode == ReadingDisplayMode.tajweed 
+                          ? Colors.white 
+                          : const Color(0xFFD4AF37),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
-          // Transliteration (optional)
+          // Transliteration
           if (preferences.showTransliteration && ayah.transliteration != null)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
               child: Text(
                 ayah.transliteration!,
                 style: TextStyle(
@@ -791,16 +1290,8 @@ class _StandardAyahCard extends StatelessWidget {
           // Translation
           if (preferences.displayMode != ReadingDisplayMode.arabicOnly &&
               ayah.translation != null)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF1F8E9),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
-                ),
-              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               child: Text(
                 ayah.translation!,
                 textAlign: preferences.selectedTranslation.startsWith('ar') || preferences.selectedTranslation.startsWith('ur') ? TextAlign.right : TextAlign.left,
@@ -815,6 +1306,49 @@ class _StandardAyahCard extends StatelessWidget {
                   height: preferences.selectedTranslation.startsWith('ar') ? 2.0 : 1.6,
                   color: Colors.black87,
                 ),
+              ),
+            ),
+
+          // Bottom Toolbar: Tafsirs & Translations
+          if (preferences.displayMode != ReadingDisplayMode.arabicOnly)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              child: Row(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.white,
+                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                        builder: (_) => BlocProvider.value(
+                          value: context.read<QuranBloc>(),
+                          child: const TranslationSelectionScreen(),
+                        ),
+                      );
+                    },
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(CustomIconsV2.translation, color: Colors.grey, size: 18),
+                        SizedBox(width: 6),
+                        Text('Translations', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                  InkWell(
+                    onTap: onTafseerTap,
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icomoon.tafseer, color: Colors.grey, size: 18),
+                        SizedBox(width: 6),
+                        Text('Tafsirs', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
         ],

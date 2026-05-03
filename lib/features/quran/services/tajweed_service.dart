@@ -98,40 +98,40 @@ class TajweedService {
     switch (rule) {
       // 🔴 RED (Ghunnah)
       case TajweedRule.ghunnah:
-        return const Color(0xFFF30606); // Red
+        return const Color(0xFFEF5D74); // Coral Red
 
       // 🟤 BROWN / DARK ORANGE (Idghaam with Ghunnah)
       case TajweedRule.idghaamGhunnah:
       case TajweedRule.idghaamMutajanisayn:
       case TajweedRule.idghaamMutaqaribayn:
-        return const Color(0xFFD25232); // Brownish / Dark Orange
+        return const Color(0xFF8394C6); // Indigo
 
       // 🟢 GREEN (Ikhfa)
       case TajweedRule.ikhfa:
       case TajweedRule.ikhfaShafawi:
       case TajweedRule.idghaamShafawi:
-        return const Color(0xFF05CC0F); // Green
+        return const Color(0xFF258564); // Dark Green
 
       // 🔵 BLUE (Qalqalah)
       case TajweedRule.qalqalah:
-        return const Color(0xFF4C9DFA); // Blue
+        return const Color(0xFF65C3E8); // Sky Blue
 
       // 🟣 PURPLE (Normal Madd)
       case TajweedRule.maddNormal:
-        return const Color(0xFFA20AC6); // Purple
+        return const Color(0xFF9A71A7); // Purple
 
       // 👛 PINK (Permissible Madd)
       case TajweedRule.maddPermissible:
-        return const Color(0xFFFA0267); // Pink
+        return const Color(0xFFF6A1C4); // Light Pink
 
       // 🍒 DARK RED / CRIMSON (Necessary Madd, Obligatory Madd)
       case TajweedRule.maddNecessary:
       case TajweedRule.maddObligatory:
-        return const Color(0xFF9E013A); // Dark Red / Crimson
+        return const Color(0xFFBC6DA1); // Mauve
 
       // 🟠 ORANGE (Iqlab)
       case TajweedRule.iqlab:
-        return const Color(0xFFEF6C00); // Orange
+        return const Color(0xFF5180A2); // Dark Blue/Grey
 
       // 🔘 LIGHT GREY (Idghaam without Ghunnah)
       case TajweedRule.idghaamWithoutGhunnah:
@@ -140,7 +140,7 @@ class TajweedService {
 
       // 🔷 TEAL (Hamzat Wasl)
       case TajweedRule.hamzatWasl:
-        return const Color(0xFF009688); // Teal
+        return const Color(0xFFBDBDBD); // Light Grey
 
       // ⚫ DARK GREY (Silent)
       case TajweedRule.silent:
@@ -148,7 +148,7 @@ class TajweedService {
 
       // 🔵 DARK ROYAL BLUE (Heavy / Tafkhim - Autodetected)
       case TajweedRule.heavy:
-        return const Color(0xFF0159FF); // Dark Royal Blue
+        return const Color(0xFF8ABDE3); // Light Blue
 
       case TajweedRule.none:
         return Colors.black;
