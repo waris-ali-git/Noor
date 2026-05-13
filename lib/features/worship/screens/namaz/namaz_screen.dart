@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/widgets/translated_text.dart';
-import '../../../../core/widgets/language_selector_button.dart';
+import '../../widgets/worship_sliver_header.dart';
 import '../../services/prayer_timing_service.dart';
 import '../../models/prayer_timing.dart';
 import '../../models/namaz_step.dart';
@@ -15,37 +15,83 @@ class NamazScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Blue theme for Namaz
+    final Color deepColor = const Color(0xFF1565C0); // Blue 800
+    final Color lightColor = const Color(0xFF64B5F6); // Blue 300
+
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: AppBar(
-          title: const TranslatedText('Namaz', style: TextStyle(fontWeight: FontWeight.bold)),
-          centerTitle: true,
-          actions: const [
-            LanguageSelectorButton(),
-          ],
-          bottom: TabBar(
-            indicatorColor: Theme.of(context).colorScheme.primary,
-            labelColor: Theme.of(context).colorScheme.primary,
-            unselectedLabelColor: Colors.grey[600],
-            tabs: const [
-              Tab(text: 'Timings', icon: Icon(Icons.access_time)),
-              Tab(text: 'Tariqa', icon: Icon(Icons.accessibility_new)),
-              Tab(text: 'Rakats', icon: Icon(Icons.format_list_numbered)),
+        backgroundColor: const Color(0xFFFAF8FF),
+        body: NestedScrollView(
+          physics: const BouncingScrollPhysics(),
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              WorshipSliverHeader(
+                title: 'Namaz',
+                subtitle: 'The Five Daily Prayers',
+                arabicTitle: 'صَلَاة',
+                icon: Icons.pan_tool_alt_rounded,
+                deepColor: deepColor,
+                lightColor: lightColor,
+                badgeText: 'Pillar #2',
+              ),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _NamazSliverAppBarDelegate(
+                  TabBar(
+                    indicatorColor: deepColor,
+                    labelColor: deepColor,
+                    unselectedLabelColor: Colors.grey[600],
+                    indicatorWeight: 3,
+                    labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    tabs: const [
+                      Tab(text: 'Timings', icon: Icon(Icons.access_time)),
+                      Tab(text: 'Tariqa', icon: Icon(Icons.accessibility_new)),
+                      Tab(text: 'Rakats', icon: Icon(Icons.format_list_numbered)),
+                    ],
+                  ),
+                ),
+              ),
+            ];
+          },
+          body: const TabBarView(
+            children: [
+              _TimingsTab(),
+              _TariqaTab(),
+              _RakatsTab(),
             ],
           ),
-        ),
-        body: const TabBarView(
-          children: [
-            _TimingsTab(),
-            _TariqaTab(),
-            _RakatsTab(),
-          ],
         ),
       ),
     );
   }
 }
+
+class _NamazSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _NamazSliverAppBarDelegate(this._tabBar);
+
+  final TabBar _tabBar;
+
+  @override
+  double get minExtent => _tabBar.preferredSize.height;
+  @override
+  double get maxExtent => _tabBar.preferredSize.height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: const Color(0xFFFAF8FF), // Match background color to prevent transparency issues
+      child: _tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_NamazSliverAppBarDelegate oldDelegate) {
+    return false;
+  }
+}
+
 
 // ─── TIMINGS TAB ─────────────────────────────────────────────────────────────
 class _TimingsTab extends StatefulWidget {
@@ -128,6 +174,8 @@ class _TimingsTabState extends State<_TimingsTab> {
     }
 
     final t = _timing!;
+    final Color deepColor = const Color(0xFF1565C0); // Blue 800
+    final Color lightColor = const Color(0xFF64B5F6); // Blue 300
 
     return RefreshIndicator(
       onRefresh: _fetchTimings,
@@ -139,14 +187,14 @@ class _TimingsTabState extends State<_TimingsTab> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.tertiary],
+                colors: [deepColor, lightColor],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: deepColor.withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 )
@@ -170,34 +218,45 @@ class _TimingsTabState extends State<_TimingsTab> {
           const SizedBox(height: 24),
           const TranslatedText('Today\'s Prayers', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
-          _buildTimingRow('Fajr', t.fajr, Icons.wb_twilight),
-          _buildTimingRow('Sunrise', t.sunrise, Icons.wb_sunny_outlined),
-          _buildTimingRow('Dhuhr', t.dhuhr, Icons.wb_sunny),
-          _buildTimingRow('Asr', t.asr, Icons.wb_cloudy),
-          _buildTimingRow('Maghrib', t.maghrib, Icons.nights_stay_outlined),
-          _buildTimingRow('Isha', t.isha, Icons.nights_stay),
+          _buildTimingRow('Fajr', t.fajr, Icons.wb_twilight, deepColor),
+          _buildTimingRow('Sunrise', t.sunrise, Icons.wb_sunny_outlined, deepColor),
+          _buildTimingRow('Dhuhr', t.dhuhr, Icons.wb_sunny, deepColor),
+          _buildTimingRow('Asr', t.asr, Icons.wb_cloudy, deepColor),
+          _buildTimingRow('Maghrib', t.maghrib, Icons.nights_stay_outlined, deepColor),
+          _buildTimingRow('Isha', t.isha, Icons.nights_stay, deepColor),
         ],
       ),
     );
   }
 
-  Widget _buildTimingRow(String name, String time, IconData icon) {
+  Widget _buildTimingRow(String name, String time, IconData icon, Color deepColor) {
     // Format the time slightly if needed, Aladhan API returns e.g. "05:14 (PKT)", we can strip the timezone if we want
     final cleanTime = time.replaceAll(RegExp(r'\ \([^)]*\)'), ''); // Removes " (PKT)"
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: deepColor.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          child: Icon(icon, color: Theme.of(context).colorScheme.onPrimaryContainer),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: deepColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: deepColor),
         ),
-        title: TranslatedText(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: TranslatedText(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: deepColor)),
         trailing: Text(
           cleanTime,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
@@ -243,9 +302,20 @@ class _TariqaTabState extends State<_TariqaTab> {
       itemCount: _steps.length,
       itemBuilder: (context, index) {
         final step = _steps[index];
-        return Card(
+        final Color deepColor = const Color(0xFF1565C0);
+        return Container(
           margin: const EdgeInsets.only(bottom: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: deepColor.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ],
+          ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -255,15 +325,15 @@ class _TariqaTabState extends State<_TariqaTab> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     CircleAvatar(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                      child: Text('${index + 1}'),
+                      backgroundColor: deepColor.withValues(alpha: 0.1),
+                      foregroundColor: deepColor,
+                      child: Text('${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: TranslatedText(
                         step.title,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: deepColor),
                       ),
                     ),
                   ],
@@ -278,8 +348,9 @@ class _TariqaTabState extends State<_TariqaTab> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(128),
+                      color: deepColor.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: deepColor.withValues(alpha: 0.1)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -289,7 +360,7 @@ class _TariqaTabState extends State<_TariqaTab> {
                           textAlign: TextAlign.right,
                           textDirection: TextDirection.rtl,
                           style: const TextStyle(
-                            fontFamily: 'Jameel Noori',
+                            fontFamily: 'DigitalKhatt',
                             fontSize: 22,
                             height: 1.8,
                           ),
@@ -328,12 +399,24 @@ class _RakatsTab extends StatelessWidget {
       itemCount: rakatData.length,
       itemBuilder: (context, index) {
         final r = rakatData[index];
-        return Card(
-          elevation: 2,
+        final Color deepColor = const Color(0xFF1565C0);
+        return Container(
           margin: const EdgeInsets.only(bottom: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: deepColor.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ],
+          ),
           child: ExpansionTile(
-            title: TranslatedText(r.prayerName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: TranslatedText(r.prayerName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: deepColor)),
             subtitle: Row(
               children: [
                 const TranslatedText('Total: '),
@@ -344,12 +427,12 @@ class _RakatsTab extends StatelessWidget {
             childrenPadding: const EdgeInsets.all(16),
             expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildRakatRow('Sunnah (Before)', r.sunnahMuakkadahBefore + r.sunnahGhairMuakkadahBefore),
-              _buildRakatRow('Fard', r.fard, isFard: true),
-              _buildRakatRow('Sunnah (After)', r.sunnahAfter),
-              _buildRakatRow('Nafl', r.nafl),
-              if (r.witr > 0) _buildRakatRow('Witr', r.witr, isWitr: true),
-              if (r.naflAfterWitr > 0) _buildRakatRow('Nafl (After Witr)', r.naflAfterWitr),
+              _buildRakatRow('Sunnah (Before)', r.sunnahMuakkadahBefore + r.sunnahGhairMuakkadahBefore, deepColor),
+              _buildRakatRow('Fard', r.fard, deepColor, isFard: true),
+              _buildRakatRow('Sunnah (After)', r.sunnahAfter, deepColor),
+              _buildRakatRow('Nafl', r.nafl, deepColor),
+              if (r.witr > 0) _buildRakatRow('Witr', r.witr, deepColor, isWitr: true),
+              if (r.naflAfterWitr > 0) _buildRakatRow('Nafl (After Witr)', r.naflAfterWitr, deepColor),
             ],
           ),
         );
@@ -357,7 +440,7 @@ class _RakatsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildRakatRow(String type, int count, {bool isFard = false, bool isWitr = false}) {
+  Widget _buildRakatRow(String type, int count, Color deepColor, {bool isFard = false, bool isWitr = false}) {
     if (count == 0) return const SizedBox.shrink();
     
     Color badgeColor = Colors.grey[300]!;

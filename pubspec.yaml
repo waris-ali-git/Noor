@@ -57,7 +57,6 @@ dependencies:
   screenshot: ^3.0.0
   vibration: ^3.1.8 # Haptic / vibration
   wakelock_plus: ^1.2.8 # Keep screen on
-  provider: ^6.1.2 # ChangeNotifier provider (Tasbeeh module)
 
 
 dev_dependencies:

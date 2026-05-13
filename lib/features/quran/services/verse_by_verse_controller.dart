@@ -61,6 +61,7 @@ class VerseByVerseState {
   final int currentAyahInSurah; // 1-based ayah within surah
   final int totalAyahs;
   final VersePlaybackStep step;
+  final double speed;
 
   const VerseByVerseState({
     this.isActive = false,
@@ -70,6 +71,7 @@ class VerseByVerseState {
     this.currentAyahInSurah = 0,
     this.totalAyahs = 0,
     this.step = VersePlaybackStep.idle,
+    this.speed = 1.0,
   });
 
   bool get isIdle => !isActive;
@@ -83,6 +85,7 @@ class VerseByVerseState {
     int? currentAyahInSurah,
     int? totalAyahs,
     VersePlaybackStep? step,
+    double? speed,
   }) {
     return VerseByVerseState(
       isActive: isActive ?? this.isActive,
@@ -92,6 +95,7 @@ class VerseByVerseState {
       currentAyahInSurah: currentAyahInSurah ?? this.currentAyahInSurah,
       totalAyahs: totalAyahs ?? this.totalAyahs,
       step: step ?? this.step,
+      speed: speed ?? this.speed,
     );
   }
 }
@@ -142,6 +146,9 @@ class VerseByVerseController extends ChangeNotifier {
 
   VerseByVerseState get state => _state;
   VerseByVerseConfig get config => _config;
+
+  Stream<Duration> get positionStream => _player.positionStream;
+  Stream<Duration?> get durationStream => _player.durationStream;
 
   VerseByVerseController._internal()
       : _config = VerseByVerseConfig(
@@ -199,6 +206,23 @@ class VerseByVerseController extends ChangeNotifier {
     } else if (_state.isPaused) {
       await resume();
     }
+  }
+
+  /// Cycle through playback speeds.
+  void cycleSpeed() {
+    final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+    int currentIndex = speeds.indexOf(_state.speed);
+    int nextIndex = (currentIndex + 1) % speeds.length;
+    final newSpeed = speeds[nextIndex];
+    
+    _state = _state.copyWith(speed: newSpeed);
+    _player.setSpeed(newSpeed);
+    notifyListeners();
+  }
+
+  /// Seek to a specific position in the current audio.
+  Future<void> seek(Duration position) async {
+    await _player.seek(position);
   }
 
   /// Stop and reset everything.

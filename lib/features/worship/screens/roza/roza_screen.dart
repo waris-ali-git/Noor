@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/translated_text.dart';
-import '../../../../core/widgets/language_selector_button.dart';
+import '../../widgets/worship_sliver_header.dart';
 import '../../services/prayer_timing_service.dart';
 import '../../models/prayer_timing.dart';
 
@@ -15,6 +15,10 @@ class _RozaScreenState extends State<RozaScreen> {
   final PrayerTimingService _timingService = PrayerTimingService();
   late Future<PrayerTiming?> _timingsFuture;
 
+  // Purple theme for Roza
+  final Color _deepColor = const Color(0xFF6A1B9A); // Purple 800
+  final Color _lightColor = const Color(0xFFBA68C8); // Purple 300
+
   @override
   void initState() {
     super.initState();
@@ -24,11 +28,7 @@ class _RozaScreenState extends State<RozaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const TranslatedText('Roza Companion', style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        actions: const [LanguageSelectorButton()],
-      ),
+      backgroundColor: const Color(0xFFFAF8FF),
       body: FutureBuilder<PrayerTiming?>(
         future: _timingsFuture,
         builder: (context, snapshot) {
@@ -39,13 +39,24 @@ class _RozaScreenState extends State<RozaScreen> {
           final timings = snapshot.data;
           
           return CustomScrollView(
+            physics: const BouncingScrollPhysics(),
             slivers: [
+              WorshipSliverHeader(
+                title: 'Roza',
+                subtitle: 'Fasting in Ramadan',
+                arabicTitle: 'صَوْم',
+                icon: Icons.brightness_3,
+                deepColor: _deepColor,
+                lightColor: _lightColor,
+                badgeText: 'Pillar #3',
+              ),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
                       if (timings != null) 
+
                         _buildTimingCard(timings)
                       else 
                         const Card(
@@ -65,7 +76,7 @@ class _RozaScreenState extends State<RozaScreen> {
                       const SizedBox(height: 16),
                       _buildDuaCard(
                         "Iftar Dua (Breaking the Fast)",
-                        "اَللّٰهُمَّ اِنِّی لَکَ صُمْتُ وَبِکَ اٰمَنْتُ وَعَلَيْکَ تَوَکَّلْتُ وَعَلٰی رِزْقِکَ اَفْطَرْتُ",
+                        "اَللّٰهُمَّ اِنّيْ لَكَ صُمْتُ وَبِكَ اٰمَنْتُ وَعَلَيْكَ تَوَكَّلْتُ وَعَلٰيْ رِزْقِكَ اَفْطَرْتُ",
                         "Allahumma inni laka sumtu wa bika aamantu wa 'alayka tawakkaltu wa 'ala rizqika aftartu",
                         "O Allah! I fasted for You and I believe in You and I put my trust in You and I break my fast with Your sustenance"
                       ),
@@ -85,15 +96,14 @@ class _RozaScreenState extends State<RozaScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor,
-        borderRadius: BorderRadius.circular(20),
-        image: const DecorationImage(
-          image: AssetImage('assets/images/pattern.png'), // Will safely ignore if not present
-          fit: BoxFit.cover,
-          opacity: 0.1,
+        gradient: LinearGradient(
+          colors: [_deepColor, _lightColor],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))
+          BoxShadow(color: _deepColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))
         ],
       ),
       child: Column(
@@ -131,20 +141,25 @@ class _RozaScreenState extends State<RozaScreen> {
   }
 
   Widget _buildDuaCard(String title, String arabic, String transliteration, String translation) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: _deepColor.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TranslatedText(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.teal)),
+            TranslatedText(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _deepColor)),
             const SizedBox(height: 16),
             Text(
               arabic,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontFamily: 'UthmanicHafs', fontSize: 26, height: 1.5),
+              style: const TextStyle(fontFamily: 'DigitalKhatt', fontSize: 30, height: 1.8),
               textDirection: TextDirection.rtl,
             ),
             const Divider(height: 32),
@@ -155,7 +170,7 @@ class _RozaScreenState extends State<RozaScreen> {
             const SizedBox(height: 12),
             TranslatedText(
               translation,
-              style: const TextStyle(fontSize: 15),
+              style: const TextStyle(fontSize: 15, height: 1.4),
             ),
           ],
         ),

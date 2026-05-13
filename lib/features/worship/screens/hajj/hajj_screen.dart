@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/translated_text.dart';
-import '../../../../core/widgets/language_selector_button.dart';
+import '../../widgets/worship_sliver_header.dart';
 
 class HajjScreen extends StatefulWidget {
   const HajjScreen({super.key});
@@ -10,6 +10,10 @@ class HajjScreen extends StatefulWidget {
 }
 
 class _HajjScreenState extends State<HajjScreen> {
+  // Soothing Sand/Brown theme for Hajj
+  final Color _deepColor = const Color(0xFF8D6E63); // Soothing Brown 400
+  final Color _lightColor = const Color(0xFFD7CCC8); // Soothing Brown 100
+
   final Map<String, bool> _checklist = {
     "Passport & Visa": false,
     "Ihram Towels (x2)": false,
@@ -67,31 +71,51 @@ class _HajjScreenState extends State<HajjScreen> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: AppBar(
-          title: const TranslatedText('Hajj Companion', style: TextStyle(fontWeight: FontWeight.bold)),
-          centerTitle: true,
-          actions: const [LanguageSelectorButton()],
-          bottom: const TabBar(
-            labelColor: Colors.teal,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Colors.teal,
-            tabs: [
-              Tab(icon: Icon(Icons.map), text: "Guide"),
-              Tab(icon: Icon(Icons.menu_book), text: "Duas"),
-              Tab(icon: Icon(Icons.checklist), text: "Checklist"),
+        backgroundColor: const Color(0xFFFAF8FF),
+        body: NestedScrollView(
+          physics: const BouncingScrollPhysics(),
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              WorshipSliverHeader(
+                title: 'Hajj',
+                subtitle: 'Pilgrimage to Makkah',
+                arabicTitle: 'حَجّ',
+                icon: Icons.location_on,
+                deepColor: _deepColor,
+                lightColor: _lightColor,
+                badgeText: 'Pillar #5',
+              ),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _HajjSliverAppBarDelegate(
+                  TabBar(
+                    labelColor: _deepColor,
+                    unselectedLabelColor: Colors.grey,
+                    indicatorColor: _deepColor,
+                    indicatorWeight: 3,
+                    labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    tabs: const [
+                      Tab(icon: Icon(Icons.map), text: "Guide"),
+                      Tab(icon: Icon(Icons.menu_book), text: "Duas"),
+                      Tab(icon: Icon(Icons.checklist), text: "Checklist"),
+                    ],
+                  ),
+                ),
+              ),
+            ];
+          },
+          body: TabBarView(
+            children: [
+              _buildGuideTab(),
+              _buildDuasTab(),
+              _buildChecklistTab(),
             ],
           ),
-        ),
-        body: TabBarView(
-          children: [
-            _buildGuideTab(),
-            _buildDuasTab(),
-            _buildChecklistTab(),
-          ],
         ),
       ),
     );
   }
+
 
   Widget _buildGuideTab() {
     return ListView.builder(
@@ -99,17 +123,29 @@ class _HajjScreenState extends State<HajjScreen> {
       itemCount: _guideSteps.length,
       itemBuilder: (context, index) {
         final step = _guideSteps[index];
-        return Card(
+        return Container(
           margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: _deepColor.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
           child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             leading: CircleAvatar(
-              backgroundColor: Colors.teal.shade100,
-              child: Text("${index + 1}", style: TextStyle(color: Colors.teal.shade900, fontWeight: FontWeight.bold)),
+              backgroundColor: _deepColor.withOpacity(0.1),
+              child: Text("${index + 1}", style: TextStyle(color: _deepColor, fontWeight: FontWeight.bold)),
             ),
-            title: TranslatedText(step["title"]!, style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: TranslatedText(step["title"]!, style: TextStyle(fontWeight: FontWeight.bold, color: _deepColor, fontSize: 18)),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 8.0),
-              child: TranslatedText(step["desc"]!),
+              child: TranslatedText(step["desc"]!, style: const TextStyle(fontSize: 15, height: 1.4)),
             ),
           ),
         );
@@ -146,31 +182,40 @@ class _HajjScreenState extends State<HajjScreen> {
   }
 
   Widget _buildDuaCard(String title, String arabic, String transliteration, String translation) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: _deepColor.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TranslatedText(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.teal)),
-            const SizedBox(height: 12),
+            TranslatedText(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _deepColor)),
+            const SizedBox(height: 16),
             Text(
               arabic,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontFamily: 'UthmanicHafs', fontSize: 24, height: 1.5),
+              style: const TextStyle(fontFamily: 'DigitalKhatt', fontSize: 30, height: 1.8),
               textDirection: TextDirection.rtl,
             ),
-            const Divider(height: 16),
+            const Divider(height: 32),
             Text(
               transliteration,
-              style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic, color: Colors.grey.shade700),
+              style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.grey.shade700),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             TranslatedText(
               translation,
-              style: const TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: 15, height: 1.4),
             ),
           ],
         ),
@@ -184,17 +229,30 @@ class _HajjScreenState extends State<HajjScreen> {
       itemCount: _checklist.keys.length,
       itemBuilder: (context, index) {
         String key = _checklist.keys.elementAt(index);
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: _deepColor.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
           child: CheckboxListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             title: TranslatedText(key, 
               style: TextStyle(
                 decoration: _checklist[key]! ? TextDecoration.lineThrough : null,
-                color: _checklist[key]! ? Colors.grey : Colors.black87
+                color: _checklist[key]! ? Colors.grey : _deepColor,
+                fontWeight: _checklist[key]! ? FontWeight.normal : FontWeight.w600,
               )
             ),
             value: _checklist[key],
-            activeColor: Colors.teal,
+            activeColor: _deepColor,
             onChanged: (bool? value) {
               setState(() {
                 _checklist[key] = value ?? false;
@@ -204,5 +262,29 @@ class _HajjScreenState extends State<HajjScreen> {
         );
       },
     );
+  }
+}
+
+class _HajjSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _HajjSliverAppBarDelegate(this._tabBar);
+
+  final TabBar _tabBar;
+
+  @override
+  double get minExtent => _tabBar.preferredSize.height;
+  @override
+  double get maxExtent => _tabBar.preferredSize.height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: const Color(0xFFFAF8FF),
+      child: _tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_HajjSliverAppBarDelegate oldDelegate) {
+    return false;
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/widgets/translated_text.dart';
 import '../../../../core/widgets/language_selector_button.dart';
 import '../../../../shared/widgets/custom_button.dart';
+import '../../widgets/worship_sliver_header.dart';
 
 class ZakatScreen extends StatefulWidget {
   const ZakatScreen({super.key});
@@ -58,6 +59,7 @@ class _ZakatScreenState extends State<ZakatScreen> {
   }
 
   Widget _buildTextField(String label, TextEditingController controller) {
+    const deepColor = Color(0xFFE65100);
     return Padding(
       padding: const EdgeInsets.only(bottom: 20.0),
       child: Column(
@@ -92,7 +94,7 @@ class _ZakatScreenState extends State<ZakatScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF0F5A4A), width: 2),
+                borderSide: const BorderSide(color: deepColor, width: 2),
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),
@@ -104,54 +106,66 @@ class _ZakatScreenState extends State<ZakatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Orange theme for Zakat
+    final Color deepColor = const Color(0xFFE65100); // Orange 900
+    final Color lightColor = const Color(0xFFFFB74D); // Orange 300
+
     // Determine screen size for responsive layout
     final isDesktop = MediaQuery.of(context).size.width > 800;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFBFBFB),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF0F5A4A)),
-        title: const TranslatedText(
-          'Zakat Calculator',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F5A4A), fontSize: 24),
-        ),
-        centerTitle: false,
-        actions: const [LanguageSelectorButton()],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: isDesktop 
-            ? Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: _buildInputSection()),
-                  const SizedBox(width: 32),
-                  Expanded(child: _buildResultSection()),
-                ],
-              )
-            : Column(
-                children: [
-                  _buildInputSection(),
-                  const SizedBox(height: 32),
-                  _buildResultSection(),
-                ],
+      backgroundColor: const Color(0xFFFAF8FF),
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          WorshipSliverHeader(
+            title: 'Zakat',
+            subtitle: 'Obligatory Charity',
+            arabicTitle: 'زَكَاة',
+            icon: Icons.volunteer_activism,
+            deepColor: deepColor,
+            lightColor: lightColor,
+            badgeText: 'Pillar #4',
+          ),
+          SliverToBoxAdapter(
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: isDesktop 
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: _buildInputSection(deepColor)),
+                        const SizedBox(width: 32),
+                        Expanded(child: _buildResultSection(deepColor, lightColor)),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        _buildInputSection(deepColor),
+                        const SizedBox(height: 32),
+                        _buildResultSection(deepColor, lightColor),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
               ),
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildInputSection() {
+
+  Widget _buildInputSection(Color deepColor) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: deepColor.withOpacity(0.1),
             blurRadius: 24,
             offset: const Offset(0, 8),
           )
@@ -161,12 +175,12 @@ class _ZakatScreenState extends State<ZakatScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const TranslatedText(
+          TranslatedText(
             "Wealth Assessment",
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF0F5A4A),
+              color: deepColor,
             ),
           ),
           const SizedBox(height: 8),
@@ -185,14 +199,18 @@ class _ZakatScreenState extends State<ZakatScreen> {
     );
   }
 
-  Widget _buildResultSection() {
+  Widget _buildResultSection(Color deepColor, Color lightColor) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0A4433), // Deep forest green
+        gradient: LinearGradient(
+          colors: [deepColor, deepColor.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0A4433).withOpacity(0.3),
+            color: deepColor.withOpacity(0.3),
             blurRadius: 30,
             offset: const Offset(0, 15),
           )
@@ -205,18 +223,18 @@ class _ZakatScreenState extends State<ZakatScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF145D4B),
+              color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Icon(Icons.calculate, color: Color(0xFF6EE2A3), size: 40),
+            child: const Icon(Icons.calculate, color: Colors.white, size: 40),
           ),
           const SizedBox(height: 24),
           
           // Total Zakat Due
-          const TranslatedText(
+          TranslatedText(
             "TOTAL ZAKAT DUE",
             style: TextStyle(
-              color: Color(0xFF38B084),
+              color: lightColor,
               fontWeight: FontWeight.bold,
               letterSpacing: 2,
               fontSize: 13,
@@ -255,14 +273,14 @@ class _ZakatScreenState extends State<ZakatScreen> {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF136450), width: 1.5),
-              color: const Color(0xFF0C4D3A),
+              border: Border.all(color: lightColor.withOpacity(0.5), width: 1.5),
+              color: Colors.white.withOpacity(0.1),
             ),
             child: const Text(
               "\"The example of those who spend their wealth in the way of Allah is like a seed of grain which grows seven spikes; in each spike is a hundred grains.\"",
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF90CDB3),
+                color: Colors.white70,
                 fontSize: 15,
                 fontStyle: FontStyle.italic,
                 height: 1.6,
@@ -276,12 +294,12 @@ class _ZakatScreenState extends State<ZakatScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.info_outline, color: Color(0xFFF9C03C), size: 18),
+              const Icon(Icons.info_outline, color: Colors.white, size: 18),
               const SizedBox(width: 8),
-              TranslatedText(
+              const TranslatedText(
                 "NISAB THRESHOLD APPLIES",
                 style: TextStyle(
-                  color: const Color(0xFFF9C03C),
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                   letterSpacing: 1.2,

@@ -92,6 +92,26 @@ class VersePlaybackBar extends StatelessWidget {
                       ),
 
                       // Controls
+                      GestureDetector(
+                        onTap: () => controller.cycleSpeed(),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD4AF37).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.3)),
+                          ),
+                          child: Text(
+                            '${state.speed}x',
+                            style: const TextStyle(
+                              color: Color(0xFFB8960C),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       _ControlButton(
                         icon: Icons.skip_previous_rounded,
                         onTap: () => controller.skipToPrev(),
@@ -108,12 +128,6 @@ class VersePlaybackBar extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       _ControlButton(
-                        icon: Icons.fast_forward_rounded,
-                        tooltip: 'Skip step',
-                        onTap: () => controller.skipStep(),
-                      ),
-                      const SizedBox(width: 4),
-                      _ControlButton(
                         icon: Icons.settings_rounded,
                         onTap: onSettingsTap,
                       ),
@@ -127,6 +141,10 @@ class VersePlaybackBar extends StatelessWidget {
                       ),
                     ],
                   ),
+                  
+                  // ─── Progress Slider ────────────────────────
+                  const SizedBox(height: 4),
+                  _AudioProgressSlider(controller: controller),
                 ],
               ),
             ),
@@ -315,6 +333,55 @@ class _PlayPauseButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AudioProgressSlider extends StatelessWidget {
+  final VerseByVerseController controller;
+
+  const _AudioProgressSlider({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Duration?>(
+      stream: controller.durationStream,
+      builder: (context, durationSnapshot) {
+        final duration = durationSnapshot.data ?? Duration.zero;
+        return StreamBuilder<Duration>(
+          stream: controller.positionStream,
+          builder: (context, positionSnapshot) {
+            final position = positionSnapshot.data ?? Duration.zero;
+            double value = 0;
+            if (duration.inMilliseconds > 0) {
+              value = (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
+            }
+
+            return Container(
+              height: 12,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: SliderTheme(
+                data: SliderThemeData(
+                  trackHeight: 2,
+                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 4),
+                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
+                  activeTrackColor: const Color(0xFFD4AF37),
+                  inactiveTrackColor: Colors.grey[200],
+                  thumbColor: const Color(0xFFB8960C),
+                  overlayColor: const Color(0xFFD4AF37).withValues(alpha: 0.1),
+                ),
+                child: Slider(
+                  value: value,
+                  onChanged: (v) {
+                    final newPos = Duration(milliseconds: (v * duration.inMilliseconds).toInt());
+                    controller.seek(newPos);
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
