@@ -320,7 +320,7 @@ class _BookCard extends StatelessWidget {
               child: const Icon(
                 Icons.menu_book_rounded,
                 size: 26,
-                color: Color(0xFF948160),
+                color: Color(0xFF6B8FB5),
               ),
             ),
             const SizedBox(height: 14),
@@ -337,7 +337,7 @@ class _BookCard extends StatelessWidget {
                   style: const TextStyle(
                     fontFamily: 'Thuluth',
                     fontSize: 17,
-                    color: Color(0xFF948160),
+                    color: Color(0xFF6B8FB5),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -373,7 +373,7 @@ class _BookCard extends StatelessWidget {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 9,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF948160),
+                  color: const Color(0xFF6B8FB5),
                   letterSpacing: 0.3,
                 ),
               ),
@@ -396,7 +396,7 @@ class _LoadingWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Color(0xFF948160)),
+            CircularProgressIndicator(color: Color(0xFF6B8FB5)),
             SizedBox(height: 16),
             TranslatedText(
               'احادیث لوڈ ہو رہی ہیں...',

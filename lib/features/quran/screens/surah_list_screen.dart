@@ -235,9 +235,9 @@ class _SurahListScreenState extends State<SurahListScreen> {
                                   LiquidGlassButton(
                                     label: 'Search in Quran text',
                                     icon: const Icon(Icons.menu_book,
-                                        size: 18, color: Color(0xFF948160)),
+                                        size: 18, color: Color(0xFF6B8FB5)),
                                     textStyle: const TextStyle(
-                                        color: Color(0xFF948160), fontSize: 13),
+                                        color: Color(0xFF6B8FB5), fontSize: 13),
                                     onTap: () {
                                       context.read<QuranBloc>().add(
                                           SearchQuranEvent(
@@ -451,7 +451,7 @@ class _LoadingWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Color(0xFF948160)),
+            CircularProgressIndicator(color: Color(0xFF6B8FB5)),
             SizedBox(height: 16),
             TranslatedText('قرآن لوڈ ہو رہا ہے...',
                 style: TextStyle(fontSize: 16)),
@@ -822,7 +822,7 @@ class _SurahListTile extends StatelessWidget {
                         backgroundColor: Colors.transparent,
                         // Only show filled portion as requested
                         valueColor: const AlwaysStoppedAnimation<Color>(
-                            Color(0xFF948160)),
+                            Color(0xFF6B8FB5)),
                         minHeight: 2,
                       ),
                     ),
@@ -860,7 +860,7 @@ class _SurahListTile extends StatelessWidget {
                             style: const TextStyle(
                               fontFamily: 'UthmanicHafs',
                               fontSize: 24,
-                              color: Color(0xFF948160),
+                              color: Color(0xFF6B8FB5),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -961,7 +961,7 @@ class _ModeTile extends StatelessWidget {
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: const Color(0xFFF4F1ED),
-        child: Icon(icon, color: const Color(0xFF948160)),
+        child: Icon(icon, color: const Color(0xFF6B8FB5)),
       ),
       title: TranslatedText(title,
           style: GoogleFonts.plusJakartaSans(

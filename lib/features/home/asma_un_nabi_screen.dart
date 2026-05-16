@@ -637,11 +637,11 @@ class _AsmaUnNabiScreenState extends State<AsmaUnNabiScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F8E9),
+      backgroundColor: const Color(0xFFFAFDFF), // TasbeehColors.background
       appBar: AppBar(
-        title: const Text('Asma un Nabi', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF1B5E20),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Asma un Nabi', style: TextStyle(color: Color(0xFF90BDE7), fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFFFAFDFF),
+        iconTheme: const IconThemeData(color: Color(0xFF90BDE7)),
         elevation: 0,
       ),
       body: CustomScrollView(
@@ -686,7 +686,7 @@ class _AsmaUnNabiScreenState extends State<AsmaUnNabiScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF1B5E20), Color(0xFFF1F8E9)],
+            colors: [Color(0xFFD9F1FD), Color(0xFFFAFDFF)],
           ),
         ),
         child: Column(
@@ -696,7 +696,7 @@ class _AsmaUnNabiScreenState extends State<AsmaUnNabiScreen>
               style: TextStyle(
                 fontFamily: 'Jameel Noori',
                 fontSize: 48,
-                color: Colors.white,
+                color: Color(0xFF6FA8D8),
                 height: 1.3,
               ),
               textAlign: TextAlign.center,
@@ -709,7 +709,7 @@ class _AsmaUnNabiScreenState extends State<AsmaUnNabiScreen>
                 fontFamily: 'Georgia',
                 fontSize: 13,
                 letterSpacing: 6,
-                color: Colors.white.withOpacity(0.85),
+                color: Color(0xFF1A2E44),
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -718,7 +718,7 @@ class _AsmaUnNabiScreenState extends State<AsmaUnNabiScreen>
               'The 100 Beautiful Names of Prophet Muhammad (PBUH)',
               style: TextStyle(
                 fontSize: 12,
-                color: const Color(0xFF1B5E20).withOpacity(0.7),
+                color: Color(0xFF4A6B8A),
                 letterSpacing: 1,
               ),
               textAlign: TextAlign.center,
@@ -730,7 +730,7 @@ class _AsmaUnNabiScreenState extends State<AsmaUnNabiScreen>
               decoration: BoxDecoration(
                 gradient: LinearGradient(colors: [
                   Colors.transparent,
-                  const Color(0xFF2E7D32).withOpacity(0.6),
+                  const Color(0xFF90BDE7).withOpacity(0.6),
                   Colors.transparent,
                 ]),
               ),
@@ -768,26 +768,26 @@ class _NameCard extends StatelessWidget {
               ? const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF1B5E20), Color(0xFF388E3C)],
+                  colors: [Color(0xFF90BDE7), Color(0xFF6FA8D8)],
                 )
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Colors.white, Color(0xFFE8F5E9)],
+                  colors: [Colors.white, Color(0xFFDBE9FA)],
                 ),
           boxShadow: [
             BoxShadow(
               color: isActive
-                  ? const Color(0xFF1B5E20).withOpacity(0.35)
-                  : Colors.black.withOpacity(0.06),
+                  ? const Color(0xFF90BDE7).withOpacity(0.35)
+                  : const Color(0xFF90BDE7).withOpacity(0.1),
               blurRadius: isActive ? 12 : 8,
               offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
             color: isActive
-                ? const Color(0xFF1B5E20).withOpacity(0.8)
-                : const Color(0xFF1B5E20).withOpacity(0.18),
+                ? const Color(0xFF90BDE7).withOpacity(0.8)
+                : const Color(0xFF90BDE7).withOpacity(0.3),
             width: isActive ? 1.5 : 1,
           ),
         ),
@@ -803,9 +803,9 @@ class _NameCard extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: isActive
                       ? Colors.white.withOpacity(0.2)
-                      : const Color(0xFF1B5E20).withOpacity(0.12),
+                      : const Color(0xFF90BDE7).withOpacity(0.12),
                   border: Border.all(
-                    color: isActive ? Colors.white.withOpacity(0.4) : const Color(0xFF1B5E20).withOpacity(0.4),
+                    color: isActive ? Colors.white.withOpacity(0.4) : const Color(0xFF90BDE7).withOpacity(0.4),
                   ),
                 ),
                 child: Center(
@@ -814,7 +814,7 @@ class _NameCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
-                      color: isActive ? Colors.white : const Color(0xFF1B5E20),
+                      color: isActive ? Colors.white : const Color(0xFF6FA8D8),
                     ),
                   ),
                 ),
@@ -837,7 +837,7 @@ class _NameCard extends StatelessWidget {
                           fontFamily: 'Jameel Noori',
                           fontSize: 34,
                           height: 1.2,
-                          color: isActive ? Colors.white : const Color(0xFF1B5E20),
+                          color: isActive ? Colors.white : const Color(0xFF1A2E44),
                         ),
                         textAlign: TextAlign.center,
                         textDirection: TextDirection.rtl,
@@ -848,7 +848,7 @@ class _NameCard extends StatelessWidget {
                   Container(
                     height: 1,
                     margin: const EdgeInsets.symmetric(horizontal: 16),
-                    color: isActive ? Colors.white.withOpacity(0.3) : const Color(0xFF1B5E20).withOpacity(0.25),
+                    color: isActive ? Colors.white.withOpacity(0.3) : const Color(0xFF90BDE7).withOpacity(0.25),
                   ),
                   const SizedBox(height: 4),
                   Expanded(
@@ -862,7 +862,7 @@ class _NameCard extends StatelessWidget {
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,
-                            color: isActive ? Colors.white : const Color(0xFF2E7D32),
+                            color: isActive ? Colors.white : const Color(0xFF6FA8D8),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -872,7 +872,7 @@ class _NameCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 9,
                             height: 1.2,
-                            color: isActive ? Colors.white.withOpacity(0.85) : Colors.black54,
+                            color: isActive ? Colors.white.withOpacity(0.85) : const Color(0xFF4A6B8A),
                           ),
                           textAlign: TextAlign.center,
                           maxLines: 2,

@@ -9,6 +9,7 @@ import '../../models/namaz_step.dart';
 import '../../models/rakat_info.dart';
 import '../../../quran/models/ayah.dart'; // For ArabicStringExtension
 import '../../../../shared/widgets/custom_button.dart';
+import '../../../../core/constants.dart';
 
 class NamazScreen extends StatelessWidget {
   const NamazScreen({super.key});
@@ -16,13 +17,13 @@ class NamazScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Blue theme for Namaz
-    final Color deepColor = const Color(0xFF1565C0); // Blue 800
-    final Color lightColor = const Color(0xFF64B5F6); // Blue 300
+    final Color deepColor = const Color(0xFF90BDE7); // Carolina Blue
+    final Color lightColor = const Color(0xFFD9F1FD); // Powder Blue
 
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: const Color(0xFFFAF8FF),
+        backgroundColor: TasbeehColors.iceWhite, // Ice White
         body: NestedScrollView(
           physics: const BouncingScrollPhysics(),
           headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -81,7 +82,13 @@ class _NamazSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: const Color(0xFFFAF8FF), // Match background color to prevent transparency issues
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFF4FBFE), Color(0xFFD9F1FD)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
       child: _tabBar,
     );
   }
@@ -174,8 +181,8 @@ class _TimingsTabState extends State<_TimingsTab> {
     }
 
     final t = _timing!;
-    final Color deepColor = const Color(0xFF1565C0); // Blue 800
-    final Color lightColor = const Color(0xFF64B5F6); // Blue 300
+    final Color deepColor = const Color(0xFF90BDE7); // Carolina Blue
+    final Color lightColor = const Color(0xFFD9F1FD); // Powder Blue
 
     return RefreshIndicator(
       onRefresh: _fetchTimings,
@@ -236,7 +243,7 @@ class _TimingsTabState extends State<_TimingsTab> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+            color: TasbeehColors.iceWhite, // Ice White
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -302,15 +309,19 @@ class _TariqaTabState extends State<_TariqaTab> {
       itemCount: _steps.length,
       itemBuilder: (context, index) {
         final step = _steps[index];
-        final Color deepColor = const Color(0xFF1565C0);
+        final Color deepColor = TasbeehColors.blueDark;
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            gradient: const LinearGradient(
+              colors: TasbeehColors.softGradient,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: deepColor.withValues(alpha: 0.1),
+                color: TasbeehColors.blueDark.withValues(alpha: 0.15),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               )
@@ -399,15 +410,46 @@ class _RakatsTab extends StatelessWidget {
       itemCount: rakatData.length,
       itemBuilder: (context, index) {
         final r = rakatData[index];
-        final Color deepColor = const Color(0xFF1565C0);
+        
+        List<Color> bgGradient;
+        Color textColor;
+        
+        switch (r.prayerName.toLowerCase()) {
+          case 'fajr':
+          case 'isha':
+            bgGradient = const [Color(0xFFEAF9FA), Color(0xFFC4EFEF)]; // Soothing light cyan
+            textColor = const Color(0xFF2EAAA6);
+            break;
+          case 'dhuhr':
+          case "jumu'ah":
+            bgGradient = const [Color(0xFFF1F1FC), Color(0xFFE0E2F5)]; // Soothing lavender
+            textColor = const Color(0xFF7B66FF);
+            break;
+          case 'asr':
+            bgGradient = const [Color(0xFFEAF7ED), Color(0xFFCDEFCE)]; // Soothing mint green
+            textColor = const Color(0xFF38A86C);
+            break;
+          case 'maghrib':
+            bgGradient = const [Color(0xFFFCECF3), Color(0xFFF4D8E6)]; // Soothing soft pink
+            textColor = const Color(0xFFE86B9D);
+            break;
+          default:
+            bgGradient = [TasbeehColors.iceWhite, const Color(0xFFD9F1FD)]; // Default light blue
+            textColor = const Color(0xFF2687F6);
+        }
+
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            gradient: LinearGradient(
+              colors: bgGradient,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: deepColor.withValues(alpha: 0.1),
+                color: textColor.withValues(alpha: 0.15),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               )
@@ -416,23 +458,25 @@ class _RakatsTab extends StatelessWidget {
           child: ExpansionTile(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: TranslatedText(r.prayerName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: deepColor)),
+            iconColor: textColor,
+            collapsedIconColor: textColor,
+            title: TranslatedText(r.prayerName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor)),
             subtitle: Row(
               children: [
-                const TranslatedText('Total: '),
-                Text('${r.total} ', style: const TextStyle(fontWeight: FontWeight.bold)),
-                const TranslatedText('Rakats'),
+                TranslatedText('Total: ', style: TextStyle(color: textColor.withValues(alpha: 0.8))),
+                Text('${r.total} ', style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+                TranslatedText('Rakats', style: TextStyle(color: textColor.withValues(alpha: 0.8))),
               ],
             ),
             childrenPadding: const EdgeInsets.all(16),
             expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildRakatRow('Sunnah (Before)', r.sunnahMuakkadahBefore + r.sunnahGhairMuakkadahBefore, deepColor),
-              _buildRakatRow('Fard', r.fard, deepColor, isFard: true),
-              _buildRakatRow('Sunnah (After)', r.sunnahAfter, deepColor),
-              _buildRakatRow('Nafl', r.nafl, deepColor),
-              if (r.witr > 0) _buildRakatRow('Witr', r.witr, deepColor, isWitr: true),
-              if (r.naflAfterWitr > 0) _buildRakatRow('Nafl (After Witr)', r.naflAfterWitr, deepColor),
+              _buildRakatRow('Sunnah (Before)', r.sunnahMuakkadahBefore + r.sunnahGhairMuakkadahBefore, textColor),
+              _buildRakatRow('Fard', r.fard, textColor, isFard: true),
+              _buildRakatRow('Sunnah (After)', r.sunnahAfter, textColor),
+              _buildRakatRow('Nafl', r.nafl, textColor),
+              if (r.witr > 0) _buildRakatRow('Witr', r.witr, textColor, isWitr: true),
+              if (r.naflAfterWitr > 0) _buildRakatRow('Nafl (After Witr)', r.naflAfterWitr, textColor),
             ],
           ),
         );
@@ -440,18 +484,18 @@ class _RakatsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildRakatRow(String type, int count, Color deepColor, {bool isFard = false, bool isWitr = false}) {
+  Widget _buildRakatRow(String type, int count, Color themeColor, {bool isFard = false, bool isWitr = false}) {
     if (count == 0) return const SizedBox.shrink();
     
-    Color badgeColor = Colors.grey[300]!;
-    Color textColor = Colors.black87;
+    Color badgeColor = themeColor.withValues(alpha: 0.15);
+    Color tColor = themeColor;
 
     if (isFard) {
-      badgeColor = Colors.green[700]!;
-      textColor = Colors.white;
+      badgeColor = themeColor; // Solid theme color for Fard
+      tColor = Colors.white;
     } else if (isWitr) {
-      badgeColor = Colors.amber[700]!;
-      textColor = Colors.white;
+      badgeColor = themeColor.withValues(alpha: 0.7); // Slightly less solid for Witr
+      tColor = Colors.white;
     }
 
     return Padding(
@@ -459,7 +503,7 @@ class _RakatsTab extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          TranslatedText(type, style: TextStyle(fontWeight: isFard ? FontWeight.bold : FontWeight.normal)),
+          TranslatedText(type, style: TextStyle(fontWeight: isFard ? FontWeight.bold : FontWeight.normal, color: themeColor)),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
@@ -468,7 +512,7 @@ class _RakatsTab extends StatelessWidget {
             ),
             child: Text(
               '$count',
-              style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+              style: TextStyle(color: tColor, fontWeight: FontWeight.bold),
             ),
           ),
         ],

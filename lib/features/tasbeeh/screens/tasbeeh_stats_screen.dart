@@ -36,7 +36,7 @@ class _TasbeehStatsScreenState extends State<TasbeehStatsScreen> {
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: TasbeehColors.bronzeGold, size: 20),
+                color: TasbeehColors.steelBlue, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
           title: ShaderMask(
@@ -52,7 +52,7 @@ class _TasbeehStatsScreenState extends State<TasbeehStatsScreen> {
           ),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
-            child: Container(height: 1, color: TasbeehColors.goldenCream2),
+            child: Container(height: 1, color: TasbeehColors.babyBlue),
           ),
         ),
         body: ListView(
@@ -100,16 +100,16 @@ class _TasbeehStatsScreenState extends State<TasbeehStatsScreen> {
                   gradient: const LinearGradient(
                     colors: [
                       Color(0xFFFFF8E7),
-                      Color(0xFFF5F0D5),
+                      Color(0xFFDBE9FA),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: TasbeehColors.goldenCream2),
+                  border: Border.all(color: TasbeehColors.babyBlue),
                   boxShadow: [
                     BoxShadow(
-                      color: TasbeehColors.standardGold.withOpacity(0.12),
+                      color: TasbeehColors.standardBlue.withOpacity(0.12),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
@@ -146,7 +146,7 @@ class _TasbeehStatsScreenState extends State<TasbeehStatsScreen> {
                           style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w700,
-                            color: TasbeehColors.standardGold,
+                            color: TasbeehColors.standardBlue,
                           ),
                         ),
                         Text('total', style: TasbeehTextStyles.caption),
@@ -187,7 +187,7 @@ class _CounterStatRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: TasbeehColors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: TasbeehColors.goldenCream2),
+        border: Border.all(color: TasbeehColors.babyBlue),
       ),
       child: Column(
         children: [
@@ -201,7 +201,7 @@ class _CounterStatRow extends StatelessWidget {
               Text(
                 '${counter.totalCount} total',
                 style: TasbeehTextStyles.caption
-                    .copyWith(color: TasbeehColors.standardGold),
+                    .copyWith(color: TasbeehColors.standardBlue),
               ),
             ],
           ),
@@ -215,9 +215,9 @@ class _CounterStatRow extends StatelessWidget {
                     value: counter.totalCount > 0
                         ? (counter.totalCount / 1000).clamp(0.0, 1.0)
                         : 0,
-                    backgroundColor: TasbeehColors.goldenCream2,
+                    backgroundColor: TasbeehColors.babyBlue,
                     valueColor: const AlwaysStoppedAnimation(
-                        TasbeehColors.standardGold),
+                        TasbeehColors.standardBlue),
                     minHeight: 5,
                   ),
                 ),

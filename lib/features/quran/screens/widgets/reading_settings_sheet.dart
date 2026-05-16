@@ -223,7 +223,7 @@ class _ReadingModeSelector extends StatelessWidget {
               color: isSelected ? const Color(0xFFE8F5E9) : Colors.grey[50],
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: isSelected ? const Color(0xFF1B5E20) : Colors.grey[200]!,
+                color: isSelected ? const Color(0xFF90BDE7) : Colors.grey[200]!,
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -231,7 +231,7 @@ class _ReadingModeSelector extends StatelessWidget {
               children: [
                 Icon(
                   m.$2,
-                  color: isSelected ? const Color(0xFF1B5E20) : Colors.grey,
+                  color: isSelected ? const Color(0xFF90BDE7) : Colors.grey,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -243,7 +243,7 @@ class _ReadingModeSelector extends StatelessWidget {
                         style: TextStyle(
                           fontFamily: 'Jameel Noori',
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? const Color(0xFF1B5E20) : Colors.black87,
+                          color: isSelected ? const Color(0xFF90BDE7) : Colors.black87,
                         ),
                       ),
                       TranslatedText(
@@ -254,7 +254,7 @@ class _ReadingModeSelector extends StatelessWidget {
                   ),
                 ),
                 if (isSelected)
-                  const Icon(Icons.check_circle, color: Color(0xFF1B5E20)),
+                  const Icon(Icons.check_circle, color: Color(0xFF90BDE7)),
               ],
             ),
           ),
@@ -308,7 +308,7 @@ class _FontSizeSlider extends StatelessWidget {
           min: min,
           max: max,
           divisions: ((max - min) / 2).round(),
-          activeColor: const Color(0xFF1B5E20),
+          activeColor: const Color(0xFF90BDE7),
           onChanged: onChanged,
         ),
       ],
@@ -392,7 +392,7 @@ class _ToggleTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF1B5E20)),
+      leading: Icon(icon, color: const Color(0xFF90BDE7)),
       title: TranslatedText(title, style: const TextStyle(fontFamily: 'Jameel Noori', fontWeight: FontWeight.w500)),
       subtitle: TranslatedText(subtitle, style: const TextStyle(fontFamily: 'Jameel Noori', fontSize: 12)),
       trailing: Row(
@@ -409,12 +409,12 @@ class _ToggleTile extends StatelessWidget {
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFF1B5E20).withOpacity(0.12),
+                    color: const Color(0xFF90BDE7).withOpacity(0.12),
                   ),
                   child: const Icon(
                     Icons.format_list_bulleted,
                     size: 18,
-                    color: Color(0xFF1B5E20),
+                    color: Color(0xFF90BDE7),
                   ),
                 ),
               ),
@@ -424,7 +424,7 @@ class _ToggleTile extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: const Color(0xFF1B5E20),
+            activeThumbColor: const Color(0xFF90BDE7),
           ),
         ],
       ),

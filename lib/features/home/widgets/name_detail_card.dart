@@ -53,15 +53,15 @@ class _NameDetailCardState extends State<NameDetailCard> {
           Screenshot(
             controller: screenshotController,
             child: Material(
-              color: const Color(0xFFFDF9F0), // Lighter, more premium cream color
+              color: const Color(0xFFFAFDFF), // TasbeehColors.background
               borderRadius: BorderRadius.circular(32),
               elevation: 8,
-              shadowColor: Colors.black.withOpacity(0.1),
+              shadowColor: const Color(0xFF90BDE7).withOpacity(0.15),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(32),
                   border: Border.all(
-                    color: const Color(0xFFD4AF37).withOpacity(0.3),
+                    color: const Color(0xFF90BDE7).withOpacity(0.4),
                     width: 2,
                   ),
                   image: const DecorationImage(
@@ -79,16 +79,16 @@ class _NameDetailCardState extends State<NameDetailCard> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFD4AF37).withOpacity(0.1),
+                          color: const Color(0xFF90BDE7).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: const Color(0xFFD4AF37).withOpacity(0.4),
+                            color: const Color(0xFF90BDE7).withOpacity(0.4),
                           ),
                         ),
                         child: Text(
                           'Name #${widget.index + 1}',
                           style: const TextStyle(
-                            color: Color(0xFF8B6914),
+                            color: Color(0xFF6FA8D8),
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.5,
@@ -99,16 +99,23 @@ class _NameDetailCardState extends State<NameDetailCard> {
                       const SizedBox(height: 24),
                       
                       // Arabic name with specialized font
-                      Text(
-                        widget.data['arabic']!,
-                        style: const TextStyle(
-                          fontFamily: 'AsmaUlHusna', // Using the specialized font
-                          fontSize: 64,
-                          color: Color(0xFF1A1208),
-                          height: 1.1,
+                      ShaderMask(
+                        shaderCallback: (bounds) => const LinearGradient(
+                          colors: [Color(0xFF90BDE7), Color(0xFF6FA8D8)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ).createShader(bounds),
+                        child: Text(
+                          widget.data['arabic']!,
+                          style: const TextStyle(
+                            fontFamily: 'AsmaUlHusna', // Using the specialized font
+                            fontSize: 64,
+                            color: Colors.white,
+                            height: 1.1,
+                          ),
+                          textAlign: TextAlign.center,
+                          textDirection: TextDirection.rtl,
                         ),
-                        textAlign: TextAlign.center,
-                        textDirection: TextDirection.rtl,
                       ),
                       
                       const SizedBox(height: 16),
@@ -122,7 +129,7 @@ class _NameDetailCardState extends State<NameDetailCard> {
                       Text(
                         widget.data['transliteration']!,
                         style: const TextStyle(
-                          color: Color(0xFF1A1208),
+                          color: Color(0xFF1A2E44),
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
@@ -135,8 +142,8 @@ class _NameDetailCardState extends State<NameDetailCard> {
                       // Meaning
                       Text(
                         widget.data['meaning']!,
-                        style: TextStyle(
-                          color: const Color(0xFF8B6914).withOpacity(0.9),
+                        style: const TextStyle(
+                          color: Color(0xFF4A6B8A),
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           fontStyle: FontStyle.italic,
@@ -146,20 +153,19 @@ class _NameDetailCardState extends State<NameDetailCard> {
                       
                       const SizedBox(height: 20),
                       
-                      // Detailed Description
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withOpacity(0.6),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0xFFD4AF37).withOpacity(0.15),
+                            color: const Color(0xFF90BDE7).withOpacity(0.2),
                           ),
                         ),
                         child: Text(
                           widget.data['description'] ?? widget.data['meaning']!,
                           style: const TextStyle(
-                            color: Color(0xFF4A3F35),
+                            color: Color(0xFF6B8FB5),
                             fontSize: 14,
                             height: 1.6,
                           ),
@@ -176,20 +182,21 @@ class _NameDetailCardState extends State<NameDetailCard> {
           const SizedBox(height: 24),
           
           // Share Button (Outside the screenshot area for better UX)
-          ElevatedButton.icon(
-            onPressed: _shareName,
-            icon: const Icon(Icons.share_rounded, color: Colors.white),
-            label: const Text('Share Name', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1A1208),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+            ElevatedButton.icon(
+              onPressed: _shareName,
+              icon: const Icon(Icons.share_rounded, color: Colors.white),
+              label: const Text('Share Name', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF90BDE7),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                elevation: 4,
+                shadowColor: const Color(0xFF90BDE7).withOpacity(0.5),
               ),
-              elevation: 4,
             ),
-          ),
         ],
       ),
     );
@@ -204,7 +211,7 @@ class _NameDetailCardState extends State<NameDetailCard> {
           height: 1.5,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.transparent, const Color(0xFFD4AF37).withOpacity(0.6)],
+              colors: [Colors.transparent, const Color(0xFF90BDE7).withOpacity(0.6)],
             ),
           ),
         ),
@@ -213,7 +220,7 @@ class _NameDetailCardState extends State<NameDetailCard> {
           child: Icon(
             Icons.brightness_7, // Decorative star icon
             size: 14,
-            color: const Color(0xFFD4AF37).withOpacity(0.8),
+            color: const Color(0xFF90BDE7).withOpacity(0.8),
           ),
         ),
         Container(
@@ -221,7 +228,7 @@ class _NameDetailCardState extends State<NameDetailCard> {
           height: 1.5,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [const Color(0xFFD4AF37).withOpacity(0.6), Colors.transparent],
+              colors: [const Color(0xFF90BDE7).withOpacity(0.6), Colors.transparent],
             ),
           ),
         ),

@@ -186,11 +186,11 @@ class _GlobalTafseerPlayerWidgetState extends State<GlobalTafseerPlayerWidget>
                 dense: true,
                 leading: CircleAvatar(
                   backgroundColor:
-                      const Color(0xFF1B5E20).withValues(alpha: 0.1),
+                      const Color(0xFF90BDE7).withValues(alpha: 0.1),
                   child: Text(
                     '${p.part}',
                     style: const TextStyle(
-                        color: Color(0xFF1B5E20),
+                        color: Color(0xFF90BDE7),
                         fontWeight: FontWeight.w700,
                         fontSize: 12),
                   ),
@@ -252,7 +252,7 @@ class _GlobalTafseerPlayerWidgetState extends State<GlobalTafseerPlayerWidget>
           child: Container(
             margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFFF4FBFE),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -262,7 +262,7 @@ class _GlobalTafseerPlayerWidgetState extends State<GlobalTafseerPlayerWidget>
                 ),
               ],
               border: Border.all(
-                color: const Color(0xFF1B5E20).withValues(alpha: 0.15),
+                color: const Color(0xFF90BDE7).withValues(alpha: 0.15),
               ),
             ),
             child: Padding(
@@ -277,11 +277,11 @@ class _GlobalTafseerPlayerWidgetState extends State<GlobalTafseerPlayerWidget>
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1B5E20).withValues(alpha: 0.1),
+                          color: const Color(0xFF90BDE7).withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Icons.menu_book,
-                            color: Color(0xFF1B5E20), size: 20),
+                            color: Color(0xFF90BDE7), size: 20),
                       ),
                       const SizedBox(width: 10),
                       // Track info
@@ -294,7 +294,7 @@ class _GlobalTafseerPlayerWidgetState extends State<GlobalTafseerPlayerWidget>
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: const Color(0xFF1B5E20),
+                                color: const Color(0xFF90BDE7),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -319,7 +319,7 @@ class _GlobalTafseerPlayerWidgetState extends State<GlobalTafseerPlayerWidget>
                               horizontal: 7, vertical: 4),
                           decoration: BoxDecoration(
                             color:
-                                const Color(0xFF1B5E20).withValues(alpha: 0.08),
+                                const Color(0xFF90BDE7).withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -327,7 +327,7 @@ class _GlobalTafseerPlayerWidgetState extends State<GlobalTafseerPlayerWidget>
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF1B5E20),
+                              color: const Color(0xFF90BDE7),
                             ),
                           ),
                         ),
@@ -335,7 +335,7 @@ class _GlobalTafseerPlayerWidgetState extends State<GlobalTafseerPlayerWidget>
                       if (_hasSegments)
                         IconButton(
                           icon: const Icon(Icons.list_alt_rounded,
-                              color: Color(0xFF1B5E20), size: 20),
+                              color: Color(0xFF90BDE7), size: 20),
                           tooltip: 'All Parts',
                           onPressed: () => _showSegmentedPartsSheet(context),
                           padding: const EdgeInsets.all(6),
@@ -348,12 +348,12 @@ class _GlobalTafseerPlayerWidgetState extends State<GlobalTafseerPlayerWidget>
                                 width: 22,
                                 height: 22,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Color(0xFF1B5E20)))
+                                    strokeWidth: 2, color: Color(0xFF90BDE7)))
                             : Icon(
                                 _isPlaying
                                     ? Icons.pause_circle_filled_rounded
                                     : Icons.play_circle_filled_rounded,
-                                color: const Color(0xFF1B5E20),
+                                color: const Color(0xFF90BDE7),
                                 size: 34,
                               ),
                         onPressed: _togglePlayPause,
@@ -390,7 +390,7 @@ class _GlobalTafseerPlayerWidgetState extends State<GlobalTafseerPlayerWidget>
                               value: _position.inMilliseconds.toDouble().clamp(
                                   0, _duration.inMilliseconds.toDouble()),
                               max: _duration.inMilliseconds.toDouble(),
-                              activeColor: const Color(0xFF1B5E20),
+                              activeColor: const Color(0xFF90BDE7),
                               inactiveColor: Colors.grey[200],
                               onChanged: (val) => _audioService.seekTafseer(
                                   Duration(milliseconds: val.toInt())),

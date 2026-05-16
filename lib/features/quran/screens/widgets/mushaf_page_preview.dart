@@ -115,7 +115,7 @@ class _MushafPagePreviewState extends State<MushafPagePreview> {
                       const SizedBox(height: 2),
                       Text(
                         word.transliteration!,
-                        style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 11, fontStyle: FontStyle.italic, fontWeight: FontWeight.w500),
+                        style: const TextStyle(color: Color(0xFF90BDE7), fontSize: 11, fontStyle: FontStyle.italic, fontWeight: FontWeight.w500),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -221,13 +221,13 @@ class _MushafPagePreviewState extends State<MushafPagePreview> {
           Color wordColor;
           Color bgColor;
           if (isRecitationActive) {
-            wordColor = const Color(0xFFD4AF37); // bright golden
-            bgColor = const Color(0xFFFFFDF5);
+            wordColor = const Color(0xFF90BDE7); // bright golden
+            bgColor = const Color(0xFFF4FBFE);
           } else if (isHighlighted) {
-            wordColor = const Color(0xFFD4AF37);
-            bgColor = const Color(0xFFFFFDF5);
+            wordColor = const Color(0xFF90BDE7);
+            bgColor = const Color(0xFFF4FBFE);
           } else if (isRecitationFading) {
-            wordColor = const Color(0xFFD4AF37).withValues(alpha: 0.45); // fading golden
+            wordColor = const Color(0xFF90BDE7).withValues(alpha: 0.45); // fading golden
             bgColor = Colors.transparent;
           } else {
             wordColor = Colors.black87;
@@ -264,7 +264,7 @@ class _MushafPagePreviewState extends State<MushafPagePreview> {
       // Ayah number marker
       spans.add(TextSpan(
         text: '${_toArabicDigits(ayah.numberInSurah)} ',
-        style: const TextStyle(color: Color(0xFFD4AF37)),
+        style: const TextStyle(color: Color(0xFF90BDE7)),
         recognizer: widget.onAyahMarkerTap != null 
           ? (TapGestureRecognizer()..onTap = () => widget.onAyahMarkerTap!(ayah.numberInSurah))
           : null,

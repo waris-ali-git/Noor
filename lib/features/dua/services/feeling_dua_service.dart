@@ -16,7 +16,7 @@ class FeelingDuaService {
     'grateful': Color(0xFFFFD54F),
     'greedy': Color(0xFFE65100),
     'guilty': Color(0xFF5D4037),
-    'happy': Color(0xFFFFC107),
+    'happy': Color(0xFF90BDE7),
     'hopeful': Color(0xFF4FC3F7),
     'hopeless': Color(0xFF455A64),
     'humble': Color(0xFFA1887F),

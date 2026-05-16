@@ -637,11 +637,11 @@ class _AsmaUlHusnaScreenState extends State<AsmaUlHusnaScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF8F2),
+      backgroundColor: const Color(0xFFFAFDFF), // TasbeehColors.background
       appBar: AppBar(
-        title: const Text('Asma ul Husna', style: TextStyle(color: Color(0xFFD4AF37))),
-        backgroundColor: const Color(0xFF1A1208),
-        iconTheme: const IconThemeData(color: Color(0xFFD4AF37)),
+        title: const Text('Asma ul Husna', style: TextStyle(color: Color(0xFF90BDE7))),
+        backgroundColor: const Color(0xFFFAFDFF),
+        iconTheme: const IconThemeData(color: Color(0xFF90BDE7)),
         elevation: 0,
       ),
       body: CustomScrollView(
@@ -687,7 +687,7 @@ class _AsmaUlHusnaScreenState extends State<AsmaUlHusnaScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF1A1208), Color(0xFFFAF8F2)],
+            colors: [Color(0xFFD9F1FD), Color(0xFFFAFDFF)],
           ),
         ),
         child: Column(
@@ -697,7 +697,7 @@ class _AsmaUlHusnaScreenState extends State<AsmaUlHusnaScreen>
               style: TextStyle(
                 fontFamily: 'Jameel Noori',
                 fontSize: 52,
-                color: Color(0xFFD4AF37),
+                color: Color(0xFF6FA8D8),
                 height: 1.3,
               ),
               textAlign: TextAlign.center,
@@ -710,7 +710,7 @@ class _AsmaUlHusnaScreenState extends State<AsmaUlHusnaScreen>
                 fontFamily: 'Georgia',
                 fontSize: 13,
                 letterSpacing: 6,
-                color: Colors.white.withOpacity(0.85),
+                color: Color(0xFF1A2E44),
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -719,7 +719,7 @@ class _AsmaUlHusnaScreenState extends State<AsmaUlHusnaScreen>
               'The 99 Beautiful Names of Allah',
               style: TextStyle(
                 fontSize: 12,
-                color: const Color(0xFFD4AF37).withOpacity(0.7),
+                color: Color(0xFF4A6B8A),
                 letterSpacing: 1,
               ),
             ),
@@ -730,7 +730,7 @@ class _AsmaUlHusnaScreenState extends State<AsmaUlHusnaScreen>
               decoration: BoxDecoration(
                 gradient: LinearGradient(colors: [
                   Colors.transparent,
-                  const Color(0xFFD4AF37).withOpacity(0.6),
+                  const Color(0xFF90BDE7).withOpacity(0.6),
                   Colors.transparent,
                 ]),
               ),
@@ -769,26 +769,26 @@ class _NameCard extends StatelessWidget {
               ? const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF1A1208), Color(0xFF2E1F0A)],
+                  colors: [Color(0xFF90BDE7), Color(0xFF6FA8D8)],
                 )
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Colors.white, Color(0xFFF5F0E8)],
+                  colors: [Colors.white, Color(0xFFDBE9FA)],
                 ),
           boxShadow: [
             BoxShadow(
               color: isActive
-                  ? const Color(0xFFD4AF37).withOpacity(0.35)
-                  : Colors.black.withOpacity(0.06),
+                  ? const Color(0xFF90BDE7).withOpacity(0.35)
+                  : const Color(0xFF90BDE7).withOpacity(0.1),
               blurRadius: isActive ? 12 : 8,
               offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
             color: isActive
-                ? const Color(0xFFD4AF37).withOpacity(0.8)
-                : const Color(0xFFD4AF37).withOpacity(0.18),
+                ? const Color(0xFF90BDE7).withOpacity(0.8)
+                : const Color(0xFF90BDE7).withOpacity(0.3),
             width: isActive ? 1.5 : 1,
           ),
         ),
@@ -804,10 +804,10 @@ class _NameCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isActive
-                      ? const Color(0xFFD4AF37).withOpacity(0.2)
-                      : const Color(0xFFD4AF37).withOpacity(0.12),
+                      ? const Color(0xFF90BDE7).withOpacity(0.2)
+                      : const Color(0xFF90BDE7).withOpacity(0.12),
                   border: Border.all(
-                    color: const Color(0xFFD4AF37).withOpacity(0.4),
+                    color: const Color(0xFF90BDE7).withOpacity(0.4),
                   ),
                 ),
                 child: Center(
@@ -817,8 +817,8 @@ class _NameCard extends StatelessWidget {
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
                       color: isActive
-                          ? const Color(0xFFD4AF37)
-                          : const Color(0xFF8B6914),
+                          ? Colors.white
+                          : const Color(0xFF6FA8D8),
                     ),
                   ),
                 ),
@@ -842,8 +842,8 @@ class _NameCard extends StatelessWidget {
                           fontSize: 34,
                           height: 1.2,
                           color: isActive
-                              ? const Color(0xFFD4AF37)
-                              : const Color(0xFF1A1208),
+                              ? Colors.white
+                              : const Color(0xFF1A2E44),
                         ),
                         textAlign: TextAlign.center,
                         textDirection: TextDirection.rtl,
@@ -855,7 +855,7 @@ class _NameCard extends StatelessWidget {
                   Container(
                     height: 1,
                     margin: const EdgeInsets.symmetric(horizontal: 16),
-                    color: const Color(0xFFD4AF37).withOpacity(0.25),
+                    color: const Color(0xFF90BDE7).withOpacity(0.25),
                   ),
                   const SizedBox(height: 4),
                   // Transliteration
@@ -872,7 +872,7 @@ class _NameCard extends StatelessWidget {
                             letterSpacing: 0.5,
                             color: isActive
                                 ? Colors.white
-                                : const Color(0xFF8B6914),
+                                : const Color(0xFF6FA8D8),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -884,8 +884,8 @@ class _NameCard extends StatelessWidget {
                             fontSize: 9,
                             height: 1.2,
                             color: isActive
-                                ? Colors.white.withOpacity(0.7)
-                                : const Color(0xFF6B5B3E).withOpacity(0.85),
+                                ? Colors.white.withOpacity(0.9)
+                                : const Color(0xFF4A6B8A),
                           ),
                           textAlign: TextAlign.center,
                           maxLines: 2,

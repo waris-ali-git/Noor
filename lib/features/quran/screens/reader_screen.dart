@@ -354,7 +354,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                   state.isBookmarked ? '✓ بک مارک ہو گیا' : 'بک مارک ہٹا دیا',
                 ),
                 duration: const Duration(seconds: 1),
-                backgroundColor: const Color(0xFF1B5E20),
+                backgroundColor: const Color(0xFF90BDE7),
               ),
             );
           }
@@ -405,7 +405,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1B5E20).withOpacity(0.9),
+                          color: const Color(0xFF90BDE7).withOpacity(0.9),
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: const [
                             BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
@@ -563,7 +563,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 return LinearProgressIndicator(
                   value: progress,
                   backgroundColor: Colors.transparent,
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF948160)),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6B8FB5)),
                   minHeight: 2.0,
                 );
               },
@@ -627,7 +627,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFD4AF37) : Colors.transparent,
+          color: isSelected ? const Color(0xFF90BDE7) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Icon(
@@ -673,7 +673,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       SnackBar(
                         content: Text('Saved Surah ${surah.englishName}, Ayah $ayahNumber as last read'),
                         duration: const Duration(seconds: 1),
-                        backgroundColor: const Color(0xFF948160),
+                        backgroundColor: const Color(0xFF6B8FB5),
                       ),
                     );
                   },
@@ -856,13 +856,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: const LinearGradient(
-            colors: [Color(0xFFD4AF37), Color(0xFFB8960C)],
+            colors: [Color(0xFF90BDE7), Color(0xFF6FA8D8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFD4AF37).withValues(alpha: isPlaying ? 0.5 : 0.3),
+              color: const Color(0xFF90BDE7).withValues(alpha: isPlaying ? 0.5 : 0.3),
               blurRadius: isPlaying ? 20 : 12,
               spreadRadius: isPlaying ? 2 : 0,
               offset: const Offset(0, 4),
@@ -1175,7 +1175,7 @@ class _StandardAyahCard extends StatelessWidget {
         border: Border(
           bottom: const BorderSide(color: Color(0xFFEEEEEE)),
           left: isVbVActive
-              ? const BorderSide(color: Color(0xFFD4AF37), width: 4)
+              ? const BorderSide(color: Color(0xFF90BDE7), width: 4)
               : BorderSide.none,
         ),
         boxShadow: isVbVActive
@@ -1206,7 +1206,7 @@ class _StandardAyahCard extends StatelessWidget {
                   },
                   child: Icon(
                     isVbVActive && isVbVPlaying ? Icons.pause : Icons.play_arrow_outlined,
-                    color: isVbVActive ? const Color(0xFFD4AF37) : Colors.grey,
+                    color: isVbVActive ? const Color(0xFF90BDE7) : Colors.grey,
                     size: 24,
                   ),
                 ),
@@ -1257,15 +1257,15 @@ class _StandardAyahCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: preferences.displayMode == ReadingDisplayMode.tajweed 
-                          ? const Color(0xFFD4AF37)
-                          : const Color(0xFFD4AF37).withOpacity(0.12),
+                          ? const Color(0xFF90BDE7)
+                          : const Color(0xFF90BDE7).withOpacity(0.12),
                     ),
                     child: Icon(
                       Icons.palette,
                       size: 16,
                       color: preferences.displayMode == ReadingDisplayMode.tajweed 
                           ? Colors.white 
-                          : const Color(0xFFD4AF37),
+                          : const Color(0xFF90BDE7),
                     ),
                   ),
                 ),

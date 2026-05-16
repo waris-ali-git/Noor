@@ -71,7 +71,7 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                         contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                         leading: CircleAvatar(
                           backgroundColor: const Color(0xFFF4F1ED),
-                          child: const Icon(Icons.translate, color: Color(0xFF948160), size: 18),
+                          child: const Icon(Icons.translate, color: Color(0xFF6B8FB5), size: 18),
                         ),
                         title: Text(
                           edition.language,
@@ -174,7 +174,7 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                                     ),
                                   ),
                                   value: isSelected,
-                                  activeColor: const Color(0xFF948160),
+                                  activeColor: const Color(0xFF6B8FB5),
                                   checkColor: Colors.white,
                                   onChanged: (_) {
                                     context.read<HadithBloc>().add(
@@ -265,7 +265,7 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                     IconButton(
                       icon: Icon(
                         _showAllTranslations ? Icons.translate : Icons.language,
-                        color: _showAllTranslations ? const Color(0xFF948160) : Colors.black54,
+                        color: _showAllTranslations ? const Color(0xFF6B8FB5) : Colors.black54,
                       ),
                       tooltip: _showAllTranslations ? 'All Translations (ON)' : 'Single Translation',
                       onPressed: () => setState(() => _showAllTranslations = !_showAllTranslations),
@@ -541,11 +541,11 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                       color: isSelected ? Colors.white : const Color(0xFF2D2D2D),
                     )),
                     selected: isSelected,
-                    selectedColor: const Color(0xFF948160),
+                    selectedColor: const Color(0xFF6B8FB5),
                     checkmarkColor: Colors.white,
                     backgroundColor: const Color(0xFFF4F1ED),
                     side: BorderSide(
-                      color: isSelected ? const Color(0xFF948160) : const Color(0xFFD6D6D6),
+                      color: isSelected ? const Color(0xFF6B8FB5) : const Color(0xFFD6D6D6),
                       width: 1,
                     ),
                     visualDensity: VisualDensity.compact,
@@ -611,7 +611,7 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF948160),
+                    color: const Color(0xFF6B8FB5),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -650,7 +650,7 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color: isArabic ? const Color(0xFF948160) : const Color(0xFF8E8E8E),
+                          color: isArabic ? const Color(0xFF6B8FB5) : const Color(0xFF8E8E8E),
                           letterSpacing: 0.4,
                         ),
                       ),
@@ -737,12 +737,12 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
             flex: 0,
             child: LiquidGlassButton(
               label: 'Chapters',
-              icon: const Icon(Icons.list, size: 16, color: Color(0xFF948160)),
+              icon: const Icon(Icons.list, size: 16, color: Color(0xFF6B8FB5)),
               height: 36,
               textStyle: GoogleFonts.plusJakartaSans(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF948160),
+                color: const Color(0xFF6B8FB5),
               ),
               onTap: () => context.read<HadithBloc>().add(SelectHadithBookEvent(book: book)),
             ),
@@ -759,13 +759,13 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: isSahih
-              ? const Color(0xFF948160).withValues(alpha: 0.08)
-              : Colors.orange.shade50,
+              ? const Color(0xFF6B8FB5).withValues(alpha: 0.08)
+              : const Color(0xFFD9F1FD),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSahih
-                ? const Color(0xFF948160).withValues(alpha: 0.35)
-                : Colors.orange.shade200,
+                ? const Color(0xFF6B8FB5).withValues(alpha: 0.35)
+                : const Color(0xFFA6C7F2),
             width: 1,
           ),
         ),
@@ -774,7 +774,7 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
           style: GoogleFonts.plusJakartaSans(
             fontSize: 10,
             fontWeight: FontWeight.w600,
-            color: isSahih ? const Color(0xFF948160) : Colors.orange.shade700,
+            color: isSahih ? const Color(0xFF6B8FB5) : const Color(0xFF6B8FB5),
           ),
         ),
       );
@@ -820,7 +820,7 @@ class _HadithVerseCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF948160),
+                    color: const Color(0xFF6B8FB5),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -873,8 +873,8 @@ class _HadithVerseCard extends StatelessWidget {
                     visualDensity: VisualDensity.compact,
                     side: BorderSide(
                       color: isSahih
-                          ? const Color(0xFF948160).withValues(alpha: 0.4)
-                          : Colors.orange.shade200,
+                          ? const Color(0xFF6B8FB5).withValues(alpha: 0.4)
+                          : const Color(0xFFA6C7F2),
                       width: 1,
                     ),
                     label: Text(
@@ -883,13 +883,13 @@ class _HadithVerseCard extends StatelessWidget {
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: isSahih
-                            ? const Color(0xFF948160)
-                            : Colors.orange.shade800,
+                            ? const Color(0xFF6B8FB5)
+                            : const Color(0xFF90BDE7),
                       ),
                     ),
                     backgroundColor: isSahih
-                        ? const Color(0xFF948160).withValues(alpha: 0.08)
-                        : Colors.orange.shade50,
+                        ? const Color(0xFF6B8FB5).withValues(alpha: 0.08)
+                        : const Color(0xFFD9F1FD),
                   );
                 }).toList(),
               ),
@@ -906,13 +906,13 @@ class _HadithVerseCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: isSahih
-              ? const Color(0xFF948160).withValues(alpha: 0.08)
-              : Colors.orange.shade50,
+              ? const Color(0xFF6B8FB5).withValues(alpha: 0.08)
+              : const Color(0xFFD9F1FD),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSahih
-                ? const Color(0xFF948160).withValues(alpha: 0.35)
-                : Colors.orange.shade200,
+                ? const Color(0xFF6B8FB5).withValues(alpha: 0.35)
+                : const Color(0xFFA6C7F2),
             width: 1,
           ),
         ),
@@ -921,7 +921,7 @@ class _HadithVerseCard extends StatelessWidget {
           style: GoogleFonts.plusJakartaSans(
             fontSize: 10,
             fontWeight: FontWeight.w600,
-            color: isSahih ? const Color(0xFF948160) : Colors.orange.shade700,
+            color: isSahih ? const Color(0xFF6B8FB5) : const Color(0xFF6B8FB5),
           ),
         ),
       );

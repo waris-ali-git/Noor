@@ -53,15 +53,15 @@ class _NabiNameDetailCardState extends State<NabiNameDetailCard> {
           Screenshot(
             controller: screenshotController,
             child: Material(
-              color: const Color(0xFFF9FFF2), // Lighter green/cream for Nabi names
+              color: const Color(0xFFFAFDFF), // TasbeehColors.background
               borderRadius: BorderRadius.circular(32),
               elevation: 8,
-              shadowColor: Colors.black.withOpacity(0.1),
+              shadowColor: const Color(0xFF90BDE7).withOpacity(0.15),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(32),
                   border: Border.all(
-                    color: const Color(0xFF1B5E20).withOpacity(0.2),
+                    color: const Color(0xFF90BDE7).withOpacity(0.4),
                     width: 2,
                   ),
                   image: const DecorationImage(
@@ -79,16 +79,16 @@ class _NabiNameDetailCardState extends State<NabiNameDetailCard> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1B5E20).withOpacity(0.08),
+                          color: const Color(0xFF90BDE7).withOpacity(0.08),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: const Color(0xFF1B5E20).withOpacity(0.3),
+                            color: const Color(0xFF90BDE7).withOpacity(0.3),
                           ),
                         ),
                         child: Text(
                           'Name #${widget.index + 1}',
                           style: const TextStyle(
-                            color: Color(0xFF1B5E20),
+                            color: Color(0xFF6FA8D8),
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.5,
@@ -99,16 +99,23 @@ class _NabiNameDetailCardState extends State<NabiNameDetailCard> {
                       const SizedBox(height: 24),
                       
                       // Arabic name
-                      Text(
-                        widget.data['arabic']!,
-                        style: const TextStyle(
-                          fontFamily: 'Jameel Noori',
-                          fontSize: 58,
-                          color: Color(0xFF0D3310),
-                          height: 1.2,
+                      ShaderMask(
+                        shaderCallback: (bounds) => const LinearGradient(
+                          colors: [Color(0xFF90BDE7), Color(0xFF6FA8D8)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ).createShader(bounds),
+                        child: Text(
+                          widget.data['arabic']!,
+                          style: const TextStyle(
+                            fontFamily: 'Jameel Noori',
+                            fontSize: 58,
+                            color: Colors.white,
+                            height: 1.2,
+                          ),
+                          textAlign: TextAlign.center,
+                          textDirection: TextDirection.rtl,
                         ),
-                        textAlign: TextAlign.center,
-                        textDirection: TextDirection.rtl,
                       ),
                       
                       const SizedBox(height: 16),
@@ -122,7 +129,7 @@ class _NabiNameDetailCardState extends State<NabiNameDetailCard> {
                       Text(
                         widget.data['transliteration']!,
                         style: const TextStyle(
-                          color: Color(0xFF1B5E20),
+                          color: Color(0xFF1A2E44),
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
@@ -135,8 +142,8 @@ class _NabiNameDetailCardState extends State<NabiNameDetailCard> {
                       // Meaning
                       Text(
                         widget.data['meaning']!,
-                        style: TextStyle(
-                          color: const Color(0xFF2E7D32).withOpacity(0.9),
+                        style: const TextStyle(
+                          color: Color(0xFF4A6B8A),
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           fontStyle: FontStyle.italic,
@@ -146,20 +153,19 @@ class _NabiNameDetailCardState extends State<NabiNameDetailCard> {
                       
                       const SizedBox(height: 20),
                       
-                      // Detailed Description
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.6),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0xFF1B5E20).withOpacity(0.1),
+                            color: const Color(0xFF90BDE7).withOpacity(0.2),
                           ),
                         ),
                         child: Text(
                           widget.data['description'] ?? widget.data['meaning']!,
                           style: const TextStyle(
-                            color: Color(0xFF1B5E20),
+                            color: Color(0xFF6B8FB5),
                             fontSize: 14,
                             height: 1.6,
                           ),
@@ -175,19 +181,19 @@ class _NabiNameDetailCardState extends State<NabiNameDetailCard> {
           
           const SizedBox(height: 24),
           
-          // Share Button
           ElevatedButton.icon(
             onPressed: _shareName,
             icon: const Icon(Icons.share_rounded, color: Colors.white),
             label: const Text('Share Name', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1B5E20),
+              backgroundColor: const Color(0xFF90BDE7),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
               elevation: 4,
+              shadowColor: const Color(0xFF90BDE7).withOpacity(0.5),
             ),
           ),
         ],
@@ -204,7 +210,7 @@ class _NabiNameDetailCardState extends State<NabiNameDetailCard> {
           height: 1.5,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.transparent, const Color(0xFF1B5E20).withOpacity(0.5)],
+              colors: [Colors.transparent, const Color(0xFF90BDE7).withOpacity(0.5)],
             ),
           ),
         ),
@@ -213,7 +219,7 @@ class _NabiNameDetailCardState extends State<NabiNameDetailCard> {
           child: Icon(
             Icons.eco, // Decorative leaf/eco icon for Prophet names
             size: 14,
-            color: const Color(0xFF1B5E20).withOpacity(0.7),
+            color: const Color(0xFF90BDE7).withOpacity(0.7),
           ),
         ),
         Container(
@@ -221,7 +227,7 @@ class _NabiNameDetailCardState extends State<NabiNameDetailCard> {
           height: 1.5,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [const Color(0xFF1B5E20).withOpacity(0.5), Colors.transparent],
+              colors: [const Color(0xFF90BDE7).withOpacity(0.5), Colors.transparent],
             ),
           ),
         ),

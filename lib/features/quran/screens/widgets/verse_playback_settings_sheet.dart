@@ -67,10 +67,10 @@ class _VersePlaybackSettingsSheetState extends State<VersePlaybackSettingsSheet>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD4AF37).withOpacity(0.15),
+                    color: const Color(0xFF90BDE7).withOpacity(0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.queue_music_rounded, color: Color(0xFFD4AF37), size: 22),
+                  child: const Icon(Icons.queue_music_rounded, color: Color(0xFF90BDE7), size: 22),
                 ),
                 const SizedBox(width: 12),
                 const Column(
@@ -114,7 +114,7 @@ class _VersePlaybackSettingsSheetState extends State<VersePlaybackSettingsSheet>
                       subtitle: _config.reciter.name,
                       value: _config.playRecitation,
                       onChanged: (v) => _update(_config.copyWith(playRecitation: v)),
-                      accentColor: const Color(0xFFD4AF37),
+                      accentColor: const Color(0xFF90BDE7),
                       isTappable: true,
                     ),
                   ),
@@ -163,7 +163,7 @@ class _VersePlaybackSettingsSheetState extends State<VersePlaybackSettingsSheet>
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD4AF37),
+                  backgroundColor: const Color(0xFF90BDE7),
                   foregroundColor: Colors.black87,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -190,7 +190,7 @@ class _SectionHeader extends StatelessWidget {
     return Text(
       title.toUpperCase(),
       style: const TextStyle(
-        color: Color(0xFFD4AF37),
+        color: Color(0xFF90BDE7),
         fontSize: 11,
         fontWeight: FontWeight.bold,
         letterSpacing: 1.2,
@@ -268,10 +268,10 @@ class _EditionTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 6),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFD4AF37).withOpacity(0.12) : Colors.black.withOpacity(0.02),
+          color: isSelected ? const Color(0xFF90BDE7).withOpacity(0.12) : Colors.black.withOpacity(0.02),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? const Color(0xFFD4AF37).withOpacity(0.6) : Colors.black12,
+            color: isSelected ? const Color(0xFF90BDE7).withOpacity(0.6) : Colors.black12,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -286,7 +286,7 @@ class _EditionTile extends StatelessWidget {
                   Text(
                     edition.languageLabel,
                     style: TextStyle(
-                      color: isSelected ? const Color(0xFFD4AF37) : Colors.black87,
+                      color: isSelected ? const Color(0xFF90BDE7) : Colors.black87,
                       fontSize: 13,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
@@ -299,7 +299,7 @@ class _EditionTile extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle_rounded, color: Color(0xFFD4AF37), size: 18),
+              const Icon(Icons.check_circle_rounded, color: Color(0xFF90BDE7), size: 18),
           ],
         ),
       ),

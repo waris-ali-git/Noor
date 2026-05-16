@@ -86,7 +86,7 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
           backgroundColor: TasbeehColors.background,
           body: Center(
             child: CircularProgressIndicator(
-              color: TasbeehColors.standardGold,
+              color: TasbeehColors.standardBlue,
             ),
           ),
         );
@@ -118,6 +118,11 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Row(
         children: [
+          PrimaryIconButton(
+            icon: Icons.arrow_back_ios_new_rounded,
+            onTap: () => Navigator.pop(context),
+          ),
+          const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -142,12 +147,12 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
           ),
           const Spacer(),
           if (counter != null)
-            GoldenIconButton(
+            PrimaryIconButton(
               icon: counter.isFavorite ? Icons.favorite : Icons.favorite_border,
               onTap: () => bloc.toggleFavorite(counter.id),
             ),
           const SizedBox(width: 10),
-          GoldenIconButton(
+          PrimaryIconButton(
             icon: Icons.tune_rounded,
             onTap: () => Navigator.push(
               context,
@@ -177,9 +182,9 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
               decoration: BoxDecoration(
-                color: TasbeehColors.goldenCream,
+                color: TasbeehColors.whisperBlue,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: TasbeehColors.goldenCream2),
+                border: Border.all(color: TasbeehColors.babyBlue),
               ),
               child: Text(
                 counter.category,
@@ -238,7 +243,7 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
               height: 280,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: TasbeehColors.standardGold.withOpacity(0.06),
+                color: TasbeehColors.standardBlue.withOpacity(0.06),
               ),
             ),
           ),
@@ -246,7 +251,7 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
           width: 240,
           height: 240,
           child: CustomPaint(
-            painter: GoldenArcPainter(
+            painter: PrimaryArcPainter(
               progress: counter.progress,
               strokeWidth: 7,
             ),
@@ -267,14 +272,14 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
                   gradient: RadialGradient(
                     colors: [
                       TasbeehColors.surface,
-                      TasbeehColors.goldenCream,
+                      TasbeehColors.whisperBlue,
                     ],
                     center: Alignment.topCenter,
                     radius: 1.2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: TasbeehColors.standardGold.withOpacity(0.25),
+                      color: TasbeehColors.standardBlue.withOpacity(0.25),
                       blurRadius: 30,
                       spreadRadius: 4,
                       offset: const Offset(0, 8),
@@ -287,7 +292,7 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
                     ),
                   ],
                   border: Border.all(
-                    color: TasbeehColors.goldenCream2,
+                    color: TasbeehColors.babyBlue,
                     width: 1.5,
                   ),
                 ),
@@ -302,7 +307,7 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
                     Container(
                       height: 1,
                       width: 40,
-                      color: TasbeehColors.goldenCream2,
+                      color: TasbeehColors.babyBlue,
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -359,7 +364,7 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
           label: 'Reset',
           icon: Icons.restart_alt_rounded,
           onTap: () => _showResetDialog(context, bloc),
-          golden: true,
+          primary: true,
         ),
         const SizedBox(width: 16),
         _ActionButton(
@@ -388,10 +393,10 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
       decoration: BoxDecoration(
         color: TasbeehColors.surface,
         border: Border(
-            top: BorderSide(color: TasbeehColors.goldenCream2, width: 1)),
+            top: BorderSide(color: TasbeehColors.babyBlue, width: 1)),
         boxShadow: [
           BoxShadow(
-            color: TasbeehColors.standardGold.withOpacity(0.08),
+            color: TasbeehColors.standardBlue.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),
@@ -429,7 +434,7 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
           _NavItem(
             icon: Icons.add_circle_outline_rounded,
             label: 'Custom',
-            golden: true,
+            primary: true,
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
@@ -452,7 +457,7 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.auto_awesome,
-              size: 56, color: TasbeehColors.goldenCream2),
+              size: 56, color: TasbeehColors.babyBlue),
           const SizedBox(height: 16),
           Text('No dhikr selected', style: TasbeehTextStyles.heading),
           const SizedBox(height: 8),
@@ -467,7 +472,7 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: TasbeehColors.softGold,
+        backgroundColor: TasbeehColors.iceWhite,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Reset Counter',
             style: TextStyle(
@@ -479,11 +484,11 @@ class _TasbeehHomeScreenState extends State<TasbeehHomeScreen>
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text('Cancel',
-                style: TextStyle(color: TasbeehColors.bronzeGold)),
+                style: TextStyle(color: TasbeehColors.steelBlue)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: TasbeehColors.standardGold,
+              backgroundColor: TasbeehColors.standardBlue,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -513,14 +518,14 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: TasbeehColors.goldenCream,
+        color: TasbeehColors.whisperBlue,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: TasbeehColors.goldenCream2),
+        border: Border.all(color: TasbeehColors.babyBlue),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: TasbeehColors.bronzeGold),
+          Icon(icon, size: 12, color: TasbeehColors.steelBlue),
           const SizedBox(width: 4),
           Text(label, style: TasbeehTextStyles.caption),
         ],
@@ -534,14 +539,14 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final bool small;
-  final bool golden;
+  final bool primary;
 
   const _ActionButton({
     required this.label,
     required this.icon,
     required this.onTap,
     this.small = false,
-    this.golden = false,
+    this.primary = false,
   });
 
   @override
@@ -556,19 +561,19 @@ class _ActionButton extends StatelessWidget {
             height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: golden ? TasbeehColors.primaryGradient : null,
-              color: golden ? null : TasbeehColors.surface,
+              gradient: primary ? TasbeehColors.primaryGradient : null,
+              color: primary ? null : TasbeehColors.surface,
               border: Border.all(
-                color: golden
-                    ? TasbeehColors.darkerGold
-                    : TasbeehColors.goldenCream2,
+                color: primary
+                    ? TasbeehColors.blueDark
+                    : TasbeehColors.babyBlue,
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: TasbeehColors.standardGold
-                      .withOpacity(golden ? 0.3 : 0.1),
-                  blurRadius: golden ? 16 : 8,
+                  color: TasbeehColors.standardBlue
+                      .withOpacity(primary ? 0.3 : 0.1),
+                  blurRadius: primary ? 16 : 8,
                   offset: const Offset(0, 4),
                 ),
               ],
@@ -576,7 +581,7 @@ class _ActionButton extends StatelessWidget {
             child: Icon(
               icon,
               size: size * 0.38,
-              color: golden ? Colors.white : TasbeehColors.bronzeGold,
+              color: primary ? Colors.white : TasbeehColors.steelBlue,
             ),
           ),
           const SizedBox(height: 6),
@@ -591,13 +596,13 @@ class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final bool golden;
+  final bool primary;
 
   const _NavItem({
     required this.icon,
     required this.label,
     required this.onTap,
-    this.golden = false,
+    this.primary = false,
   });
 
   @override
@@ -610,17 +615,17 @@ class _NavItem extends StatelessWidget {
           Icon(
             icon,
             size: 26,
-            color: golden
-                ? TasbeehColors.standardGold
-                : TasbeehColors.bronzeGold,
+            color: primary
+                ? TasbeehColors.standardBlue
+                : TasbeehColors.steelBlue,
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: TasbeehTextStyles.caption.copyWith(
               color:
-              golden ? TasbeehColors.standardGold : TasbeehColors.textLight,
-              fontWeight: golden ? FontWeight.w600 : FontWeight.w400,
+              primary ? TasbeehColors.standardBlue : TasbeehColors.textLight,
+              fontWeight: primary ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
         ],

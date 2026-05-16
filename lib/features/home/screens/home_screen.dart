@@ -22,46 +22,60 @@ import '../asma_un_nabi_screen.dart';
 import '../../prophets/prophets_list_screen.dart';
 import '../../../core/widgets/language_selector_button.dart';
 import '../../../core/widgets/translated_text.dart';
+import '../widgets/streak_widget.dart';
+import '../../../core/services/notification_service.dart';
 
 // ──────────────────────────────────────────────────────────
 // Colour Palette
 // ──────────────────────────────────────────────────────────
-const _bg        = Color(0xFFFFF8F2);
-const _gold1     = Color(0xFFFFD28A);
-const _gold2     = Color(0xFFFFAA5A);
-const _clockClr  = Color(0xFF7A4400);
-const _orange    = Color(0xFFFF8C00);
-const _cardBg    = Color(0xFFFFFFFF);
-const _muted     = Color(0xFF9E8B7B);
-const _dark      = Color(0xFF3D2B1F);
+const _bg = Color(0xFFF4FBFE); // Ice White
+const _gold1 = Color(0xFFD9F1FD); // Powder Blue (hero gradient start)
+const _gold2 = Color(0xFFA6C7F2); // Baby Blue   (hero gradient end / icon tint)
+const _clockClr = Color(0xFF2D5F8A); // deep blue
+const _orange = Color(0xFF90BDE7); // Carolina Blue (replaces orange accent)
+const _cardBg = Color(0xFFF4FBFE); // Ice White card bg
+const _muted = Color(0xFF6B8FB5); // steel blue muted
+const _dark = Color(0xFF1A2E44); // deep navy dark text
 
 // ──────────────────────────────────────────────────────────
 // Prayer Time Calculator  (simplified Adhan algorithm)
 // ──────────────────────────────────────────────────────────
 class _PC {
   static double _dtr(double d) => d * math.pi / 180;
-  static double _s(double d)   => math.sin(_dtr(d));
-  static double _c(double d)   => math.cos(_dtr(d));
-  static double _ac(double x)  => math.acos(x.clamp(-1.0, 1.0)) * 180 / math.pi;
-  static double _at(double x)  => math.atan(x) * 180 / math.pi;
+
+  static double _s(double d) => math.sin(_dtr(d));
+
+  static double _c(double d) => math.cos(_dtr(d));
+
+  static double _ac(double x) => math.acos(x.clamp(-1.0, 1.0)) * 180 / math.pi;
+
+  static double _at(double x) => math.atan(x) * 180 / math.pi;
+
   static double _a2(double y, double x) => math.atan2(y, x) * 180 / math.pi;
+
   static double _fx(double a, {double r = 360.0}) => a - r * (a / r).floor();
 
   static List<double> _sun(int y, int m, int d, double lng, double tz) {
-    if (m <= 2) { y--; m += 12; }
-    double A  = (y / 100).floorToDouble();
-    double B  = 2 - A + (A / 4).floorToDouble();
+    if (m <= 2) {
+      y--;
+      m += 12;
+    }
+    double A = (y / 100).floorToDouble();
+    double B = 2 - A + (A / 4).floorToDouble();
     double jd = (365.25 * (y + 4716)).floorToDouble() +
-                (30.6001 * (m + 1)).floorToDouble() + d + B - 1524.5;
-    double D  = jd - 2451545.0;
-    double g  = _fx(357.529 + 0.98560028 * D);
-    double q  = _fx(280.459 + 0.98564736 * D);
-    double L  = _fx(q + 1.915 * _s(g) + 0.020 * _s(2 * g));
-    double e  = 23.439 - 0.00000036 * D;
-    double ra   = _fx(_a2(_c(e) * _s(L), _c(L)) / 15, r: 24.0);
+        (30.6001 * (m + 1)).floorToDouble() +
+        d +
+        B -
+        1524.5;
+    double D = jd - 2451545.0;
+    double g = _fx(357.529 + 0.98560028 * D);
+    double q = _fx(280.459 + 0.98564736 * D);
+    double L = _fx(q + 1.915 * _s(g) + 0.020 * _s(2 * g));
+    double e = 23.439 - 0.00000036 * D;
+    double ra = _fx(_a2(_c(e) * _s(L), _c(L)) / 15, r: 24.0);
     double decl = math.asin((_s(e) * _s(L)).clamp(-1.0, 1.0)) * 180 / math.pi;
-    double eqt  = q / 15 - ra;
-    double mid  = 12 - eqt - lng / 15 + tz;
+    double eqt = q / 15 - ra;
+    double mid = 12 - eqt - lng / 15 + tz;
     return [decl, mid];
   }
 
@@ -71,19 +85,23 @@ class _PC {
   }
 
   static double _asrAlt(double lat, double decl) {
-    double el  = 90 - (lat - decl).abs();
+    double el = 90 - (lat - decl).abs();
     double cot = _c(el) / _s(el).clamp(0.001, 1.0);
     return _at(1.0 / (1 + cot));
   }
 
   static Map<String, DateTime> compute({
-    required int y, required int m, required int d,
-    required double lat, required double lng, required double tz,
+    required int y,
+    required int m,
+    required int d,
+    required double lat,
+    required double lng,
+    required double tz,
   }) {
-    final sun   = _sun(y, m, d, lng, tz);
-    final decl  = sun[0];
-    final mid   = sun[1];
-    final sunH  = _ha(-0.833, lat, decl);
+    final sun = _sun(y, m, d, lng, tz);
+    final decl = sun[0];
+    final mid = sun[1];
+    final sunH = _ha(-0.833, lat, decl);
 
     DateTime toDateTime(double h) {
       final mins = (((h % 24) + 24) % 24 * 60).round();
@@ -91,21 +109,21 @@ class _PC {
     }
 
     return {
-      'Fajr'   : toDateTime(mid - _ha(-18,              lat, decl)),
-      'Dhuhr'  : toDateTime(mid + 0.033),
-      'Asr'    : toDateTime(mid + _ha(_asrAlt(lat, decl), lat, decl)),
+      'Fajr': toDateTime(mid - _ha(-18, lat, decl)),
+      'Dhuhr': toDateTime(mid + 0.033),
+      'Asr': toDateTime(mid + _ha(_asrAlt(lat, decl), lat, decl)),
       'Maghrib': toDateTime(mid + sunH),
-      'Isha'   : toDateTime(mid + _ha(-17,              lat, decl)),
+      'Isha': toDateTime(mid + _ha(-17, lat, decl)),
     };
   }
 }
-
 
 // ──────────────────────────────────────────────────────────
 // Main Shell  (HomeScreen = shell with bottom navigation)
 // ──────────────────────────────────────────────────────────
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -123,19 +141,21 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   void _onNav(int i) => setState(() {
-    _idx = i;
-    if (i < _activated.length) _activated[i] = true;
-  });
+        _idx = i;
+        if (i < _activated.length) _activated[i] = true;
+      });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bg,
       body: Stack(
-        children: List.generate(_pages.length, (i) => Offstage(
-          offstage: _idx != i,
-          child: _activated[i] ? _pages[i] : const SizedBox.shrink(),
-        )),
+        children: List.generate(
+            _pages.length,
+            (i) => Offstage(
+                  offstage: _idx != i,
+                  child: _activated[i] ? _pages[i] : const SizedBox.shrink(),
+                )),
       ),
       bottomNavigationBar: _BottomNav(current: _idx, onTap: _onNav),
     );
@@ -148,13 +168,14 @@ class _HomeScreenState extends State<HomeScreen> {
 class _BottomNav extends StatelessWidget {
   final int current;
   final ValueChanged<int> onTap;
+
   const _BottomNav({required this.current, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFF4FBFE), // Ice White bottom nav
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -170,11 +191,15 @@ class _BottomNav extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _tile(0, const IconData(0xe906, fontFamily: 'CustomIcons'), 'Home'),
-              _tile(1, const IconData(0xe900, fontFamily: 'CustomIcons'), 'Quran'),
-              _tile(2, const IconData(0xe903, fontFamily: 'CustomIcons'), 'Qibla'),
+              _tile(
+                  0, const IconData(0xe906, fontFamily: 'CustomIcons'), 'Home'),
+              _tile(1, const IconData(0xe900, fontFamily: 'CustomIcons'),
+                  'Quran'),
+              _tile(2, const IconData(0xe903, fontFamily: 'CustomIcons'),
+                  'Qibla'),
               // Tasbih: opens via Navigator
-              _tileNav(const IconData(0xe907, fontFamily: 'CustomIcons'), 'Tasbih', context),
+              _tileNav(const IconData(0xe907, fontFamily: 'CustomIcons'),
+                  'Tasbih', context),
             ],
           ),
         ),
@@ -194,11 +219,12 @@ class _BottomNav extends StatelessWidget {
           children: [
             Icon(iconData, color: sel ? _orange : _muted, size: 20),
             const SizedBox(height: 3),
-            Text(label, style: TextStyle(
-              fontSize: 11,
-              fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
-              color: sel ? _orange : _muted,
-            )),
+            Text(label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
+                  color: sel ? _orange : _muted,
+                )),
           ],
         ),
       ),
@@ -227,7 +253,9 @@ class _BottomNav extends StatelessWidget {
           children: [
             Icon(iconData, color: _muted, size: 28),
             const SizedBox(height: 3),
-            Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _muted)),
+            Text(label,
+                style: const TextStyle(
+                    fontSize: 11, fontWeight: FontWeight.w400, color: _muted)),
           ],
         ),
       ),
@@ -240,6 +268,7 @@ class _BottomNav extends StatelessWidget {
 // ──────────────────────────────────────────────────────────
 class _HomeTab extends StatefulWidget {
   const _HomeTab();
+
   @override
   State<_HomeTab> createState() => _HomeTabState();
 }
@@ -250,26 +279,33 @@ class _HomeTabState extends State<_HomeTab> {
 
   // Prayer times
   Map<String, DateTime> _pt = {};
-  String   _next = '...';
-  Duration _rem  = Duration.zero;
+  String _next = '...';
+  Duration _rem = Duration.zero;
 
   // Location
   String _loc = '';
-  double _lat = 24.8607;   // Karachi default
+  double _lat = 24.8607; // Karachi default
   double _lng = 67.0011;
 
   @override
   void initState() {
     super.initState();
+    NotificationService().scheduleInactivityReminder();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      setState(() { _now = DateTime.now(); _upd(); });
+      setState(() {
+        _now = DateTime.now();
+        _upd();
+      });
     });
     _initLocation();
   }
 
   @override
-  void dispose() { _timer.cancel(); super.dispose(); }
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
 
   // ── Location & prayer calculation ─────────────────────
   Future<void> _initLocation() async {
@@ -278,9 +314,11 @@ class _HomeTabState extends State<_HomeTab> {
       if (perm == LocationPermission.denied) {
         perm = await Geolocator.requestPermission();
       }
-      if (perm == LocationPermission.whileInUse || perm == LocationPermission.always) {
+      if (perm == LocationPermission.whileInUse ||
+          perm == LocationPermission.always) {
         final pos = await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(accuracy: LocationAccuracy.low),
+          locationSettings:
+              const LocationSettings(accuracy: LocationAccuracy.low),
         );
         _lat = pos.latitude;
         _lng = pos.longitude;
@@ -292,11 +330,12 @@ class _HomeTabState extends State<_HomeTab> {
             headers: {'User-Agent': 'IslamicApp/1.0', 'Accept-Language': 'en'},
           ).timeout(const Duration(seconds: 6));
           if (res.statusCode == 200) {
-            final j    = json.decode(res.body) as Map;
+            final j = json.decode(res.body) as Map;
             final addr = j['address'] as Map? ?? {};
             final city = addr['city'] ?? addr['town'] ?? addr['village'] ?? '';
-            final cc   = addr['country'] ?? '';
-            if (mounted) setState(() => _loc = city.isNotEmpty ? '$city, $cc' : cc);
+            final cc = addr['country'] ?? '';
+            if (mounted)
+              setState(() => _loc = city.isNotEmpty ? '$city, $cc' : cc);
           }
         } catch (_) {
           if (mounted) setState(() => _loc = '${_lat.toStringAsFixed(1)}°N');
@@ -311,13 +350,32 @@ class _HomeTabState extends State<_HomeTab> {
   }
 
   void _calcPrayers() {
-    final n  = DateTime.now();
+    final n = DateTime.now();
     final tz = n.timeZoneOffset.inMinutes / 60.0;
-    final t  = _PC.compute(
-      y: n.year, m: n.month, d: n.day,
-      lat: _lat, lng: _lng, tz: tz,
+    final t = _PC.compute(
+      y: n.year,
+      m: n.month,
+      d: n.day,
+      lat: _lat,
+      lng: _lng,
+      tz: tz,
     );
-    if (mounted) setState(() { _pt = t; _upd(); });
+    if (mounted)
+      setState(() {
+        _pt = t;
+        _upd();
+      });
+
+    // Schedule notifications for prayers
+    int id = 0;
+    _pt.forEach((name, time) {
+      NotificationService().schedulePrayerNotification(
+        id: id++,
+        title: 'Time for $name',
+        body: 'It is time for $name prayer.',
+        scheduledTime: time,
+      );
+    });
   }
 
   void _upd() {
@@ -326,12 +384,12 @@ class _HomeTabState extends State<_HomeTab> {
       final t = _pt[name];
       if (t != null && _now.isBefore(t)) {
         _next = name;
-        _rem  = t.difference(_now);
+        _rem = t.difference(_now);
         return;
       }
     }
     _next = 'Fajr';
-    _rem  = const Duration(hours: 5);
+    _rem = const Duration(hours: 5);
   }
 
   // ── Helpers ───────────────────────────────────────────
@@ -345,7 +403,20 @@ class _HomeTabState extends State<_HomeTab> {
   }
 
   String get _dateStr {
-    const mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const mn = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return '${_now.day} ${mn[_now.month - 1]}, ${_now.year}';
   }
 
@@ -383,7 +454,7 @@ class _HomeTabState extends State<_HomeTab> {
                             _quickGrid(),
                           ],
                         ),
-                        // Top spacing is 2 + 218 = 220 for Hero. 
+                        // Top spacing is 2 + 218 = 220 for Hero.
                         // The space between Hero and Grid is 18. Center = 229.
                         // Button height = 64. 229 - (64/2) = 197.
                         Positioned(
@@ -408,48 +479,54 @@ class _HomeTabState extends State<_HomeTab> {
 
   // ── AppBar ────────────────────────────────────────────
   Widget _appBar() => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-    child: Row(children: [
-      IconButton(icon: const Icon(Icons.menu, color: _dark), onPressed: () {}),
-      const Expanded(child: TranslatedText(
-        'ISLAMIC APP',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 17, fontWeight: FontWeight.w900,
-          color: _dark, letterSpacing: 2.5,
-        ),
-      )),
-      const LanguageSelectorButton(),
-    ]),
-  );
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: Row(children: [
+          const Padding(
+            padding: EdgeInsets.only(left: 8.0),
+            child: StreakWidget(),
+          ),
+          const Expanded(
+              child: TranslatedText(
+            'ISLAMIC APP',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w900,
+              color: _dark,
+              letterSpacing: 2.5,
+            ),
+          )),
+          const LanguageSelectorButton(),
+        ]),
+      );
 
   Widget _featureButtons() {
     return Center(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Calculate screen width to align exactly above the outer columns
-          double screenWidth = MediaQuery.of(context).size.width;
-          // The grid has 3 items, the gaps are between them.
-          // By giving the gap roughly 1/3 of the width, the buttons slide outward.
-          double spacing = (screenWidth * 0.33).clamp(80.0, 200.0); 
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Muhammad Button
-              _featureCircleButton(
-                imagePath: 'lib/assets/images/muhammad_name.png',
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AsmaUnNabiScreen())),
-              ),
-              SizedBox(width: spacing),
-              // Allah Button
-              _featureCircleButton(
-                imagePath: 'lib/assets/images/allah_name.png',
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AsmaUlHusnaScreen())),
-              ),
-            ],
-          );
-        }
-      ),
+      child: LayoutBuilder(builder: (context, constraints) {
+        // Calculate screen width to align exactly above the outer columns
+        double screenWidth = MediaQuery.of(context).size.width;
+        // The grid has 3 items, the gaps are between them.
+        // By giving the gap roughly 1/3 of the width, the buttons slide outward.
+        double spacing = (screenWidth * 0.33).clamp(80.0, 200.0);
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Muhammad Button
+            _featureCircleButton(
+              imagePath: 'lib/assets/images/muhammad_name.png',
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const AsmaUnNabiScreen())),
+            ),
+            SizedBox(width: spacing),
+            // Allah Button
+            _featureCircleButton(
+              imagePath: 'lib/assets/images/allah_name.png',
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const AsmaUlHusnaScreen())),
+            ),
+          ],
+        );
+      }),
     );
   }
 
@@ -470,7 +547,7 @@ class _HomeTabState extends State<_HomeTab> {
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFD4AF37).withValues(alpha: 0.25),
+              color: const Color(0xFF90BDE7).withValues(alpha: 0.25),
               blurRadius: 10,
               spreadRadius: 1,
               offset: const Offset(0, 4),
@@ -484,134 +561,164 @@ class _HomeTabState extends State<_HomeTab> {
 
   // ── Hero Card  (live clock + mosque silhouette) ───────
   Widget _hero() => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: Container(
-        height: 218,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [_gold1, _gold2],
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: Container(
+            height: 218,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [_gold1, _gold2],
+              ),
+            ),
+            child: Stack(children: [
+              // Home picture from assets
+              Positioned.fill(
+                child: Image.asset(
+                  'lib/assets/images/homepic.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
+              // Content overlay
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // ── Daily Dua ──
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF90BDE7).withValues(alpha: 0.25),
+                        // Pastel blue shade
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'رَبِّ زِدْنِي عِلْمًا',
+                              style: GoogleFonts.amiri(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
+                              textDirection: TextDirection.rtl,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '"O my Lord, increase me in knowledge"',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.white.withOpacity(0.9),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    // ── Info row (remaining time | date + location) ──
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF90BDE7).withValues(alpha: 0.25),
+                        // Pastel blue shade
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(children: [
+                        Expanded(
+                            child: Column(children: [
+                          TranslatedText('REMAINING TIME',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 8.5,
+                                letterSpacing: 1.3,
+                                color: Colors.white.withValues(alpha: 0.8),
+                                fontWeight: FontWeight.w600,
+                              )),
+                          const SizedBox(height: 2),
+                          Text(
+                            '$_next  $_remStr',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ])),
+                        Container(
+                            width: 1,
+                            height: 36,
+                            color: Colors.white.withValues(alpha: 0.3)),
+                        Expanded(
+                            child: Column(children: [
+                          Text(_dateStr,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 8.5,
+                                letterSpacing: 0.5,
+                                color: Colors.white.withValues(alpha: 0.8),
+                                fontWeight: FontWeight.w600,
+                              )),
+                          const SizedBox(height: 2),
+                          Text(
+                            _loc.isEmpty ? 'Locating...' : _loc,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
+                        ])),
+                      ]),
+                    ),
+                  ],
+                ),
+              ),
+            ]),
           ),
         ),
-        child: Stack(children: [
-          // Home picture from assets
-          Positioned.fill(
-            child: Image.asset(
-              'lib/assets/images/homepic.png',
-              fit: BoxFit.cover,
-            ),
-          ),
-          // Content overlay
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // ── Daily Dua ──
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.1), // <-- DUA KE BACKGROUND KA COLOR YAHAN HAI
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'رَبِّ زِدْنِي عِلْمًا',
-                          style: GoogleFonts.amiri(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                          textAlign: TextAlign.center,
-                          textDirection: TextDirection.rtl,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '"O my Lord, increase me in knowledge"',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.white.withOpacity(0.9),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-                // ── Info row (remaining time | date + location) ──
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.15), // <-- BOTTOM INFO KE BACKGROUND KA COLOR YAHAN HAI
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(children: [
-                    Expanded(child: Column(children: [
-                      TranslatedText('REMAINING TIME', 
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 8.5, letterSpacing: 1.3,
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontWeight: FontWeight.w600,
-                      )),
-                      const SizedBox(height: 2),
-                      Text(
-                        '$_next  $_remStr',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 13, fontWeight: FontWeight.w400, color: Colors.white,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ])),
-                    Container(width: 1, height: 36, color: Colors.white.withValues(alpha: 0.3)),
-                    Expanded(child: Column(children: [
-                      Text(_dateStr, style: GoogleFonts.montserrat(
-                        fontSize: 8.5, letterSpacing: 0.5,
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontWeight: FontWeight.w600,
-                      )),
-                      const SizedBox(height: 2),
-                      Text(
-                        _loc.isEmpty ? 'Locating...' : _loc,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 13, fontWeight: FontWeight.w400, color: Colors.white,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                      ),
-                    ])),
-                  ]),
-                ),
-              ],
-            ),
-          ),
-        ]),
-      ),
-    ),
-  );
+      );
 
   // ── Quick Feature Grid ────────────────────────────────
   Widget _quickGrid() {
     final items = [
-      _FItem('Quran',    const IconData(0xe900, fontFamily: 'CustomIcons'), () => _nav(const SurahListScreen())),
-      _FItem('Worship',  const IconData(0xe904, fontFamily: 'CustomIcons'), () => _nav(const WorshipHomeScreen())),
-      _FItem('Hadith',   Icomoon.hadith, () => _nav(const HadithBooksScreen())),
-      _FItem('Duas',     const IconData(0xe902, fontFamily: 'CustomIcons'), () => _nav(const DuasHomeScreen())),
-      _FItem('Prophets', Icomoon.prophetStory, () => _nav(const ProphetsListScreen())),
-      _FItem('Qibla',    const IconData(0xe903, fontFamily: 'CustomIcons'), () => _nav(const QiblaCompassScreen())),
+      _FItem('Quran', const IconData(0xe900, fontFamily: 'CustomIcons'),
+          () => _nav(const SurahListScreen())),
+      _FItem('Worship', const IconData(0xe904, fontFamily: 'CustomIcons'),
+          () => _nav(const WorshipHomeScreen())),
+      _FItem('Hadith', Icomoon.hadith, () => _nav(const HadithBooksScreen())),
+      _FItem('Supplication', const IconData(0xe902, fontFamily: 'CustomIcons'),
+          () => _nav(const DuasHomeScreen())),
+      _FItem('Prophets', Icomoon.prophetStory,
+          () => _nav(const ProphetsListScreen())),
+      _FItem('Qibla', const IconData(0xe903, fontFamily: 'CustomIcons'),
+          () => _nav(const QiblaCompassScreen())),
+    ];
+
+    final gradients = [
+      const [Color(0xFFDFF5F6), Color(0xFFA7F7FF)], // Cyan
+      const [Color(0xFFF1F1FC), Color(0xFFAEAEFF)], // Lavender
+      const [Color(0xFFEAF7ED), Color(0xFFB0FFC4)], // Mint Green
+      const [Color(0xFFFCECF3), Color(0xFFFAA9D0)], // Soft Pink
+      const [Color(0xFFF4FBFE), Color(0xFF9EE1FF)], // Light Blue
+      const [Color(0xFFFFF4E6), Color(0xFFFBD9AE)], // Soft Orange
     ];
 
     return Padding(
@@ -619,7 +726,11 @@ class _HomeTabState extends State<_HomeTab> {
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 14, 12, 10),
         decoration: BoxDecoration(
-          color: _cardBg,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFF4FCFE), Color(0xFFEDFDF5)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(22),
           boxShadow: [
             BoxShadow(
@@ -636,101 +747,370 @@ class _HomeTabState extends State<_HomeTab> {
           childAspectRatio: 0.95,
           crossAxisSpacing: 6,
           mainAxisSpacing: 6,
-          children: items.map(_featureCell).toList(),
+          children: List.generate(
+              items.length, (i) => _featureCell(items[i], gradients[i])),
         ),
       ),
     );
   }
 
-  Widget _featureCell(_FItem f) => GestureDetector(
-    onTap: f.onTap,
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        LiquidGlassContainer(
-          width: 58,
-          height: 58,
-          borderRadius: 16,
-          isTransparent: false,
-          glassColor: Colors.white,
-          child: Center(
-            child: Icon(f.icon, size: 26, color: _gold2),
-          ),
+  Widget _featureCell(_FItem f, List<Color> gradientColors) => GestureDetector(
+        onTap: f.onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: gradientColors,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: gradientColors[1].withValues(alpha: 0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Icon(
+                  f.icon,
+                  size: 26,
+                  color: Colors.white,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black12,
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TranslatedText(f.label,
+                style: GoogleFonts.montserrat(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: _dark,
+                )),
+          ],
         ),
-        const SizedBox(height: 8),
-        TranslatedText(f.label, style: GoogleFonts.montserrat(
-          fontSize: 11.5,
-          fontWeight: FontWeight.w600,
-          color: _dark,
-        )),
-      ],
-    ),
-  );
+      );
 
   // ── Prayer Times Section ──────────────────────────────
   Widget _prayerSection() {
-    final prayers = [
-      _PItem('Fajr',    '🌅', _ptStr('Fajr')),
-      _PItem('Dhuhr',   '☀️', _ptStr('Dhuhr')),
-      _PItem('Asr',     '🌤', _ptStr('Asr')),
-      _PItem('Maghrib', '🌙', _ptStr('Maghrib')),
-      _PItem('Isha',    '⭐', _ptStr('Isha')),
+    return _CircularPrayerTracker(
+      pt: _pt,
+      ptStr: _ptStr,
+      nextPrayer: _next,
+    );
+  }
+}
+
+// ── Circular Prayer Tracker ───────────────────────────────
+class _CircularPrayerTracker extends StatefulWidget {
+  final Map<String, DateTime> pt;
+  final String Function(String) ptStr;
+  final String nextPrayer;
+
+  const _CircularPrayerTracker({
+    super.key,
+    required this.pt,
+    required this.ptStr,
+    required this.nextPrayer,
+  });
+
+  @override
+  State<_CircularPrayerTracker> createState() => _CircularPrayerTrackerState();
+}
+
+class _CircularPrayerTrackerState extends State<_CircularPrayerTracker>
+    with SingleTickerProviderStateMixin {
+  // Fajr, Dhuhr/Jumma, Asr, Maghrib, Isha
+  List<bool> _ticked = [false, false, false, false, false];
+  late AnimationController _animCtrl;
+  late Animation<double> _progressAnim;
+
+  // Track sequence of checked indices
+  List<int> _checkedSequence = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _animCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 600));
+    _progressAnim = Tween<double>(begin: 0, end: 0)
+        .animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutBack));
+  }
+
+  @override
+  void dispose() {
+    _animCtrl.dispose();
+    super.dispose();
+  }
+
+  void _toggleTick(int index) {
+    setState(() {
+      _ticked[index] = !_ticked[index];
+      if (_ticked[index]) {
+        _checkedSequence.add(index);
+      } else {
+        _checkedSequence.remove(index);
+      }
+
+      double oldProgress = _progressAnim.value;
+      double newProgress = _checkedSequence.length / 5.0;
+      _progressAnim = Tween<double>(begin: oldProgress, end: newProgress)
+          .animate(
+              CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
+      _animCtrl.forward(from: 0);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isFriday = DateTime.now().weekday == DateTime.friday;
+    final String secondPrayerName = isFriday ? 'Jumma' : 'Dhuhr';
+
+    final names = ['Fajr', secondPrayerName, 'Asr', 'Maghrib', 'Isha'];
+    // Soft pastel colors matching the theme
+    final colors = [
+      const Color(0xFFA7F7FF),
+      // Cyan (Fajr)
+      isFriday ? const Color(0xFFFBD9AE) : const Color(0xFFAEAEFF),
+      // Jumma(Orange) / Dhuhr(Lavender)
+      const Color(0xFFB0FFC4),
+      // Mint Green (Asr)
+      const Color(0xFFFAA9D0),
+      // Pink (Maghrib)
+      const Color(0xFF9EE1FF),
+      // Light Blue (Isha)
     ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 22, 16, 12),
-          child: TranslatedText('Prayer Times', style: GoogleFonts.poppins(
-            fontSize: 18, fontWeight: FontWeight.bold, color: _dark,
-          )),
+    List<Color> activeColors = [];
+    for (int i = 0; i < 5; i++) {
+      if (_ticked[i]) activeColors.add(colors[i]);
+    }
+
+    if (activeColors.length == 1) {
+      activeColors.add(activeColors.first);
+    } else if (activeColors.isEmpty) {
+      activeColors = [
+        Colors.grey.withOpacity(0.1),
+        Colors.grey.withOpacity(0.1)
+      ];
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFAFDFF), // Ice white
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-        SizedBox(
-          height: 110,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: prayers.length,
-            itemBuilder: (_, i) => _prayerCard(prayers[i], prayers[i].name == _next),
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Donut Chart
+            SizedBox(
+              width: 160,
+              height: 160,
+              child: AnimatedBuilder(
+                  animation: _progressAnim,
+                  builder: (context, child) {
+                    return CustomPaint(
+                      painter: _PrayerDonutPainter(
+                        progress: _progressAnim.value,
+                        gradientColors: activeColors,
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${_checkedSequence.length}/5',
+                              style: GoogleFonts.poppins(
+                                fontSize: 34,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF1A2E44),
+                                height: 1.1,
+                              ),
+                            ),
+                            Text(
+                              'prayed',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF6B8FB5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Prayer List
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(5, (i) {
+                final String prayerKey = i == 1 ? 'Dhuhr' : names[i];
+                final String time = widget.ptStr(prayerKey);
+                return GestureDetector(
+                  onTap: () => _toggleTick(i),
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+                    child: Row(
+                      children: [
+                        // Tick indicator
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _ticked[i] ? colors[i] : Colors.transparent,
+                            border: Border.all(
+                              color: _ticked[i]
+                                  ? colors[i]
+                                  : const Color(0xFF6B8FB5).withOpacity(0.3),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: _ticked[i]
+                              ? const Icon(Icons.check,
+                                  size: 16, color: Colors.white)
+                              : null,
+                        ),
+                        const SizedBox(width: 12),
+                        // Name & Time
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                names[i],
+                                style: GoogleFonts.poppins(
+                                  fontSize: 15,
+                                  fontWeight: widget.nextPrayer == prayerKey
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  color: _ticked[i]
+                                      ? const Color(0xFF6B8FB5).withOpacity(0.5)
+                                      : const Color(0xFF1A2E44),
+                                  decoration: _ticked[i]
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                ),
+                              ),
+                              Text(
+                                time,
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color:
+                                      const Color(0xFF6B8FB5).withOpacity(0.8),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+}
+
+class _PrayerDonutPainter extends CustomPainter {
+  final double progress;
+  final List<Color> gradientColors;
+
+  _PrayerDonutPainter({required this.progress, required this.gradientColors});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 8;
+
+    // Background track
+    final trackPaint = Paint()
+      ..color = const Color(0xFF6B8FB5).withOpacity(0.12)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 14
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -math.pi / 2,
+      2 * math.pi,
+      false,
+      trackPaint,
+    );
+
+    if (progress <= 0) return;
+
+    final sweepAngle = 2 * math.pi * progress;
+
+    List<double> stops = [];
+    if (gradientColors.length == 2) {
+      stops = [0.0, progress.clamp(0.0, 1.0)];
+    } else {
+      for (int i = 0; i < gradientColors.length; i++) {
+        stops.add((i / (gradientColors.length - 1)) * progress);
+      }
+    }
+
+    final fillPaint = Paint()
+      ..shader = SweepGradient(
+        colors: gradientColors,
+        stops: stops,
+        transform: const GradientRotation(-math.pi / 2),
+      ).createShader(Rect.fromCircle(center: center, radius: radius))
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 14
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -math.pi / 2,
+      sweepAngle,
+      false,
+      fillPaint,
     );
   }
 
-  Widget _prayerCard(_PItem p, bool isNext) => Container(
-    width: 88,
-    margin: const EdgeInsets.only(right: 10),
-    decoration: BoxDecoration(
-      color: isNext ? _orange.withValues(alpha: 0.12) : Colors.white,
-      borderRadius: BorderRadius.circular(18),
-      border: isNext
-          ? Border.all(color: _orange.withValues(alpha: 0.35), width: 1.5)
-          : null,
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.05),
-          blurRadius: 8,
-          offset: const Offset(0, 3),
-        ),
-      ],
-    ),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(p.emoji, style: const TextStyle(fontSize: 26)),
-        const SizedBox(height: 3),
-        TranslatedText(p.name, style: GoogleFonts.poppins(
-          fontSize: 11, color: _muted, fontWeight: FontWeight.w500,
-        )),
-        Text(p.time, style: GoogleFonts.poppins(
-          fontSize: 15, fontWeight: FontWeight.bold,
-          color: isNext ? _orange : _dark,
-        )),
-      ],
-    ),
-  );
+  @override
+  bool shouldRepaint(covariant _PrayerDonutPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.gradientColors != gradientColors;
+  }
 }
 
 // ── Data models ───────────────────────────────────────────
@@ -739,10 +1119,12 @@ class _FItem {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
+
   const _FItem(this.label, this.icon, this.onTap);
 }
 
 class _PItem {
   final String name, emoji, time;
+
   const _PItem(this.name, this.emoji, this.time);
 }

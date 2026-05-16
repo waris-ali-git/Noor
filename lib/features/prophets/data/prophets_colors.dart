@@ -5,7 +5,7 @@ const List<List<int>> prophetColors = [
   [0xFFD5F5E8, 0xFFA8E8C8], // Nuh - mint green
   [0xFFF5E8D5, 0xFFE8C8A8], // Hud - warm sand
   [0xFFF5D5D5, 0xFFE8A8A8], // Salih - dusty rose
-  [0xFFF5F0D5, 0xFFE8D8A8], // Ibrahim - golden cream
+  [0xFFDBE9FA, 0xFFA6C7F2], // Ibrahim - whisper blue / baby blue
   [0xFFD5F5F5, 0xFFA8E0E8], // Ismail - aqua
   [0xFFE8D5F5, 0xFFD0A8E8], // Ishaq - lilac
   [0xFFD5EBF5, 0xFFA8CAE0], // Lut - steel blue

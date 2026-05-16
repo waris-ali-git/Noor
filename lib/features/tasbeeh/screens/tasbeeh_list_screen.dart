@@ -37,7 +37,7 @@ class _TasbeehListScreenState extends State<TasbeehListScreen> {
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: TasbeehColors.bronzeGold, size: 20),
+                color: TasbeehColors.steelBlue, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
           title: ShaderMask(
@@ -57,8 +57,8 @@ class _TasbeehListScreenState extends State<TasbeehListScreen> {
               icon: Icon(
                 _favoritesOnly ? Icons.favorite : Icons.favorite_border,
                 color: _favoritesOnly
-                    ? TasbeehColors.standardGold
-                    : TasbeehColors.bronzeGold,
+                    ? TasbeehColors.standardBlue
+                    : TasbeehColors.steelBlue,
               ),
               onPressed: () =>
                   setState(() => _favoritesOnly = !_favoritesOnly),
@@ -68,7 +68,7 @@ class _TasbeehListScreenState extends State<TasbeehListScreen> {
             preferredSize: const Size.fromHeight(1),
             child: Container(
               height: 1,
-              color: TasbeehColors.goldenCream2,
+              color: TasbeehColors.babyBlue,
             ),
           ),
         ),
@@ -98,8 +98,8 @@ class _TasbeehListScreenState extends State<TasbeehListScreen> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: selected
-                              ? TasbeehColors.darkerGold
-                              : TasbeehColors.goldenCream2,
+                              ? TasbeehColors.blueDark
+                              : TasbeehColors.babyBlue,
                         ),
                       ),
                       child: Text(
@@ -111,7 +111,7 @@ class _TasbeehListScreenState extends State<TasbeehListScreen> {
                               : FontWeight.w400,
                           color: selected
                               ? Colors.white
-                              : TasbeehColors.bronzeGold,
+                              : TasbeehColors.steelBlue,
                         ),
                       ),
                     ),
@@ -119,7 +119,7 @@ class _TasbeehListScreenState extends State<TasbeehListScreen> {
                 },
               ),
             ),
-            const GoldenDivider(opacity: 0.2),
+            const PrimaryDivider(opacity: 0.2),
             Expanded(
               child: counters.isEmpty
                   ? _buildEmpty()
@@ -144,7 +144,7 @@ class _TasbeehListScreenState extends State<TasbeehListScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.auto_awesome,
-              size: 48, color: TasbeehColors.goldenCream2),
+              size: 48, color: TasbeehColors.babyBlue),
           const SizedBox(height: 12),
           Text('No dhikr found', style: TasbeehTextStyles.subheading),
         ],
@@ -176,15 +176,15 @@ class _DhikrCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isActive
-                ? TasbeehColors.standardGold
-                : TasbeehColors.goldenCream2,
+                ? TasbeehColors.standardBlue
+                : TasbeehColors.babyBlue,
             width: isActive ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
               color: isActive
-                  ? TasbeehColors.standardGold.withOpacity(0.15)
-                  : TasbeehColors.standardGold.withOpacity(0.06),
+                  ? TasbeehColors.standardBlue.withOpacity(0.15)
+                  : TasbeehColors.standardBlue.withOpacity(0.06),
               blurRadius: isActive ? 16 : 8,
               offset: const Offset(0, 4),
             ),
@@ -198,14 +198,14 @@ class _DhikrCard extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    TasbeehColors.goldenCream,
-                    TasbeehColors.goldenCream2.withOpacity(0.5),
+                    TasbeehColors.whisperBlue,
+                    TasbeehColors.babyBlue.withOpacity(0.5),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: TasbeehColors.goldenCream2),
+                border: Border.all(color: TasbeehColors.babyBlue),
               ),
               child: Center(
                 child: Text(
@@ -229,7 +229,7 @@ class _DhikrCard extends StatelessWidget {
                           width: 6,
                           height: 6,
                           decoration: const BoxDecoration(
-                            color: TasbeehColors.standardGold,
+                            color: TasbeehColors.standardBlue,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -249,9 +249,9 @@ class _DhikrCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
                             value: counter.progress,
-                            backgroundColor: TasbeehColors.goldenCream2,
+                            backgroundColor: TasbeehColors.babyBlue,
                             valueColor: const AlwaysStoppedAnimation(
-                                TasbeehColors.standardGold),
+                                TasbeehColors.standardBlue),
                             minHeight: 4,
                           ),
                         ),
@@ -273,8 +273,8 @@ class _DhikrCard extends StatelessWidget {
                 counter.isFavorite ? Icons.favorite : Icons.favorite_border,
                 size: 20,
                 color: counter.isFavorite
-                    ? TasbeehColors.standardGold
-                    : TasbeehColors.goldenCream2,
+                    ? TasbeehColors.standardBlue
+                    : TasbeehColors.babyBlue,
               ),
             ),
           ],

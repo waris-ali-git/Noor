@@ -4,52 +4,52 @@
 import 'package:flutter/material.dart';
 
 // ═══════════════════════════════════════════
-//   GOLDEN THEME COLORS
+//   PASTEL LIGHT BLUE THEME COLORS
 // ═══════════════════════════════════════════
 
 class TasbeehColors {
-  // Core Golds
-  static const Color standardGold = Color(0xFFD4AF37);
-  static const Color goldLight = Color(0xFFFFD28A);
-  static const Color goldDeep = Color(0xFFFFAA5A);
-  static const Color darkerGold = Color(0xFFB8960C);
-  static const Color softGold = Color(0xFFFFFDF5);
-  static const Color bronzeGold = Color(0xFF948160);
-  static const Color goldenCream = Color(0xFFF5F0D5);
-  static const Color goldenCream2 = Color(0xFFE8D8A8);
-  static const Color amberGold = Color(0xFFFFC107);
+  // Core Blues  (replaces the old gold palette)
+  static const Color standardBlue  = Color(0xFF90BDE7); // Carolina Blue   — was standardGold
+  static const Color blueLight     = Color(0xFFD9F1FD); // Powder Blue     — was goldLight
+  static const Color blueMid       = Color(0xFFA6C7F2); // Baby Blue       — was goldDeep
+  static const Color blueDark      = Color(0xFF6FA8D8); // deeper Carolina — was darkerGold
+  static const Color iceWhite      = Color(0xFFFAFDFF); // Ice White       — was softGold
+  static const Color steelBlue     = Color(0xFF6B8FB5); // muted steel     — was bronzeGold
+  static const Color whisperBlue   = Color(0xFFDBE9FA); // Whisper Blue    — was goldenCream
+  static const Color babyBlue      = Color(0xFFA6C7F2); // Baby Blue       — was goldenCream2
+  static const Color skyBlue       = Color(0xFF90BDE7); // sky accent      — was amberGold
 
   // Backgrounds
-  static const Color background = Color(0xFFFFFDF5);        // softGold
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceGold = Color(0xFFF5F0D5);       // goldenCream
+  static const Color background    = Color(0xFFFAFDFF); // iceWhite        — was softGold bg
+  static const Color surface       = Color(0xFFFAFDFF); // iceWhite        — was pure white
+  static const Color surfaceBlue   = Color(0xFFDBE9FA); // whisperBlue     — was goldenCream surface
 
-  // Text
-  static const Color textPrimary = Color(0xFF2C2415);
-  static const Color textSecondary = Color(0xFF6B5B35);
-  static const Color textLight = Color(0xFF948160);          // bronzeGold
+  // Text  (kept neutral so Arabic text stays readable)
+  static const Color textPrimary   = Color(0xFF1A2E44); // deep navy
+  static const Color textSecondary = Color(0xFF4A6B8A); // muted blue-grey
+  static const Color textLight     = Color(0xFF6B8FB5); // steelBlue
 
   // Gradient stops
-  static const List<Color> goldGradient = [
-    Color(0xFFFFD28A),  // goldLight
-    Color(0xFFD4AF37),  // standardGold
-    Color(0xFFB8960C),  // darkerGold
+  static const List<Color> blueGradient = [
+    Color(0xFFD9F1FD),  // blueLight  (Powder Blue)
+    Color(0xFF90BDE7),  // standardBlue (Carolina Blue)
+    Color(0xFF6FA8D8),  // blueDark
   ];
 
   static const List<Color> softGradient = [
-    Color(0xFFFFFDF5),  // softGold
-    Color(0xFFF5F0D5),  // goldenCream
-    Color(0xFFE8D8A8),  // goldenCream2
+    Color(0xFFFAFDFF),  // iceWhite
+    Color(0xFFDBE9FA),  // whisperBlue
+    Color(0xFFA6C7F2),  // babyBlue
   ];
 
   static LinearGradient get primaryGradient => const LinearGradient(
-    colors: goldGradient,
+    colors: blueGradient,
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static LinearGradient get backgroundGradient => const LinearGradient(
-    colors: [Color(0xFFFFFDF5), Color(0xFFF5F0D5)],
+    colors: [Color(0xFFFAFDFF), Color(0xFFDBE9FA)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );

@@ -20,7 +20,7 @@ class TasbeehSettingsScreen extends StatelessWidget {
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: TasbeehColors.bronzeGold, size: 20),
+                color: TasbeehColors.steelBlue, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
           title: ShaderMask(
@@ -36,7 +36,7 @@ class TasbeehSettingsScreen extends StatelessWidget {
           ),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
-            child: Container(height: 1, color: TasbeehColors.goldenCream2),
+            child: Container(height: 1, color: TasbeehColors.babyBlue),
           ),
         ),
         body: ListView(
@@ -161,7 +161,7 @@ class _SettingsSection extends StatelessWidget {
             style: TasbeehTextStyles.caption.copyWith(
               letterSpacing: 1.5,
               fontWeight: FontWeight.w700,
-              color: TasbeehColors.bronzeGold,
+              color: TasbeehColors.steelBlue,
             ),
           ),
         ),
@@ -169,10 +169,10 @@ class _SettingsSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: TasbeehColors.surface,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: TasbeehColors.goldenCream2),
+            border: Border.all(color: TasbeehColors.babyBlue),
             boxShadow: [
               BoxShadow(
-                color: TasbeehColors.standardGold.withOpacity(0.06),
+                color: TasbeehColors.standardBlue.withOpacity(0.06),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -210,11 +210,11 @@ class _SettingsTile extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: TasbeehColors.goldenCream,
+              color: TasbeehColors.whisperBlue,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: TasbeehColors.goldenCream2),
+              border: Border.all(color: TasbeehColors.babyBlue),
             ),
-            child: Icon(icon, size: 20, color: TasbeehColors.bronzeGold),
+            child: Icon(icon, size: 20, color: TasbeehColors.steelBlue),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -233,8 +233,8 @@ class _SettingsTile extends StatelessWidget {
           Switch.adaptive(
             value: value,
             onChanged: onChanged,
-            activeColor: TasbeehColors.standardGold,
-            activeTrackColor: TasbeehColors.goldLight,
+            activeColor: TasbeehColors.standardBlue,
+            activeTrackColor: TasbeehColors.blueLight,
           ),
         ],
       ),

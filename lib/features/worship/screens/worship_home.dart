@@ -7,6 +7,7 @@ import 'namaz/namaz_screen.dart';
 import 'roza/roza_screen.dart';
 import 'zakat/zakat_screen.dart';
 import 'hajj/hajj_screen.dart';
+import '../../../core/constants.dart';
 
 class WorshipHomeScreen extends StatelessWidget {
   const WorshipHomeScreen({super.key});
@@ -17,44 +18,44 @@ class WorshipHomeScreen extends StatelessWidget {
       {
         'title': 'Kalma',
         'subtitle': 'The Declaration of Faith',
-        'icon': Icons.menu_book,
-        'color': Colors.teal,
+        'image': 'lib/assets/images/worship/kalma.png',
+        'color': const Color(0xFF90BDE7), // Carolina Blue
         'screen': const KalmaScreen(),
       },
       {
         'title': 'Namaz',
         'subtitle': 'The Five Daily Prayers',
-        'icon': Icons.pan_tool_alt_rounded,
-        'color': Colors.blue,
+        'image': 'lib/assets/images/worship/namaz.png',
+        'color': const Color(0xFFD9F1FD), // Powder Blue
         'screen': const NamazScreen(),
       },
       {
         'title': 'Roza',
         'subtitle': 'Fasting in Ramadan',
-        'icon': Icons.brightness_3,
-        'color': Colors.purple,
+        'image': 'lib/assets/images/worship/roza.png',
+        'color': const Color(0xFFA6C7F2), // Baby Blue
         'screen': const RozaScreen(),
       },
       {
         'title': 'Zakat',
         'subtitle': 'Obligatory Charity',
-        'icon': Icons.volunteer_activism,
-        'color': Colors.orange,
+        'image': 'lib/assets/images/worship/zakat.png',
+        'color': const Color(0xFFDBE9FA), // Whisper Blue
         'screen': const ZakatScreen(),
       },
       {
         'title': 'Hajj',
         'subtitle': 'Pilgrimage to Makkah',
-        'icon': Icons.location_on,
-        'color': Colors.brown,
+        'image': 'lib/assets/images/worship/hajj.png',
+        'color': const Color(0xFF6B8FB5), // Steel Blue
         'screen': const HajjScreen(),
       },
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F3), // Match neumorphic base
+      backgroundColor: TasbeehColors.iceWhite, // Ice White
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF0F0F3),
+        backgroundColor: TasbeehColors.iceWhite,
         elevation: 0,
         title: const TranslatedText('5 Pillars of Islam', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1C1C1E))),
         centerTitle: true,
@@ -69,7 +70,7 @@ class WorshipHomeScreen extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: TranslatedText(
                 'Explore the foundational acts of worship in Islam.',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(fontSize: 16, color: Color(0xFF4A6B8A)),
               ),
             ),
             GridView.builder(
@@ -92,52 +93,62 @@ class WorshipHomeScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => pillar['screen'] as Widget),
                     );
                   },
-                  child: LiquidGlassContainer(
-                    borderRadius: 24,
-                    padding: const EdgeInsets.all(16),
-                    glassColor: (pillar['color'] as Color).withOpacity(0.12),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: (pillar['color'] as Color).withOpacity(0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            pillar['icon'] as IconData,
-                            color: (pillar['color'] as Color),
-                            size: 28,
-                          ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      image: DecorationImage(
+                        image: AssetImage(pillar['image'] as String),
+                        fit: BoxFit.cover,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
                         ),
-                        const SizedBox(height: 12),
-                        Flexible(
-                          child: TranslatedText(
+                      ],
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.05),
+                            Colors.black.withOpacity(0.55),
+                          ],
+                          stops: const [0.0, 0.6, 1.0],
+                        ),
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TranslatedText(
                             pillar['title'] as String,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF1C1C1E),
+                              color: Colors.white,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Flexible(
-                          child: TranslatedText(
+                          const SizedBox(height: 4),
+                          TranslatedText(
                             pillar['subtitle'] as String,
-                            textAlign: TextAlign.center,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 10,
-                              color: const Color(0xFF1C1C1E).withOpacity(0.5),
+                              fontSize: 12,
+                              color: Colors.white.withOpacity(0.85),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 );

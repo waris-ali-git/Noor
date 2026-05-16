@@ -38,7 +38,7 @@ class VersePlaybackBar extends StatelessWidget {
               ),
             ],
             border: Border.all(
-              color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+              color: const Color(0xFF90BDE7).withValues(alpha: 0.2),
             ),
           ),
             child: SafeArea(
@@ -72,7 +72,7 @@ class VersePlaybackBar extends StatelessWidget {
                                   Text(
                                     'Ayah ${state.currentAyahInSurah} of ${state.totalAyahs}',
                                     style: const TextStyle(
-                                      color: Color(0xFFB8960C),
+                                      color: Color(0xFF6FA8D8),
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -97,14 +97,14 @@ class VersePlaybackBar extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFD4AF37).withValues(alpha: 0.1),
+                            color: const Color(0xFF90BDE7).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.3)),
+                            border: Border.all(color: const Color(0xFF90BDE7).withValues(alpha: 0.3)),
                           ),
                           child: Text(
                             '${state.speed}x',
                             style: const TextStyle(
-                              color: Color(0xFFB8960C),
+                              color: Color(0xFF6FA8D8),
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -217,9 +217,9 @@ class _StepDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isActive
-        ? const Color(0xFFD4AF37)
+        ? const Color(0xFF90BDE7)
         : isPast
-            ? const Color(0xFFD4AF37).withValues(alpha: 0.6)
+            ? const Color(0xFF90BDE7).withValues(alpha: 0.6)
             : Colors.grey[300]!;
 
     return Column(
@@ -233,7 +233,7 @@ class _StepDot extends StatelessWidget {
             color: color,
             shape: BoxShape.circle,
             boxShadow: isActive
-                ? [BoxShadow(color: const Color(0xFFD4AF37).withValues(alpha: 0.5), blurRadius: 6)]
+                ? [BoxShadow(color: const Color(0xFF90BDE7).withValues(alpha: 0.5), blurRadius: 6)]
                 : null,
           ),
         ),
@@ -241,7 +241,7 @@ class _StepDot extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: isActive ? const Color(0xFFB8960C) : Colors.grey[400],
+            color: isActive ? const Color(0xFF6FA8D8) : Colors.grey[400],
             fontSize: 9,
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
           ),
@@ -261,7 +261,7 @@ class _StepLine extends StatelessWidget {
       child: Container(
         height: 2,
         margin: const EdgeInsets.only(bottom: 14),
-        color: active ? const Color(0xFFD4AF37) : Colors.grey[200],
+        color: active ? const Color(0xFF90BDE7) : Colors.grey[200],
       ),
     );
   }
@@ -286,7 +286,7 @@ class _ControlButton extends StatelessWidget {
         message: tooltip ?? '',
         child: Padding(
           padding: const EdgeInsets.all(6),
-          child: Icon(icon, color: const Color(0xFFB8960C), size: 22),
+          child: Icon(icon, color: const Color(0xFF6FA8D8), size: 22),
         ),
       ),
     );
@@ -313,13 +313,13 @@ class _PlayPauseButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: const LinearGradient(
-            colors: [Color(0xFFD4AF37), Color(0xFFB8960C)],
+            colors: [Color(0xFF90BDE7), Color(0xFF6FA8D8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
+              color: const Color(0xFF90BDE7).withValues(alpha: 0.4),
               blurRadius: 12,
               spreadRadius: 1,
             ),
@@ -365,10 +365,10 @@ class _AudioProgressSlider extends StatelessWidget {
                   trackHeight: 2,
                   thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 4),
                   overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
-                  activeTrackColor: const Color(0xFFD4AF37),
+                  activeTrackColor: const Color(0xFF90BDE7),
                   inactiveTrackColor: Colors.grey[200],
-                  thumbColor: const Color(0xFFB8960C),
-                  overlayColor: const Color(0xFFD4AF37).withValues(alpha: 0.1),
+                  thumbColor: const Color(0xFF6FA8D8),
+                  overlayColor: const Color(0xFF90BDE7).withValues(alpha: 0.1),
                 ),
                 child: Slider(
                   value: value,

@@ -74,7 +74,7 @@ class _AddTasbeehScreenState extends State<AddTasbeehScreen> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.close_rounded,
-                color: TasbeehColors.bronzeGold),
+                color: TasbeehColors.steelBlue),
             onPressed: () => Navigator.pop(context),
           ),
           title: ShaderMask(
@@ -91,7 +91,7 @@ class _AddTasbeehScreenState extends State<AddTasbeehScreen> {
           centerTitle: true,
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
-            child: Container(height: 1, color: TasbeehColors.goldenCream2),
+            child: Container(height: 1, color: TasbeehColors.babyBlue),
           ),
         ),
         body: Form(
@@ -165,8 +165,8 @@ class _AddTasbeehScreenState extends State<AddTasbeehScreen> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: selected
-                              ? TasbeehColors.darkerGold
-                              : TasbeehColors.goldenCream2,
+                              ? TasbeehColors.blueDark
+                              : TasbeehColors.babyBlue,
                         ),
                       ),
                       child: Text(
@@ -175,7 +175,7 @@ class _AddTasbeehScreenState extends State<AddTasbeehScreen> {
                           fontSize: 13,
                           color: selected
                               ? Colors.white
-                              : TasbeehColors.bronzeGold,
+                              : TasbeehColors.steelBlue,
                           fontWeight: selected
                               ? FontWeight.w600
                               : FontWeight.w400,
@@ -195,7 +195,7 @@ class _AddTasbeehScreenState extends State<AddTasbeehScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: TasbeehColors.standardGold.withOpacity(0.4),
+                        color: TasbeehColors.standardBlue.withOpacity(0.4),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),
@@ -269,16 +269,16 @@ class _AddTasbeehScreenState extends State<AddTasbeehScreen> {
         const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: TasbeehColors.goldenCream2),
+          borderSide: const BorderSide(color: TasbeehColors.babyBlue),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: TasbeehColors.goldenCream2),
+          borderSide: const BorderSide(color: TasbeehColors.babyBlue),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(
-              color: TasbeehColors.standardGold, width: 1.5),
+              color: TasbeehColors.standardBlue, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

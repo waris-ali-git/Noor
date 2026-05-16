@@ -6,12 +6,12 @@ import '../../core/constants.dart';
 //   CIRCULAR PROGRESS PAINTER
 // ═══════════════════════════════════════════
 
-class GoldenArcPainter extends CustomPainter {
+class PrimaryArcPainter extends CustomPainter {
   final double progress;
   final double strokeWidth;
   final bool showGlow;
 
-  GoldenArcPainter({
+  PrimaryArcPainter({
     required this.progress,
     this.strokeWidth = 6.0,
     this.showGlow = true,
@@ -24,7 +24,7 @@ class GoldenArcPainter extends CustomPainter {
 
     // ── Track arc ──
     final trackPaint = Paint()
-      ..color = TasbeehColors.goldenCream2.withOpacity(0.5)
+      ..color = TasbeehColors.babyBlue.withOpacity(0.5)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
@@ -46,8 +46,8 @@ class GoldenArcPainter extends CustomPainter {
           startAngle: -math.pi / 2,
           endAngle: -math.pi / 2 + 2 * math.pi * progress,
           colors: [
-            TasbeehColors.goldLight.withOpacity(0.0),
-            TasbeehColors.standardGold.withOpacity(0.3),
+            TasbeehColors.blueLight.withOpacity(0.0),
+            TasbeehColors.standardBlue.withOpacity(0.3),
           ],
         ).createShader(Rect.fromCircle(center: center, radius: radius))
         ..style = PaintingStyle.stroke
@@ -70,9 +70,9 @@ class GoldenArcPainter extends CustomPainter {
         startAngle: -math.pi / 2,
         endAngle: -math.pi / 2 + 2 * math.pi * progress,
         colors: const [
-          Color(0xFFFFD28A),  // goldLight
-          Color(0xFFD4AF37),  // standardGold
-          Color(0xFFB8960C),  // darkerGold
+          Color(0xFFD9F1FD),  // blueLight
+          Color(0xFF90BDE7),  // standardBlue
+          Color(0xFF6FA8D8),  // blueDark
         ],
         stops: const [0.0, 0.5, 1.0],
       ).createShader(Rect.fromCircle(center: center, radius: radius))
@@ -95,7 +95,7 @@ class GoldenArcPainter extends CustomPainter {
       final tipY = center.dy + radius * math.sin(tipAngle);
 
       final dotPaint = Paint()
-        ..color = TasbeehColors.standardGold
+        ..color = TasbeehColors.standardBlue
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(Offset(tipX, tipY), strokeWidth / 2 + 1, dotPaint);
@@ -103,7 +103,7 @@ class GoldenArcPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(GoldenArcPainter oldDelegate) =>
+  bool shouldRepaint(PrimaryArcPainter oldDelegate) =>
       oldDelegate.progress != progress;
 }
 
@@ -163,12 +163,12 @@ class TasbeehBeadsRow extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isActive
-                    ? TasbeehColors.standardGold
-                    : TasbeehColors.goldenCream2,
+                    ? TasbeehColors.standardBlue
+                    : TasbeehColors.babyBlue,
                 boxShadow: isActive
                     ? [
                   BoxShadow(
-                    color: TasbeehColors.standardGold.withOpacity(0.4),
+                    color: TasbeehColors.standardBlue.withOpacity(0.4),
                     blurRadius: 6,
                     spreadRadius: 1,
                   )
@@ -184,16 +184,16 @@ class TasbeehBeadsRow extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════
-//   GOLD ICON BUTTON
+//   PRIMARY ICON BUTTON
 // ═══════════════════════════════════════════
 
-class GoldenIconButton extends StatelessWidget {
+class PrimaryIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final double size;
   final bool filled;
 
-  const GoldenIconButton({
+  const PrimaryIconButton({
     super.key,
     required this.icon,
     required this.onTap,
@@ -213,12 +213,12 @@ class GoldenIconButton extends StatelessWidget {
           gradient: filled ? TasbeehColors.primaryGradient : null,
           color: filled ? null : TasbeehColors.surface,
           border: Border.all(
-            color: TasbeehColors.goldenCream2,
+            color: TasbeehColors.babyBlue,
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: TasbeehColors.standardGold.withOpacity(0.15),
+              color: TasbeehColors.standardBlue.withOpacity(0.15),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -227,7 +227,7 @@ class GoldenIconButton extends StatelessWidget {
         child: Icon(
           icon,
           size: size * 0.42,
-          color: filled ? Colors.white : TasbeehColors.bronzeGold,
+          color: filled ? Colors.white : TasbeehColors.steelBlue,
         ),
       ),
     );
@@ -235,13 +235,13 @@ class GoldenIconButton extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════
-//   GOLDEN DIVIDER
+//   PRIMARY DIVIDER
 // ═══════════════════════════════════════════
 
-class GoldenDivider extends StatelessWidget {
+class PrimaryDivider extends StatelessWidget {
   final double opacity;
 
-  const GoldenDivider({super.key, this.opacity = 0.3});
+  const PrimaryDivider({super.key, this.opacity = 0.3});
 
   @override
   Widget build(BuildContext context) {
@@ -252,8 +252,8 @@ class GoldenDivider extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             Colors.transparent,
-            TasbeehColors.standardGold.withOpacity(opacity),
-            TasbeehColors.standardGold.withOpacity(opacity),
+            TasbeehColors.standardBlue.withOpacity(opacity),
+            TasbeehColors.standardBlue.withOpacity(opacity),
             Colors.transparent,
           ],
         ),
@@ -285,10 +285,10 @@ class StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: TasbeehColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: TasbeehColors.goldenCream2, width: 1),
+        border: Border.all(color: TasbeehColors.babyBlue, width: 1),
         boxShadow: [
           BoxShadow(
-            color: TasbeehColors.standardGold.withOpacity(0.08),
+            color: TasbeehColors.standardBlue.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -296,7 +296,7 @@ class StatCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, color: TasbeehColors.standardGold, size: 22),
+          Icon(icon, color: TasbeehColors.standardBlue, size: 22),
           const SizedBox(height: 8),
           Text(
             value,

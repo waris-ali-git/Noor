@@ -57,6 +57,8 @@ dependencies:
   screenshot: ^3.0.0
   vibration: ^3.1.8 # Haptic / vibration
   wakelock_plus: ^1.2.8 # Keep screen on
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
 
 
 dev_dependencies:
@@ -143,6 +145,7 @@ flutter:
     - lib/assets/images/quran.png
     - lib/assets/images/allah_name.png
     - lib/assets/images/muhammad_name.png
+    - lib/assets/images/worship/
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a

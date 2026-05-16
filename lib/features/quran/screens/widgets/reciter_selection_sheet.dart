@@ -76,7 +76,7 @@ class _ReciterSelectionSheetState extends State<ReciterSelectionSheet> {
                 final isSelected = _selectedReciter.id == reciter.id;
 
                 return Material(
-                  color: isSelected ? Colors.green[50] : Colors.transparent,
+                  color: isSelected ? const Color(0xFFDBE9FA) : Colors.transparent,
                   child: InkWell(
                     onTap: () async {
                       setState(() => _selectedReciter = reciter);
@@ -92,7 +92,7 @@ class _ReciterSelectionSheetState extends State<ReciterSelectionSheet> {
                             height: 56,
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Color(0xFF1B5E20),
+                              color: Color(0xFF90BDE7),
                             ),
                             child: ClipOval(
                               child: Image.asset(
@@ -153,7 +153,7 @@ class _ReciterSelectionSheetState extends State<ReciterSelectionSheet> {
                           if (isSelected)
                             const Icon(
                               Icons.check_circle,
-                              color: Color(0xFF1B5E20),
+                              color: Color(0xFF90BDE7),
                               size: 24,
                             )
                           else
@@ -178,7 +178,7 @@ class _ReciterSelectionSheetState extends State<ReciterSelectionSheet> {
               label: 'Done',
               width: double.infinity,
               height: 52,
-              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1B5E20)),
+              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF90BDE7)),
               onTap: () => Navigator.pop(context),
             ),
           ),

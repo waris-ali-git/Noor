@@ -103,7 +103,7 @@ class BismillahSkeletonHeader extends StatelessWidget {
       margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1B5E20), Color(0xFF388E3C)],
+          colors: [Color(0xFF90BDE7), Color(0xFF388E3C)],
         ),
         borderRadius: BorderRadius.circular(16),
       ),

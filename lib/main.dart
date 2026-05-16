@@ -8,10 +8,13 @@ import 'features/home/screens/home_screen.dart';
 import 'core/state/language_cubit.dart';
 import 'core/di.dart';
 
+import 'core/services/notification_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await setupDependencies();
+  await NotificationService().init();
   runApp(const IslamicApp());
 }
 
@@ -35,7 +38,7 @@ class IslamicApp extends StatelessWidget {
             theme: ThemeData(
               useMaterial3: true,
               colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xFF1B5E20),
+                seedColor: const Color(0xFF90BDE7),
                 brightness: Brightness.light,
               ),
               fontFamily: 'Poppins',

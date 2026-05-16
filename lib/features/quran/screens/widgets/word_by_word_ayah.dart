@@ -40,12 +40,12 @@ class WordByWordAyahWidget extends StatelessWidget {
 
   // Har word ko ek rng — cycle karta rahe (elegant scheme)
   static const List<Color> _wordColors = [
-    Color(0xFF0F4C81), // Classic Blue
-    Color(0xFF9B1B30), // Deep Red
-    Color(0xFF2E4053), // Slate
-    Color(0xFF8E44AD), // Muted Purple
-    Color(0xFFC0392B), // Brick
-    Color(0xFF229954), // Emerald
+    Color(0xFFF06292), // Soft Neon Magenta
+    Color(0xFF81C784), // Soft Neon Lime
+    Color(0xFFBA68C8), // Soft Plasma Violet
+    Color(0xFF64B5F6), // Soft Deep Electric Blue
+    Color(0xFFF48FB1), // Soft Hyper Pink
+    Color(0xFF4FC3F7), // Soft Cyber Sky
   ];
 
   @override
@@ -164,31 +164,6 @@ class WordByWordAyahWidget extends StatelessWidget {
             child: Row(
               children: [
                 InkWell(
-                  onTap: onTafseerTap,
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icomoon.tafseer, color: Colors.grey, size: 18),
-                      SizedBox(width: 6),
-                      Text('Tafsirs', style: TextStyle(color: Colors.grey, fontSize: 14)),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 20),
-                // Tajweed Color Guide icon
-                GestureDetector(
-                  onTap: () => showTajweedLegendDialog(context),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.palette, color: Color(0xFFD4AF37), size: 18),
-                      SizedBox(width: 6),
-                      Text('Tajweed', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 14, fontWeight: FontWeight.w500)),
-                    ],
-                  ),
-                ),
-                const Spacer(),
-                InkWell(
                   onTap: () {
                     showGeneralDialog(
                       context: context,
@@ -225,6 +200,18 @@ class WordByWordAyahWidget extends StatelessWidget {
                       Icon(CustomIconsV2.translation, color: Colors.grey, size: 18),
                       SizedBox(width: 6),
                       Text('Translations', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                InkWell(
+                  onTap: onTafseerTap,
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icomoon.tafseer, color: Colors.grey, size: 18),
+                      SizedBox(width: 6),
+                      Text('Tafsirs', style: TextStyle(color: Colors.grey, fontSize: 14)),
                     ],
                   ),
                 ),
@@ -335,7 +322,7 @@ class _WordByWordGrid extends StatelessWidget {
                           Text(
                             word.transliteration!,
                             style: const TextStyle(
-                              color: Color(0xFFD4AF37),
+                              color: Color(0xFF90BDE7),
                               fontSize: 12,
                               fontStyle: FontStyle.italic,
                             ),
@@ -417,7 +404,7 @@ class _WordCard extends StatelessWidget {
             Text(
               word.transliteration!,
               style: TextStyle(
-                color: const Color(0xFFD4AF37), // Golden color defined in app
+                color: const Color(0xFF90BDE7), // Golden color defined in app
                 fontSize: translationFontSize - 1,
                 fontStyle: FontStyle.italic,
                 fontWeight: FontWeight.w500,

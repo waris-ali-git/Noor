@@ -21,7 +21,7 @@ class _TranslationSelectionScreenState extends State<TranslationSelectionScreen>
       backgroundColor: const Color(0xFFF8F5F0),
       appBar: AppBar(
         title: const Text('Select Translation'),
-        backgroundColor: const Color(0xFF1B5E20),
+        backgroundColor: const Color(0xFF90BDE7),
         foregroundColor: Colors.white,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(70),
@@ -32,7 +32,7 @@ class _TranslationSelectionScreenState extends State<TranslationSelectionScreen>
               decoration: InputDecoration(
                 hintText: 'Search language or translator...',
                 hintStyle: TextStyle(color: Colors.grey[600]),
-                prefixIcon: const Icon(Icons.search, color: Color(0xFF1B5E20)),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF90BDE7)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -105,7 +105,7 @@ class _TranslationSelectionScreenState extends State<TranslationSelectionScreen>
                       subtitle: Text('${editions.length} versions'),
                       trailing: Icon(
                         isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                        color: const Color(0xFF1B5E20),
+                        color: const Color(0xFF90BDE7),
                       ),
                       children: editions.map((edition) {
                         final isSelected = edition.identifier == currentSelection;
@@ -115,7 +115,7 @@ class _TranslationSelectionScreenState extends State<TranslationSelectionScreen>
                             edition.englishName,
                             style: TextStyle(
                               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              color: isSelected ? const Color(0xFF1B5E20) : Colors.black87,
+                              color: isSelected ? const Color(0xFF90BDE7) : Colors.black87,
                             ),
                           ),
                           subtitle: Text(
@@ -125,7 +125,7 @@ class _TranslationSelectionScreenState extends State<TranslationSelectionScreen>
                             ),
                           ),
                           trailing: isSelected 
-                            ? const Icon(Icons.check_circle, color: Color(0xFF1B5E20))
+                            ? const Icon(Icons.check_circle, color: Color(0xFF90BDE7))
                             : null,
                           onTap: () {
                             bloc.add(ChangeTranslationEvent(edition: edition.identifier));

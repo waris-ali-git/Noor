@@ -55,13 +55,13 @@ class AyahToolbar extends StatelessWidget {
                           child: SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF1B5E20)),
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF90BDE7)),
                           ),
                         )
                       : IconButton(
                           icon: Icon(
                             isMyArabic && playing == true ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                            color: isMyArabic && playing == true ? Colors.amber[800] : Colors.blueGrey,
+                            color: isMyArabic && playing == true ? const Color(0xFF90BDE7) : Colors.blueGrey,
                             size: 28,
                           ),
                           tooltip: 'Play Arabic',
@@ -85,7 +85,7 @@ class AyahToolbar extends StatelessWidget {
                       : IconButton(
                           icon: Icon(
                             isMyTranslation && playing == true ? Icons.pause_circle_filled : CustomIconsV2.translation,
-                            color: isMyTranslation && playing == true ? Colors.amber[800] : Colors.blueGrey,
+                            color: isMyTranslation && playing == true ? const Color(0xFF90BDE7) : Colors.blueGrey,
                             size: 20, // Adjusted size to match Icomoon
                           ),
                           tooltip: 'Play Urdu Translation',
@@ -110,7 +110,7 @@ class AyahToolbar extends StatelessWidget {
           IconButton(
             icon: Icon(
               isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-              color: isBookmarked ? const Color(0xFF1B5E20) : Colors.grey,
+              color: isBookmarked ? const Color(0xFF90BDE7) : Colors.grey,
               size: 20,
             ),
             onPressed: onBookmarkToggle,
@@ -133,14 +133,14 @@ class _AyahBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF1B5E20).withValues(alpha: 0.1),
-        border: Border.all(color: const Color(0xFF1B5E20)),
+        color: const Color(0xFF90BDE7).withValues(alpha: 0.1),
+        border: Border.all(color: const Color(0xFF90BDE7)),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         '($number)',
         style: const TextStyle(
-          color: Color(0xFF1B5E20),
+          color: Color(0xFF90BDE7),
           fontWeight: FontWeight.bold,
           fontSize: 12,
         ),

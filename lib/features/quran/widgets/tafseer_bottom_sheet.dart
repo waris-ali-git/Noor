@@ -209,7 +209,7 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1B5E20),
+                    color: Color(0xFF90BDE7),
                   ),
                 ),
                 Padding(
@@ -219,7 +219,7 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
                     style: const TextStyle(
                       fontFamily: 'surah-name-v2-icon',
                       fontSize: 38,
-                      color: Color(0xFF1B5E20),
+                      color: Color(0xFF90BDE7),
                       fontFeatures: [FontFeature.enable('liga')],
                     ),
                   ),
@@ -254,7 +254,7 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
                   }
                 },
                 style: SegmentedButton.styleFrom(
-                  selectedBackgroundColor: const Color(0xFF1B5E20),
+                  selectedBackgroundColor: const Color(0xFF90BDE7),
                   selectedForegroundColor: Colors.white,
                   visualDensity: VisualDensity.compact,
                 ),
@@ -280,9 +280,9 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: ChoiceChip(
-                      label: Text(lang, style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : const Color(0xFF1B5E20))),
+                      label: Text(lang, style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : const Color(0xFF90BDE7))),
                       selected: isSelected,
-                      selectedColor: const Color(0xFF1B5E20),
+                      selectedColor: const Color(0xFF90BDE7),
                       backgroundColor: Colors.grey[200],
                       onSelected: (_) {
                         setState(() {
@@ -328,8 +328,8 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
                     value: activeSource,
                     onChanged: _onSourceChanged,
                     isExpanded: true,
-                    underline: Container(height: 1, color: const Color(0xFF1B5E20)),
-                    icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF1B5E20)),
+                    underline: Container(height: 1, color: const Color(0xFF90BDE7)),
+                    icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF90BDE7)),
                     items: filteredSources.map((s) {
                   return DropdownMenuItem(
                     value: s,
@@ -340,7 +340,7 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
                           s.type == TafseerType.mixed ? Icons.library_music :
                           Icons.menu_book,
                           size: 16,
-                          color: const Color(0xFF1B5E20),
+                          color: const Color(0xFF90BDE7),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -364,7 +364,7 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
             // Content Area
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: Color(0xFF1B5E20)))
+                  ? const Center(child: CircularProgressIndicator(color: Color(0xFF90BDE7)))
                   : _errorMessage != null
                       ? Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)))
                       : _currentMode == TafseerMode.audio
@@ -396,7 +396,7 @@ class _TafseerBottomSheetState extends State<TafseerBottomSheet> {
                                     padding: const EdgeInsets.all(12),
                                     margin: const EdgeInsets.only(bottom: 16),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFF1F8E9),
+                                      color: const Color(0xFFDBE9FA),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -563,10 +563,10 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
               return ListTile(
                 dense: true,
                 leading: CircleAvatar(
-                  backgroundColor: const Color(0xFF1B5E20).withValues(alpha: 0.1),
+                  backgroundColor: const Color(0xFF90BDE7).withValues(alpha: 0.1),
                   child: Text(
                     '${p.part}',
-                    style: const TextStyle(color: Color(0xFF1B5E20), fontWeight: FontWeight.w700, fontSize: 12),
+                    style: const TextStyle(color: Color(0xFF90BDE7), fontWeight: FontWeight.w700, fontSize: 12),
                   ),
                 ),
                 title: Text(p.title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
@@ -628,7 +628,7 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
                 icon: _isLoadingAudio 
                   ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
                   : Icon(_isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled),
-                color: const Color(0xFF1B5E20),
+                color: const Color(0xFF90BDE7),
                 iconSize: 40,
                 onPressed: () async {
                   final audioService = QuranAudioService();
@@ -706,7 +706,7 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
               ),
               if (hasSegmentedAudio)
                 IconButton(
-                  icon: const Icon(Icons.list, color: Color(0xFF1B5E20)),
+                  icon: const Icon(Icons.list, color: Color(0xFF90BDE7)),
                   tooltip: 'All Parts for this Surah',
                   onPressed: () => _showSegmentedPartsSheet(context),
                 ),
@@ -729,7 +729,7 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
                     child: Slider(
                       value: _position.inMilliseconds.toDouble(),
                       max: _duration.inMilliseconds.toDouble(),
-                      activeColor: const Color(0xFF1B5E20),
+                      activeColor: const Color(0xFF90BDE7),
                       inactiveColor: Colors.grey[300],
                       onChanged: (val) {
                          QuranAudioService().seekTafseer(Duration(milliseconds: val.toInt()));
@@ -750,12 +750,12 @@ class _TafseerAudioPlayerWidgetState extends State<_TafseerAudioPlayerWidget> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1B5E20).withValues(alpha: 0.1),
+                      color: const Color(0xFF90BDE7).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       '${_currentSpeed}x',
-                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1B5E20)),
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF90BDE7)),
                     ),
                   ),
                 ),

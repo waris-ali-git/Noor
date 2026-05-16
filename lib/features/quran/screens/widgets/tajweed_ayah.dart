@@ -56,7 +56,7 @@ class TajweedAyahWidget extends StatelessWidget {
         border: Border(
           bottom: const BorderSide(color: Color(0xFFEEEEEE)),
           left: isVbVActive
-              ? const BorderSide(color: Color(0xFFD4AF37), width: 4)
+              ? const BorderSide(color: Color(0xFF90BDE7), width: 4)
               : BorderSide.none,
         ),
         boxShadow: isVbVActive
@@ -86,7 +86,7 @@ class TajweedAyahWidget extends StatelessWidget {
                   },
                   child: Icon(
                     isVbVActive && isVbVPlaying ? Icons.pause : Icons.play_arrow_outlined,
-                    color: isVbVActive ? const Color(0xFFD4AF37) : Colors.grey,
+                    color: isVbVActive ? const Color(0xFF90BDE7) : Colors.grey,
                     size: 24,
                   ),
                 ),
@@ -154,7 +154,7 @@ class TajweedAyahWidget extends StatelessWidget {
                         padding: const EdgeInsets.all(6),
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Color(0xFFD4AF37),
+                          color: Color(0xFF90BDE7),
                         ),
                         child: const Icon(
                           Icons.palette,
@@ -171,12 +171,12 @@ class TajweedAyahWidget extends StatelessWidget {
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFFD4AF37).withOpacity(0.15),
+                          color: const Color(0xFF90BDE7).withOpacity(0.15),
                         ),
                         child: const Icon(
                           Icons.format_list_bulleted,
                           size: 16,
-                          color: Color(0xFFD4AF37),
+                          color: Color(0xFF90BDE7),
                         ),
                       ),
                     ),
@@ -348,9 +348,9 @@ class TajweedLegendDialogWidget extends StatelessWidget {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFFD4AF37).withOpacity(0.15),
+                  color: const Color(0xFF90BDE7).withOpacity(0.15),
                 ),
-                child: const Icon(Icons.palette, color: Color(0xFFD4AF37), size: 18),
+                child: const Icon(Icons.palette, color: Color(0xFF90BDE7), size: 18),
               ),
               const SizedBox(width: 8),
               Expanded(
