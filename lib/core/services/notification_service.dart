@@ -87,4 +87,23 @@ class NotificationService {
           UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
+
+  Future<void> showTestNotification() async {
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'test_channel',
+      'Test Notifications',
+      channelDescription: 'For testing purposes',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: true,
+    );
+    const NotificationDetails details = NotificationDetails(android: androidDetails);
+    
+    await _notificationsPlugin.show(
+      888,
+      'Test Notification',
+      'Mubarak ho! Notifications theek se kaam kar rahi hain. ✨',
+      details,
+    );
+  }
 }

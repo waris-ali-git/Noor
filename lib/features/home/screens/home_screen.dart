@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../shared/widgets/custom_button.dart';
 import '../../quran/screens/surah_list_screen.dart';
@@ -24,6 +25,7 @@ import '../../../core/widgets/language_selector_button.dart';
 import '../../../core/widgets/translated_text.dart';
 import '../widgets/streak_widget.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/constants.dart';
 
 // ──────────────────────────────────────────────────────────
 // Colour Palette
@@ -287,9 +289,13 @@ class _HomeTabState extends State<_HomeTab> {
   double _lat = 24.8607; // Karachi default
   double _lng = 67.0011;
 
+  // User name
+  String _userName = '';
+
   @override
   void initState() {
     super.initState();
+    _loadUserName();
     NotificationService().scheduleInactivityReminder();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
@@ -444,6 +450,47 @@ class _HomeTabState extends State<_HomeTab> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (_userName.isNotEmpty) ...[
+                      Padding(
+                        padding:
+                            const EdgeInsets.only(left: 20, top: 4, bottom: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Salaam,',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 23,
+                                fontWeight: FontWeight.w300,
+                                color: TasbeehColors.standardBlue,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 24),
+                              child: ShaderMask(
+                                shaderCallback: (bounds) =>
+                                    const LinearGradient(
+                                  colors: [
+                                    Color(0xFF3487D1),
+                                    Color(0xFF90BDE7)
+                                  ],
+                                ).createShader(bounds),
+                                child: Text(
+                                  _userName,
+                                  style: GoogleFonts.rochester(
+                                    fontSize: 39,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.white,
+                                    height: 1.1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
@@ -478,26 +525,188 @@ class _HomeTabState extends State<_HomeTab> {
   }
 
   // ── AppBar ────────────────────────────────────────────
-  Widget _appBar() => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        child: Row(children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 8.0),
-            child: StreakWidget(),
-          ),
-          const Expanded(
-              child: TranslatedText(
-            'ISLAMIC APP',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
-              color: _dark,
-              letterSpacing: 2.5,
+  Future<void> _loadUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString('user_name') ?? '';
+    if (name.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showNameDialog();
+      });
+    } else {
+      if (mounted) setState(() => _userName = name);
+    }
+  }
+
+  void _showNameDialog() {
+    final TextEditingController nameController = TextEditingController();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon or text
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFD9F1FD), Color(0xFFA6C7F2)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'السَّلَامُ',
+                      style: TextStyle(
+                        fontFamily: 'Jameel Noori',
+                        fontSize: 20,
+                        color: Color(0xFF1A2E44),
+                      ),
+                      textDirection: TextDirection.rtl,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'What should we call you?',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1A2E44),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Enter your name to personalize your experience.',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    color: const Color(0xFF6B8FB5),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: nameController,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.words,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1A2E44),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Your name...',
+                    filled: true,
+                    fillColor: const Color(0xFFF4FBFE),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF90BDE7),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: GestureDetector(
+                    onTap: () async {
+                      final enteredName = nameController.text.trim();
+                      if (enteredName.isNotEmpty) {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setString('user_name', enteredName);
+                        if (mounted) setState(() => _userName = enteredName);
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF5BA3D9), Color(0xFF90BDE7)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Continue',
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          )),
-          const LanguageSelectorButton(),
-        ]),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _appBar() => Padding(
+        padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const StreakWidget(),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () =>
+                            NotificationService().showTestNotification(),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.notifications_active_rounded,
+                              color: Color(0xFFF39C12), size: 20),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                const LanguageSelectorButton(),
+              ],
+            ),
+          ],
+        ),
       );
 
   Widget _featureButtons() {
@@ -856,6 +1065,26 @@ class _CircularPrayerTrackerState extends State<_CircularPrayerTracker>
   }
 
   void _toggleTick(int index) {
+    if (!_ticked[index]) {
+      final keys = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+      final bool isFriday = DateTime.now().weekday == DateTime.friday;
+      final String displayTitle = (index == 1 && isFriday) ? 'Jumma' : keys[index];
+      final prayerTime = widget.pt[keys[index]];
+      
+      if (prayerTime != null && DateTime.now().isBefore(prayerTime)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$displayTitle time has not started yet!'),
+            backgroundColor: Colors.redAccent.withOpacity(0.8),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+        return;
+      }
+    }
+
     setState(() {
       _ticked[index] = !_ticked[index];
       if (_ticked[index]) {
@@ -910,15 +1139,19 @@ class _CircularPrayerTrackerState extends State<_CircularPrayerTracker>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFFFAFDFF), // Ice white
-          borderRadius: BorderRadius.circular(28),
+          gradient: const LinearGradient(
+            colors: [Color(0xFFF4FCFE), Color(0xFFEDFDF5)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(22),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
+              color: Colors.black.withValues(alpha: 0.055),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -926,120 +1159,164 @@ class _CircularPrayerTrackerState extends State<_CircularPrayerTracker>
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Donut Chart
-            SizedBox(
-              width: 160,
-              height: 160,
-              child: AnimatedBuilder(
-                  animation: _progressAnim,
-                  builder: (context, child) {
-                    return CustomPaint(
-                      painter: _PrayerDonutPainter(
-                        progress: _progressAnim.value,
-                        gradientColors: activeColors,
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '${_checkedSequence.length}/5',
-                              style: GoogleFonts.poppins(
-                                fontSize: 34,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1A2E44),
-                                height: 1.1,
-                              ),
-                            ),
-                            Text(
-                              'prayed',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF6B8FB5),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-            ),
+            Row(
+              children: [
+                // Left side: Fajr (0) & Asr (2)
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    children: [
+                      _buildPrayerItem(0, names, colors),
+                      const SizedBox(height: 8),
+                      _buildPrayerItem(2, names, colors),
+                    ],
+                  ),
+                ),
 
-            const SizedBox(height: 24),
-
-            // Prayer List
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(5, (i) {
-                final String prayerKey = i == 1 ? 'Dhuhr' : names[i];
-                final String time = widget.ptStr(prayerKey);
-                return GestureDetector(
-                  onTap: () => _toggleTick(i),
-                  behavior: HitTestBehavior.opaque,
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
-                    child: Row(
-                      children: [
-                        // Tick indicator
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _ticked[i] ? colors[i] : Colors.transparent,
-                            border: Border.all(
-                              color: _ticked[i]
-                                  ? colors[i]
-                                  : const Color(0xFF6B8FB5).withOpacity(0.3),
-                              width: 1.5,
-                            ),
+                // Center: Donut Chart
+                Expanded(
+                  flex: 3,
+                  child: Transform.translate(
+                    offset: const Offset(-30, 17),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
-                          child: _ticked[i]
-                              ? const Icon(Icons.check,
-                                  size: 16, color: Colors.white)
-                              : null,
-                        ),
-                        const SizedBox(width: 12),
-                        // Name & Time
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                names[i],
-                                style: GoogleFonts.poppins(
-                                  fontSize: 15,
-                                  fontWeight: widget.nextPrayer == prayerKey
-                                      ? FontWeight.w700
-                                      : FontWeight.w500,
-                                  color: _ticked[i]
-                                      ? const Color(0xFF6B8FB5).withOpacity(0.5)
-                                      : const Color(0xFF1A2E44),
-                                  decoration: _ticked[i]
-                                      ? TextDecoration.lineThrough
-                                      : null,
+                        ],
+                      ),
+                      child: AspectRatio(
+                        aspectRatio: 1,
+                        child: AnimatedBuilder(
+                            animation: _progressAnim,
+                            builder: (context, child) {
+                              return CustomPaint(
+                                painter: _PrayerDonutPainter(
+                                  progress: _progressAnim.value,
+                                  gradientColors: activeColors,
                                 ),
-                              ),
-                              Text(
-                                time,
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color:
-                                      const Color(0xFF6B8FB5).withOpacity(0.8),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        '${_checkedSequence.length}/5',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFF1A2E44),
+                                          height: 1.1,
+                                        ),
+                                      ),
+                                      Text(
+                                        'prayed',
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF6B8FB5),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                              );
+                            }),
+                      ),
                     ),
                   ),
-                );
-              }),
+                ),
+
+                // Right side: Dhuhr (1) & Maghrib (3)
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    children: [
+                      _buildPrayerItem(1, names, colors),
+                      const SizedBox(height: 8),
+                      _buildPrayerItem(3, names, colors),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 48),
+            // Bottom: Isha (4)
+            SizedBox(
+              width: 130,
+              child: _buildPrayerItem(4, names, colors),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPrayerItem(int i, List<String> names, List<Color> colors) {
+    final String prayerKey = i == 1 ? 'Dhuhr' : names[i];
+    final String time = widget.ptStr(prayerKey);
+    return GestureDetector(
+      onTap: () => _toggleTick(i),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            // Tick indicator
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _ticked[i] ? colors[i] : Colors.transparent,
+                border: Border.all(
+                  color: _ticked[i]
+                      ? colors[i]
+                      : const Color(0xFF6B8FB5).withOpacity(0.3),
+                  width: 1.5,
+                ),
+              ),
+              child: _ticked[i]
+                  ? const Icon(Icons.check, size: 14, color: Colors.white)
+                  : null,
+            ),
+            const SizedBox(width: 8),
+            // Name & Time
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    names[i],
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: widget.nextPrayer == prayerKey
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      color: _ticked[i]
+                          ? const Color(0xFF6B8FB5).withOpacity(0.5)
+                          : const Color(0xFF1A2E44),
+                      decoration:
+                          _ticked[i] ? TextDecoration.lineThrough : null,
+                    ),
+                  ),
+                  Text(
+                    time,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF6B8FB5).withOpacity(0.8),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
