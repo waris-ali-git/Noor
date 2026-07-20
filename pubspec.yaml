@@ -140,6 +140,10 @@ flutter:
     - lib/assets/data/feeling_duas.json
     - lib/assets/data/worship/kalmas.json
     - lib/assets/data/worship/namaz_steps.json
+    - lib/assets/data/grammar/grammar_lessons.json
+    - lib/assets/data/grammar/root_words.json
+    - lib/assets/data/grammar/word_analysis.json
+    - lib/assets/data/grammar/vocabulary_list.json
     - lib/assets/images/reciters/
     - lib/assets/images/homepic.png
     - lib/assets/images/quran.png

@@ -125,9 +125,9 @@ Built with a passion for both **deen** and **design**, Noor combines a premium d
 <table>
   <tr>
     <td align="center"><img src="pics/worship.jpg" width="180" alt="Worship Hub"/><br/><sub><b>Worship Hub</b></sub></td>
-    <td align="center"><img src="pics/worship1.jpg" width="180" alt="Namaz Guide"/><br/><sub><b>Namaz Guide</b></sub></td>
-    <td align="center"><img src="pics/worship2(1).jpg" width="180" alt="Kalmas"/><br/><sub><b>Six Kalmas</b></sub></td>
-    <td align="center"><img src="pics/worship2(2).jpg" width="180" alt="Namaz Guide"/><br/><sub><b>Namaz Guide</b></sub></td>
+    <td align="center"><img src="pics/worship2(1).jpg" width="180" alt="Namaz Guide"/><br/><sub><b>Namaz Guide</b></sub></td>
+    <td align="center"><img src="pics/worship2(2).jpg" width="180" alt="Kalmas"/><br/><sub><b>Six Kalmas</b></sub></td>
+    <td align="center"><img src="pics/worship2(3).jpg" width="180" alt="Namaz Guide"/><br/><sub><b>Namaz Guide</b></sub></td>
   </tr>
   <tr>
     <td align="center"><img src="pics/worship2(3).jpg" width="180" alt="Rakats"/><br/><sub><b>Rakats</b></sub></td>

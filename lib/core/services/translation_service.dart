@@ -7,6 +7,30 @@ class TranslationService {
   // Simple in-memory cache to prevent redundant API calls
   static final Map<String, String> _cache = {};
 
+  static const Map<String, String> _urduOverrides = {
+    'kalma': 'کلمہ',
+    'kalmas': 'کلمے',
+    '6 kalmas': '6 کلمے',
+    'namaz': 'نماز',
+    'roza': 'روزہ',
+    'zakat': 'زکوٰۃ',
+    'hajj': 'حج',
+    'the declaration of faith': 'ایمان کا اقرار',
+    'the five daily prayers': 'پانچ وقت کی نماز',
+    'fasting in ramadan': 'رمضان میں روزہ',
+    'obligatory charity': 'فرض زکوٰۃ',
+    'pilgrimage to makkah': 'مکہ کی زیارت (حج)',
+    '5 pillars of islam': 'اسلام کے 5 ارکان',
+    'explore the foundational acts of worship in islam.': 'اسلام میں عبادت کے بنیادی اعمال کو دریافت کریں۔',
+    'first kalma (tayyab)': 'پہلا کلمہ (طیب)',
+    'second kalma (shahadat)': 'دوسرا کلمہ (شہادت)',
+    'third kalma (tamjeed)': 'تیسرا کلمہ (تمجید)',
+    'fourth kalma (tauheed)': 'چوتھا کلمہ (توحید)',
+    'fifth kalma (astaghfar)': 'پانچواں کلمہ (استغفار)',
+    'sixth kalma (radde kufr)': 'چھٹا کلمہ (ردِ کفر)',
+    'transliteration': 'رومن اردو',
+  };
+
   TranslationService(this._dio);
 
   Future<String> translate({
@@ -17,6 +41,13 @@ class TranslationService {
     // If target is English (and source is assumed English) or text is empty
     if (text.trim().isEmpty) return text;
     
+    if (targetLang == 'ur') {
+      final key = text.trim().toLowerCase();
+      if (_urduOverrides.containsKey(key)) {
+        return _urduOverrides[key]!;
+      }
+    }
+
     final cacheKey = '${text}_${sourceLang}_$targetLang';
     if (_cache.containsKey(cacheKey)) {
       return _cache[cacheKey]!;

@@ -5,6 +5,7 @@ import '../models/hadith.dart';
 import '../state/hadith_bloc.dart';
 import 'widgets/hadith_skeleton.dart';
 import '../../../shared/widgets/custom_button.dart';
+import 'package:quran_app/core/widgets/no_internet_widget.dart';
 
 class HadithReaderScreen extends StatefulWidget {
   final HadithBook book;
@@ -296,26 +297,9 @@ class _HadithReaderScreenState extends State<HadithReaderScreen> {
             return _buildLoadingSkeletons();
           }
           if (state is HadithError) {
-            return Center(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Text('Error: ${state.message}', textAlign: TextAlign.center),
-                    ),
-                    const SizedBox(height: 16),
-                    LiquidGlassButton(
-                      label: 'Retry',
-                      icon: const Icon(Icons.refresh, size: 18),
-                      onTap: () => context.read<HadithBloc>().add(SelectHadithBookEvent(book: widget.book)),
-                    ),
-                  ],
-                ),
-              ),
+            return NoInternetWidget(
+              message: state.message,
+              onRetry: () => context.read<HadithBloc>().add(SelectHadithBookEvent(book: widget.book)),
             );
           }
           if (state is HadithSectionsLoaded) return _buildSectionsList(state);

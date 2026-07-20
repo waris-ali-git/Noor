@@ -7,12 +7,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../shared/widgets/custom_button.dart';
 import '../../quran/screens/surah_list_screen.dart';
 import '../../hadith/screens/hadith_books_screen.dart';
 import '../../worship/screens/worship_home.dart';
+import '../../worship/models/prayer_tracking_record.dart';
+import '../../worship/services/prayer_tracking_service.dart';
 import '../../dua/screens/duas_home_screen.dart';
 import '../../qibla/screens/qibla_compass.dart';
 import '../../tasbeeh/screens/tasbeeh_home.dart';
@@ -292,10 +295,16 @@ class _HomeTabState extends State<_HomeTab> {
   // User name
   String _userName = '';
 
+  // Adhan Preview & Settings
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _enableAdhanNotifications = true;
+  bool _isPlayingPreview = false;
+
   @override
   void initState() {
     super.initState();
     _loadUserName();
+    _loadNotificationSettings();
     NotificationService().scheduleInactivityReminder();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
@@ -310,6 +319,7 @@ class _HomeTabState extends State<_HomeTab> {
   @override
   void dispose() {
     _timer.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -353,6 +363,83 @@ class _HomeTabState extends State<_HomeTab> {
       if (mounted) setState(() => _loc = 'Karachi, Pakistan');
     }
     _calcPrayers();
+  }
+
+  Future<void> _loadNotificationSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _enableAdhanNotifications = prefs.getBool('enable_adhan_notifications') ?? true;
+    });
+  }
+
+  Future<void> _toggleAdhanNotifications(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('enable_adhan_notifications', value);
+    setState(() {
+      _enableAdhanNotifications = value;
+    });
+
+    if (value) {
+      _calcPrayers();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Azaan Notifications Enabled!'),
+          backgroundColor: const Color(0xFF90BDE7).withOpacity(0.9),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    } else {
+      await NotificationService().cancelPrayerNotifications();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Azaan Notifications Disabled.'),
+          backgroundColor: Colors.redAccent.withOpacity(0.9),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
+  }
+
+  Future<void> _toggleAudioPreview() async {
+    try {
+      if (_isPlayingPreview) {
+        await _audioPlayer.stop();
+        setState(() {
+          _isPlayingPreview = false;
+        });
+      } else {
+        setState(() {
+          _isPlayingPreview = true;
+        });
+        await _audioPlayer.setUrl('https://github.com/AalianKhan/adhans/raw/master/adhan.mp3');
+        await _audioPlayer.play();
+
+        _audioPlayer.processingStateStream.listen((state) {
+          if (state == ProcessingState.completed) {
+            if (mounted) {
+              setState(() {
+                _isPlayingPreview = false;
+              });
+            }
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error playing Adhan preview: $e');
+      if (mounted) {
+        setState(() {
+          _isPlayingPreview = false;
+        });
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error playing Adhan: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   void _calcPrayers() {
@@ -513,6 +600,7 @@ class _HomeTabState extends State<_HomeTab> {
                       ],
                     ),
                     _prayerSection(),
+                    _prayerNotificationSettings(),
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -1020,6 +1108,152 @@ class _HomeTabState extends State<_HomeTab> {
       nextPrayer: _next,
     );
   }
+
+  Widget _prayerNotificationSettings() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFF4FCFE), Color(0xFFEDFDF5)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.055),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(
+            color: const Color(0xFF90BDE7).withValues(alpha: 0.3),
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF90BDE7).withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.notifications_active_rounded,
+                    color: Color(0xFF3487D1),
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Azaan Notifications',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1A2E44),
+                        ),
+                      ),
+                      Text(
+                        'Play beautiful Adhan at prayer times',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch.adaptive(
+                  value: _enableAdhanNotifications,
+                  activeColor: const Color(0xFF3487D1),
+                  onChanged: _toggleAdhanNotifications,
+                ),
+              ],
+            ),
+            const Divider(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Adhan Voice Preview',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1A2E44),
+                        ),
+                      ),
+                      Text(
+                        _isPlayingPreview ? 'Playing Adhan...' : 'Listen to Adhan recording',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 11,
+                          color: _isPlayingPreview ? const Color(0xFF3487D1) : Colors.grey[600],
+                          fontWeight: _isPlayingPreview ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                GestureDetector(
+                  onTap: _toggleAudioPreview,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: _isPlayingPreview
+                          ? const LinearGradient(colors: [Color(0xFFE74C3C), Color(0xFFC0392B)])
+                          : const LinearGradient(colors: [Color(0xFF3487D1), Color(0xFF90BDE7)]),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (_isPlayingPreview ? Colors.red : const Color(0xFF3487D1)).withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _isPlayingPreview ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _isPlayingPreview ? 'Stop' : 'Listen',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // ── Circular Prayer Tracker ───────────────────────────────
@@ -1041,13 +1275,21 @@ class _CircularPrayerTracker extends StatefulWidget {
 
 class _CircularPrayerTrackerState extends State<_CircularPrayerTracker>
     with SingleTickerProviderStateMixin {
+  static const List<String> _prayerKeys = PrayerTrackingRecord.prayerKeys;
+  final PrayerTrackingService _trackingService = PrayerTrackingService();
+
   // Fajr, Dhuhr/Jumma, Asr, Maghrib, Isha
   List<bool> _ticked = [false, false, false, false, false];
   late AnimationController _animCtrl;
   late Animation<double> _progressAnim;
+  String _dateKey = PrayerTrackingService.dateKey(DateTime.now());
+  bool _isLoadingTracking = true;
 
   // Track sequence of checked indices
   List<int> _checkedSequence = [];
+
+  // Last 7 days history records
+  List<PrayerTrackingRecord> _historyRecords = [];
 
   @override
   void initState() {
@@ -1056,6 +1298,7 @@ class _CircularPrayerTrackerState extends State<_CircularPrayerTracker>
         vsync: this, duration: const Duration(milliseconds: 600));
     _progressAnim = Tween<double>(begin: 0, end: 0)
         .animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutBack));
+    unawaited(_loadTrackingState(animate: false));
   }
 
   @override
@@ -1064,13 +1307,64 @@ class _CircularPrayerTrackerState extends State<_CircularPrayerTracker>
     super.dispose();
   }
 
-  void _toggleTick(int index) {
+  @override
+  void didUpdateWidget(covariant _CircularPrayerTracker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final currentDateKey = PrayerTrackingService.dateKey(DateTime.now());
+    if (currentDateKey != _dateKey && !_isLoadingTracking) {
+      unawaited(_loadTrackingState(animate: true));
+    }
+  }
+
+  Future<void> _loadTrackingState({required bool animate}) async {
+    final currentDateKey = PrayerTrackingService.dateKey(DateTime.now());
+    setState(() {
+      _isLoadingTracking = true;
+    });
+
+    final record = await _trackingService.getTodayRecord();
+    
+    // Load last 7 days from oldest to newest (today is last)
+    final List<PrayerTrackingRecord> history = [];
+    final today = DateTime.now();
+    for (int i = 6; i >= 0; i--) {
+      final date = today.subtract(Duration(days: i));
+      final rec = await _trackingService.getRecordForDate(date);
+      history.add(rec);
+    }
+
+    if (!mounted) return;
+
+    final ticked = _prayerKeys.map(record.isCompleted).toList();
+    setState(() {
+      _dateKey = currentDateKey;
+      _ticked = ticked;
+      _checkedSequence = [
+        for (int i = 0; i < ticked.length; i++)
+          if (ticked[i]) i,
+      ];
+      _historyRecords = history;
+      _retargetProgress(_checkedSequence.length / 5.0, animate: animate);
+      _isLoadingTracking = false;
+    });
+  }
+
+  void _retargetProgress(double newProgress, {required bool animate}) {
+    final oldProgress = animate ? _progressAnim.value : newProgress;
+    _progressAnim = Tween<double>(begin: oldProgress, end: newProgress)
+        .animate(
+          CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic),
+        );
+    _animCtrl.forward(from: animate ? 0 : 1);
+  }
+
+  Future<void> _toggleTick(int index) async {
     if (!_ticked[index]) {
-      final keys = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
       final bool isFriday = DateTime.now().weekday == DateTime.friday;
-      final String displayTitle = (index == 1 && isFriday) ? 'Jumma' : keys[index];
-      final prayerTime = widget.pt[keys[index]];
-      
+      final String displayTitle =
+          (index == 1 && isFriday) ? 'Jumma' : _prayerKeys[index];
+      final prayerTime = widget.pt[_prayerKeys[index]];
+
       if (prayerTime != null && DateTime.now().isBefore(prayerTime)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1078,27 +1372,61 @@ class _CircularPrayerTrackerState extends State<_CircularPrayerTracker>
             backgroundColor: Colors.redAccent.withOpacity(0.8),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
         return;
       }
     }
 
-    setState(() {
-      _ticked[index] = !_ticked[index];
-      if (_ticked[index]) {
-        _checkedSequence.add(index);
-      } else {
-        _checkedSequence.remove(index);
-      }
+    final nextTicked = List<bool>.from(_ticked);
+    nextTicked[index] = !nextTicked[index];
+    final nextCheckedSequence = [
+      for (int i = 0; i < nextTicked.length; i++)
+        if (nextTicked[i]) i,
+    ];
 
-      double oldProgress = _progressAnim.value;
-      double newProgress = _checkedSequence.length / 5.0;
-      _progressAnim = Tween<double>(begin: oldProgress, end: newProgress)
-          .animate(
-              CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
-      _animCtrl.forward(from: 0);
+    setState(() {
+      _ticked = nextTicked;
+      _checkedSequence = nextCheckedSequence;
+      _retargetProgress(_checkedSequence.length / 5.0, animate: true);
+
+      // Update local history for instant preview
+      final todayKey = PrayerTrackingService.dateKey(DateTime.now());
+      final todayIdx = _historyRecords.indexWhere((r) => r.dateKey == todayKey);
+      if (todayIdx != -1) {
+        final currentRecord = _historyRecords[todayIdx];
+        final completed = Set<String>.from(currentRecord.completedPrayers);
+        final canonicalKey = PrayerTrackingRecord.canonicalPrayerKey(_prayerKeys[index]);
+        if (completed.contains(canonicalKey)) {
+          completed.remove(canonicalKey);
+        } else {
+          completed.add(canonicalKey);
+        }
+        _historyRecords[todayIdx] = currentRecord.copyWith(completedPrayers: completed);
+      }
+    });
+
+    final record = await _trackingService.togglePrayer(_prayerKeys[index]);
+    if (!mounted) return;
+
+    final storedTicked = _prayerKeys.map(record.isCompleted).toList();
+    setState(() {
+      _ticked = storedTicked;
+      _checkedSequence = [
+        for (int i = 0; i < storedTicked.length; i++)
+          if (storedTicked[i]) i,
+      ];
+      _retargetProgress(_checkedSequence.length / 5.0, animate: true);
+
+      // Sync today record in history with database value
+      final todayKey = PrayerTrackingService.dateKey(DateTime.now());
+      final todayIdx = _historyRecords.indexWhere((r) => r.dateKey == todayKey);
+      if (todayIdx != -1) {
+        _historyRecords[todayIdx] = record;
+      }
     });
   }
 
@@ -1252,9 +1580,147 @@ class _CircularPrayerTrackerState extends State<_CircularPrayerTracker>
               width: 130,
               child: _buildPrayerItem(4, names, colors),
             ),
+            const SizedBox(height: 24),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFEDF2F7)),
+            const SizedBox(height: 16),
+            _buildHistoryRow(colors),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHistoryRow(List<Color> colors) {
+    if (_historyRecords.isEmpty) {
+      return const SizedBox(
+        height: 60,
+        child: Center(
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Last 7 Days',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF1A2E44),
+              ),
+            ),
+            Row(
+              children: [
+                Container(
+                  width: 5,
+                  height: 5,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF3487D1),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Today',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF6B8FB5),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: _historyRecords.map((record) {
+            final date = PrayerTrackingService.parseDateKey(record.dateKey) ?? DateTime.now();
+            const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            final dayName = weekdays[date.weekday - 1];
+            final dayNum = date.day.toString().padLeft(2, '0');
+            final isToday = DateUtils.isSameDay(date, DateTime.now());
+
+            return Expanded(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+                decoration: BoxDecoration(
+                  color: isToday 
+                      ? const Color(0xFF90BDE7).withOpacity(0.12)
+                      : Colors.white.withOpacity(0.45),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isToday 
+                        ? const Color(0xFF90BDE7).withOpacity(0.6)
+                        : const Color(0xFF6B8FB5).withOpacity(0.12),
+                    width: isToday ? 1.2 : 0.8,
+                  ),
+                  boxShadow: isToday ? [
+                    BoxShadow(
+                      color: const Color(0xFF90BDE7).withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    )
+                  ] : null,
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      dayName,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 9.5,
+                        fontWeight: isToday ? FontWeight.bold : FontWeight.w600,
+                        color: isToday ? const Color(0xFF3487D1) : const Color(0xFF6B8FB5),
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      dayNum,
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        fontWeight: isToday ? FontWeight.bold : FontWeight.w500,
+                        color: isToday ? const Color(0xFF1A2E44) : const Color(0xFF6B8FB5).withOpacity(0.8),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Column(
+                      children: List.generate(5, (index) {
+                        final prayerName = index == 1 ? 'Dhuhr' : PrayerTrackingRecord.prayerKeys[index];
+                        final isDone = record.isCompleted(prayerName);
+                        final color = colors[index];
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 2),
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isDone 
+                                ? color 
+                                : const Color(0xFF6B8FB5).withOpacity(0.1),
+                            border: isDone
+                                ? null
+                                : Border.all(
+                                    color: const Color(0xFF6B8FB5).withOpacity(0.2),
+                                    width: 0.5,
+                                  ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 

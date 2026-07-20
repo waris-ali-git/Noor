@@ -15,9 +15,9 @@ class _RozaScreenState extends State<RozaScreen> {
   final PrayerTimingService _timingService = PrayerTimingService();
   late Future<PrayerTiming?> _timingsFuture;
 
-  // Purple theme for Roza
-  final Color _deepColor = const Color(0xFF6A1B9A); // Purple 800
-  final Color _lightColor = const Color(0xFFBA68C8); // Purple 300
+  // Light lavender theme (matching Namaz light gradient pattern)
+  final Color _deepColor = const Color(0xFF9C6FD6); // soft lavender-purple
+  final Color _lightColor = const Color(0xFFD8B8F5); // light lilac
 
   @override
   void initState() {
@@ -28,7 +28,7 @@ class _RozaScreenState extends State<RozaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF8FF),
+      backgroundColor: const Color(0xFFF4FBFE), // Ice White
       body: FutureBuilder<PrayerTiming?>(
         future: _timingsFuture,
         builder: (context, snapshot) {
@@ -37,7 +37,7 @@ class _RozaScreenState extends State<RozaScreen> {
           }
 
           final timings = snapshot.data;
-          
+
           return CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
@@ -55,31 +55,40 @@ class _RozaScreenState extends State<RozaScreen> {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      if (timings != null) 
-
+                      if (timings != null)
                         _buildTimingCard(timings)
-                      else 
-                        const Card(
-                          child: Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: TranslatedText("Unable to fetch timings. Please check location permissions and internet connection.", 
-                              style: TextStyle(color: Colors.red)),
+                      else
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _deepColor.withOpacity(0.08),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const TranslatedText(
+                            "Unable to fetch timings. Please check location permissions and internet connection.",
+                            style: TextStyle(color: Colors.redAccent),
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       const SizedBox(height: 24),
                       _buildDuaCard(
-                        "Sehri Dua (Intention to Fast)",
-                        "وَبِصَوْمِ غَدٍ نَّوَيْتُ مِنْ شَهْرِ رَمَضَانَ",
-                        "Wa bisawmi ghadinn nawaiytu min shahri ramadan",
-                        "I intend to keep the fast for tomorrow in the month of Ramadan"
-                      ),
+                          "Sehri Dua (Intention to Fast)",
+                          "وَبِصَوْمِ غَدٍ نَّوَيْتُ مِنْ شَهْرِ رَمَضَانَ",
+                          "Wa bisawmi ghadinn nawaiytu min shahri ramadan",
+                          "I intend to keep the fast for tomorrow in the month of Ramadan"),
                       const SizedBox(height: 16),
                       _buildDuaCard(
-                        "Iftar Dua (Breaking the Fast)",
-                        "اَللّٰهُمَّ اِنّيْ لَكَ صُمْتُ وَبِكَ اٰمَنْتُ وَعَلَيْكَ تَوَكَّلْتُ وَعَلٰيْ رِزْقِكَ اَفْطَرْتُ",
-                        "Allahumma inni laka sumtu wa bika aamantu wa 'alayka tawakkaltu wa 'ala rizqika aftartu",
-                        "O Allah! I fasted for You and I believe in You and I put my trust in You and I break my fast with Your sustenance"
-                      ),
+                          "Iftar Dua (Breaking the Fast)",
+                          "اَللّٰهُمَّ اِنّيْ لَكَ صُمْتُ وَبِكَ اٰمَنْتُ وَعَلَيْكَ تَوَكَّلْتُ وَعَلٰيْ رِزْقِكَ اَفْطَرْتُ",
+                          "Allahumma inni laka sumtu wa bika aamantu wa 'alayka tawakkaltu wa 'ala rizqika aftartu",
+                          "O Allah! I fasted for You and I believe in You and I put my trust in You and I break my fast with Your sustenance"),
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -96,14 +105,17 @@ class _RozaScreenState extends State<RozaScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [_deepColor, _lightColor],
+        gradient: const LinearGradient(
+          colors: [Color(0xFFEDE0FF), Color(0xFFD8C0F8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: _deepColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))
+          BoxShadow(
+              color: _deepColor.withOpacity(0.18),
+              blurRadius: 12,
+              offset: const Offset(0, 5))
         ],
       ),
       child: Column(
@@ -114,25 +126,56 @@ class _RozaScreenState extends State<RozaScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const TranslatedText("Sehri Ends (Fajr)", style: TextStyle(color: Colors.white70)),
-                  Text(timings.fajr.replaceAll(' (PKT)', ''), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  TranslatedText("Sehri Ends (Fajr)",
+                      style: TextStyle(
+                          color: _deepColor.withOpacity(0.75),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13)),
+                  Text(timings.fajr.replaceAll(' (PKT)', ''),
+                      style: TextStyle(
+                          color: _deepColor,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
-              const Icon(Icons.wb_twilight, color: Colors.orangeAccent, size: 40),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.wb_twilight,
+                    color: _deepColor, size: 32),
+              ),
             ],
           ),
-          const Divider(color: Colors.white24, height: 32),
+          Divider(color: _deepColor.withOpacity(0.2), height: 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const TranslatedText("Iftar Time (Maghrib)", style: TextStyle(color: Colors.white70)),
-                  Text(timings.maghrib.replaceAll(' (PKT)', ''), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  TranslatedText("Iftar Time (Maghrib)",
+                      style: TextStyle(
+                          color: _deepColor.withOpacity(0.75),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13)),
+                  Text(timings.maghrib.replaceAll(' (PKT)', ''),
+                      style: TextStyle(
+                          color: _deepColor,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
-              const Icon(Icons.nights_stay, color: Colors.yellowAccent, size: 40),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.nights_stay, color: _deepColor, size: 32),
+              ),
             ],
           ),
         ],
@@ -140,13 +183,21 @@ class _RozaScreenState extends State<RozaScreen> {
     );
   }
 
-  Widget _buildDuaCard(String title, String arabic, String transliteration, String translation) {
+  Widget _buildDuaCard(String title, String arabic, String transliteration,
+      String translation) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: const LinearGradient(
+          colors: [Color(0xFFF5EEFF), Color(0xFFECDCFF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: _deepColor.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))
+          BoxShadow(
+              color: _deepColor.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4))
         ],
       ),
       child: Padding(
@@ -154,23 +205,35 @@ class _RozaScreenState extends State<RozaScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TranslatedText(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _deepColor)),
+            TranslatedText(title,
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: _deepColor)),
             const SizedBox(height: 16),
             Text(
               arabic,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontFamily: 'DigitalKhatt', fontSize: 30, height: 1.8),
+              style: const TextStyle(
+                  fontFamily: 'DigitalKhatt',
+                  fontSize: 30,
+                  height: 1.8,
+                  color: Color(0xFF2D1B69)),
               textDirection: TextDirection.rtl,
             ),
-            const Divider(height: 32),
+            Divider(height: 32, color: _deepColor.withOpacity(0.2)),
             Text(
               transliteration,
-              style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.grey.shade700),
+              style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey.shade600),
             ),
             const SizedBox(height: 12),
             TranslatedText(
               translation,
-              style: const TextStyle(fontSize: 15, height: 1.4),
+              style: const TextStyle(
+                  fontSize: 15, height: 1.4, color: Color(0xFF2D1B69)),
             ),
           ],
         ),

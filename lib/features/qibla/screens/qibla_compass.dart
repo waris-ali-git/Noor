@@ -285,11 +285,14 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen>
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-                    color: _steelBlue,
-                    onPressed: () => Navigator.pop(context),
-                  ),
+                  if (Navigator.canPop(context))
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                      color: _steelBlue,
+                      onPressed: () => Navigator.pop(context),
+                    )
+                  else
+                    const SizedBox(width: 48),
                   Expanded(
                     child: Text(
                       'Qibla Direction',

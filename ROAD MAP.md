@@ -1,31 +1,3 @@
-## Aj or kal ka kam
-- Dependencies
-- State Management decide
-- API ka kuch kam
-- Quran Auth source find
-- Audio Recitation
-
----
-## 1. Multi Language support Interface
-## 2. Hadith Collection
-## 3. Home page design
-## 4. Tafseer k or bhi sources
----
-
-
-# 🕌 Quran Feature - Complete Implementation Guide
-
-## 📋 Table of Contents
-1. [API Setup & Documentation](#api-setup)
-2. [Models (Data Structures)](#m987odels)
-3. [Services (Business Logic)](#services)
-4. [State Management (BLoC)](#bloc)
-5. [UI Screens](#screens)
-6. [Tajweed Colors Implementation](#tajweed)
-7. [Reading Modes](#reading-modes)
-
----
-
 ## 🌐 API Setup & Documentation
 
 ### **APIs We'll Use:**

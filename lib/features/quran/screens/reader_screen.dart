@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:just_audio/just_audio.dart';
 import '../services/audio_service.dart';
 import '../services/preferences_service.dart';
 import '../services/word_timing_service.dart';
@@ -18,16 +17,15 @@ import 'widgets/reading_settings_sheet.dart';
 import 'widgets/tajweed_ayah.dart';
 import 'widgets/word_by_word_ayah.dart';
 import 'widgets/reciter_selection_sheet.dart';
-import 'widgets/ayah_toolbar.dart';
 import 'widgets/mushaf_page_preview.dart';
 import 'widgets/surah_skeleton.dart';
 import 'widgets/verse_playback_bar.dart';
 import 'widgets/verse_playback_settings_sheet.dart';
 import '../widgets/global_tafseer_player.dart';
-import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/icons/icomoon.dart';
 import '../../../../shared/icons/custom_icons_v2.dart';
 import 'translation_selection_screen.dart';
+import 'package:quran_app/core/widgets/no_internet_widget.dart';
 
 class ReaderScreen extends StatefulWidget {
   final Surah surah;
@@ -367,23 +365,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
 
           if (state is QuranError) {
-            return Center(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                    const SizedBox(height: 12),
-                    Text(state.message),
-                    const SizedBox(height: 16),
-                    LiquidGlassButton(
-                      label: 'دوبارہ کوشش کریں',
-                      icon: const Icon(Icons.refresh, size: 18),
-                      onTap: _loadSurah,
-                    ),
-                  ],
-                ),
-              ),
+            return NoInternetWidget(
+              message: state.message,
+              onRetry: _loadSurah,
             );
           }
 
@@ -1171,7 +1155,7 @@ class _StandardAyahCard extends StatelessWidget {
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: isVbVActive ? const Color(0xFFFFFDF0) : Colors.white,
+        color: isVbVActive ? const Color(0xFFEBF4FD) : Colors.white,
         border: Border(
           bottom: const BorderSide(color: Color(0xFFEEEEEE)),
           left: isVbVActive
@@ -1179,7 +1163,7 @@ class _StandardAyahCard extends StatelessWidget {
               : BorderSide.none,
         ),
         boxShadow: isVbVActive
-            ? [const BoxShadow(color: Color(0x22D4AF37), blurRadius: 8, offset: Offset(2, 0))]
+            ? [const BoxShadow(color: Color(0x2290BDE7), blurRadius: 8, offset: Offset(2, 0))]
             : null,
       ),
       child: Column(

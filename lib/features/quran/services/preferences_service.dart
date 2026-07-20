@@ -11,6 +11,7 @@ import '../models/reciter.dart';
 class PreferencesService {
   static const String _selectedReciterId = 'selected_reciter_id';
   static const String _selectedTafseerScholarId = 'selected_tafseer_scholar_id';
+  static const String _completedOnboarding = 'completed_onboarding';
   // Qibla Cache
   static const String _cachedQiblaDirection = 'cached_qibla_direction';
   static const String _cachedQiblaLat = 'cached_qibla_lat';
@@ -33,6 +34,16 @@ class PreferencesService {
 
   /// Expose the SharedPreferences instance
   SharedPreferences? get prefs => _prefs;
+
+  /// Check if user has completed the onboarding flow
+  bool getCompletedOnboarding() {
+    return _prefs.getBool(_completedOnboarding) ?? false;
+  }
+
+  /// Mark onboarding flow as completed
+  Future<void> setCompletedOnboarding(bool value) async {
+    await _prefs.setBool(_completedOnboarding, value);
+  }
 
   /// Get the saved reciter ID, defaults to 'alafasy'
   String getSelectedReciterId() {

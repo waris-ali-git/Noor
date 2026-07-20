@@ -5,7 +5,7 @@ import '../../../core/widgets/language_selector_button.dart';
 import '../../../core/widgets/translated_text.dart';
 import '../state/hadith_bloc.dart';
 import 'hadith_reader_screen.dart';
-import '../../../shared/widgets/custom_button.dart';
+import 'package:quran_app/core/widgets/no_internet_widget.dart';
 
 class HadithBooksScreen extends StatefulWidget {
   const HadithBooksScreen({super.key});
@@ -71,36 +71,9 @@ class _HadithBooksScreenState extends State<HadithBooksScreen> {
             }
 
             if (state is HadithError && bloc.books.isEmpty) {
-              return Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.wifi_off, size: 64, color: Colors.grey),
-                      const SizedBox(height: 16),
-                      const TranslatedText(
-                        'انٹرنیٹ کنکشن نہیں',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(state.message,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.grey)),
-                      const SizedBox(height: 24),
-                      LiquidGlassButton(
-                        label: 'Retry',
-                        icon: const Icon(Icons.refresh,
-                            size: 18, color: Colors.white),
-                        textStyle: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                        glassColor: const Color(0x33948160),
-                        onTap: () => bloc.add(const LoadHadithBooksEvent()),
-                      ),
-                    ],
-                  ),
-                ),
+              return NoInternetWidget(
+                message: state.message,
+                onRetry: () => bloc.add(const LoadHadithBooksEvent()),
               );
             }
 

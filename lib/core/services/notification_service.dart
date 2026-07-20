@@ -2,6 +2,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -35,6 +36,13 @@ class NotificationService {
     required String body,
     required DateTime scheduledTime,
   }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final bool enabled = prefs.getBool('enable_adhan_notifications') ?? true;
+    if (!enabled) {
+      await _notificationsPlugin.cancel(id);
+      return;
+    }
+
     // If the time has already passed today, don't schedule in the past, schedule for tomorrow
     if (scheduledTime.isBefore(DateTime.now())) {
       scheduledTime = scheduledTime.add(const Duration(days: 1));
@@ -47,11 +55,13 @@ class NotificationService {
       tz.TZDateTime.from(scheduledTime, tz.local),
       const NotificationDetails(
         android: AndroidNotificationDetails(
-          'prayer_channel',
-          'Prayer Times',
-          channelDescription: 'Notifications for daily prayers',
+          'azaan_channel_v1',
+          'Adhan Prayer Notifications',
+          channelDescription: 'Notifications for daily prayers with custom Azaan audio',
           importance: Importance.max,
           priority: Priority.high,
+          sound: RawResourceAndroidNotificationSound('azaan'),
+          playSound: true,
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -59,6 +69,12 @@ class NotificationService {
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time, // Repeats daily
     );
+  }
+
+  Future<void> cancelPrayerNotifications() async {
+    for (int i = 0; i < 6; i++) {
+      await _notificationsPlugin.cancel(i);
+    }
   }
 
   Future<void> scheduleInactivityReminder() async {

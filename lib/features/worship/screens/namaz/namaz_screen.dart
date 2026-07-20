@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import '../../../../core/widgets/translated_text.dart';
 import '../../widgets/worship_sliver_header.dart';
 import '../../services/prayer_timing_service.dart';
+import '../../services/prayer_tracking_service.dart';
 import '../../models/prayer_timing.dart';
+import '../../models/prayer_tracking_record.dart';
 import '../../models/namaz_step.dart';
 import '../../models/rakat_info.dart';
 import '../../../quran/models/ayah.dart'; // For ArabicStringExtension
@@ -21,7 +23,7 @@ class NamazScreen extends StatelessWidget {
     final Color lightColor = const Color(0xFFD9F1FD); // Powder Blue
 
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         backgroundColor: TasbeehColors.iceWhite, // Ice White
         body: NestedScrollView(
@@ -41,6 +43,7 @@ class NamazScreen extends StatelessWidget {
                 pinned: true,
                 delegate: _NamazSliverAppBarDelegate(
                   TabBar(
+                    isScrollable: false,
                     indicatorColor: deepColor,
                     labelColor: deepColor,
                     unselectedLabelColor: Colors.grey[600],
@@ -50,6 +53,7 @@ class NamazScreen extends StatelessWidget {
                       Tab(text: 'Timings', icon: Icon(Icons.access_time)),
                       Tab(text: 'Tariqa', icon: Icon(Icons.accessibility_new)),
                       Tab(text: 'Rakats', icon: Icon(Icons.format_list_numbered)),
+                      Tab(text: 'Calendar', icon: Icon(Icons.calendar_month)),
                     ],
                   ),
                 ),
@@ -61,6 +65,7 @@ class NamazScreen extends StatelessWidget {
               _TimingsTab(),
               _TariqaTab(),
               _RakatsTab(),
+              _CalendarTab(),
             ],
           ),
         ),
@@ -399,7 +404,737 @@ class _TariqaTabState extends State<_TariqaTab> {
   }
 }
 
-// ─── RAKATS TAB ─────────────────────────────────────────────────────────────
+// CALENDAR TAB
+class _CalendarTab extends StatefulWidget {
+  const _CalendarTab();
+
+  @override
+  State<_CalendarTab> createState() => _CalendarTabState();
+}
+
+class _CalendarTabState extends State<_CalendarTab> {
+  static const List<String> _monthNames = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  static const List<String> _weekdayLabels = [
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
+  ];
+
+  static const List<String> _weekdayNames = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
+  final PrayerTrackingService _trackingService = PrayerTrackingService();
+
+  late DateTime _focusedMonth;
+  late DateTime _selectedDate;
+  Map<String, PrayerTrackingRecord> _records = {};
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    final today = _dateOnly(DateTime.now());
+    _focusedMonth = DateTime(today.year, today.month);
+    _selectedDate = today;
+    _loadMonth(showLoader: false);
+  }
+
+  Future<void> _loadMonth({bool showLoader = true}) async {
+    if (showLoader) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
+
+    final records = await _trackingService.getRecordsForMonth(_focusedMonth);
+    if (!mounted) return;
+
+    setState(() {
+      _records = records;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _changeMonth(int delta) async {
+    final now = _dateOnly(DateTime.now());
+    final nextMonth = DateTime(
+      _focusedMonth.year,
+      _focusedMonth.month + delta,
+    );
+
+    setState(() {
+      _focusedMonth = nextMonth;
+      _selectedDate = _isSameMonth(nextMonth, now)
+          ? now
+          : DateTime(nextMonth.year, nextMonth.month);
+    });
+
+    await _loadMonth();
+  }
+
+  PrayerTrackingRecord get _selectedRecord {
+    final key = PrayerTrackingService.dateKey(_selectedDate);
+    return _records[key] ?? PrayerTrackingRecord.empty(key);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => _loadMonth(showLoader: false),
+      color: TasbeehColors.blueDark,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildSummaryCard(),
+          const SizedBox(height: 16),
+          _buildMonthHeader(),
+          const SizedBox(height: 12),
+          _buildWeekdayHeader(),
+          const SizedBox(height: 8),
+          _buildCalendarGrid(),
+          const SizedBox(height: 16),
+          _buildSelectedDayPanel(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard() {
+    final totalPrayers = _records.values.fold<int>(
+      0,
+      (sum, record) => sum + record.completionCount,
+    );
+    final fullDays = _records.values.where((record) => record.isComplete).length;
+    final bestDay = _records.values.fold<int>(
+      0,
+      (best, record) =>
+          record.completionCount > best ? record.completionCount : best,
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFF4FCFE), Color(0xFFDBE9FA)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: TasbeehColors.blueDark.withValues(alpha: 0.16),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: TasbeehColors.blueDark.withValues(alpha: 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(11),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.75),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.calendar_month_rounded,
+                  color: TasbeehColors.blueDark,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Prayer Calendar',
+                      style: TextStyle(
+                        color: TasbeehColors.textPrimary,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Your monthly namaz rhythm',
+                      style: TextStyle(
+                        color: TasbeehColors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildSummaryPill(
+                  Icons.done_all_rounded,
+                  'Prayers',
+                  '$totalPrayers',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildSummaryPill(
+                  Icons.auto_awesome_rounded,
+                  'Best Day',
+                  '$bestDay/5',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildSummaryPill(
+                  Icons.verified_rounded,
+                  'Full Days',
+                  '$fullDays',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryPill(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: TasbeehColors.blueDark, size: 19),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: TasbeehColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: TasbeehColors.textLight,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMonthHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.78),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: TasbeehColors.whisperBlue.withValues(alpha: 0.8),
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: () => _changeMonth(-1),
+            icon: const Icon(Icons.chevron_left_rounded),
+            color: TasbeehColors.blueDark,
+          ),
+          Expanded(
+            child: Text(
+              '${_monthNames[_focusedMonth.month - 1]} ${_focusedMonth.year}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: TasbeehColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: () => _changeMonth(1),
+            icon: const Icon(Icons.chevron_right_rounded),
+            color: TasbeehColors.blueDark,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeekdayHeader() {
+    return Row(
+      children: [
+        for (final label in _weekdayLabels)
+          Expanded(
+            child: Center(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: TasbeehColors.textLight,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildCalendarGrid() {
+    final daysInMonth = DateUtils.getDaysInMonth(
+      _focusedMonth.year,
+      _focusedMonth.month,
+    );
+    final firstWeekday = DateTime(
+      _focusedMonth.year,
+      _focusedMonth.month,
+    ).weekday;
+    final leadingEmptyCells = firstWeekday - 1;
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: leadingEmptyCells + daysInMonth,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 7,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 0.82,
+      ),
+      itemBuilder: (context, index) {
+        if (index < leadingEmptyCells) {
+          return const SizedBox.shrink();
+        }
+
+        final day = index - leadingEmptyCells + 1;
+        final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
+        return _buildDayCell(date);
+      },
+    );
+  }
+
+  Widget _buildDayCell(DateTime date) {
+    final key = PrayerTrackingService.dateKey(date);
+    final record = _records[key] ?? PrayerTrackingRecord.empty(key);
+    final isSelected = DateUtils.isSameDay(date, _selectedDate);
+    final isToday = DateUtils.isSameDay(date, DateTime.now());
+    final count = record.completionCount;
+
+    List<Color> gradient;
+    Color textColor;
+
+    if (isSelected) {
+      gradient = const [Color(0xFFEAF4FB), Color(0xFFD9EAF7)];
+      textColor = const Color(0xFF1A2E44);
+    } else if (record.isComplete) {
+      gradient = const [Color(0xFFEDFAF2), Color(0xFFE2F7EA)];
+      textColor = const Color(0xFF2F8B62);
+    } else if (count > 0) {
+      gradient = const [Color(0xFFF7FAFC), Color(0xFFEDF2F7)];
+      textColor = const Color(0xFF1A2E44);
+    } else {
+      gradient = const [Color(0xFFFFFFFF), Color(0xFFF8FAFC)];
+      textColor = const Color(0xFF6B8FB5).withOpacity(0.8);
+    }
+
+    // Color definitions for specific prayers
+    final colors = [
+      const Color(0xFF32C5C5), // Fajr (Cyan)
+      const Color(0xFF7B66FF), // Dhuhr (Lavender)
+      const Color(0xFF38A86C), // Asr (Green)
+      const Color(0xFFE86B9D), // Maghrib (Pink)
+      const Color(0xFF2687F6), // Isha (Blue)
+    ];
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedDate = _dateOnly(date);
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: gradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF90BDE7)
+                : isToday
+                    ? const Color(0xFF3487D1).withOpacity(0.55)
+                    : Colors.white.withOpacity(0.9),
+            width: isSelected || isToday ? 1.5 : 1,
+          ),
+          boxShadow: [
+            if (isSelected || count > 0)
+              BoxShadow(
+                color: const Color(0xFF90BDE7).withOpacity(0.12),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+          ],
+        ),
+        child: Center(
+          child: SizedBox(
+            width: 32,
+            height: 32,
+            child: CustomPaint(
+              painter: _MiniPrayerDonutPainter(
+                completedList: PrayerTrackingRecord.prayerKeys
+                    .map((k) => record.isCompleted(k))
+                    .toList(),
+                colors: colors,
+              ),
+              child: Center(
+                child: Text(
+                  '${date.day}',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 12,
+                    fontWeight: isToday || isSelected ? FontWeight.bold : FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectedDayPanel() {
+    final record = _selectedRecord;
+    final isFriday = _selectedDate.weekday == DateTime.friday;
+
+    // Color definitions for specific prayers
+    final colors = [
+      const Color(0xFF32C5C5), // Fajr (Cyan)
+      isFriday ? const Color(0xFFFBD9AE) : const Color(0xFF7B66FF), // Jumma / Dhuhr
+      const Color(0xFF38A86C), // Asr (Green)
+      const Color(0xFFE86B9D), // Maghrib (Pink)
+      const Color(0xFF2687F6), // Isha (Blue)
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: TasbeehColors.blueDark.withValues(alpha: 0.14),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.045),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _selectedDateLabel,
+                      style: const TextStyle(
+                        color: TasbeehColors.textPrimary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${record.completionCount}/5 prayers completed',
+                      style: const TextStyle(
+                        color: TasbeehColors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 58,
+                height: 58,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    CustomPaint(
+                      painter: _SelectedDayDonutPainter(
+                        completedList: PrayerTrackingRecord.prayerKeys
+                            .map((k) => record.isCompleted(k))
+                            .toList(),
+                        colors: colors,
+                      ),
+                    ),
+                    Center(
+                      child: Text(
+                        '${record.completionCount}',
+                        style: const TextStyle(
+                          color: TasbeehColors.textPrimary,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (int i = 0; i < PrayerTrackingRecord.prayerKeys.length; i++)
+                _buildPrayerStatusChip(
+                  prayerKey: PrayerTrackingRecord.prayerKeys[i],
+                  label: PrayerTrackingRecord.prayerKeys[i] == 'Dhuhr' && isFriday
+                      ? 'Jumma'
+                      : PrayerTrackingRecord.prayerKeys[i],
+                  isCompleted: record.isCompleted(PrayerTrackingRecord.prayerKeys[i]),
+                  prayerColor: colors[i],
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrayerStatusChip({
+    required String prayerKey,
+    required String label,
+    required bool isCompleted,
+    required Color prayerColor,
+  }) {
+    final activeColor = isCompleted ? prayerColor : TasbeehColors.textLight;
+    final bgGradient = isCompleted
+        ? [prayerColor.withOpacity(0.12), prayerColor.withOpacity(0.24)]
+        : const [Color(0xFFF6FCFF), Color(0xFFEAF4FB)];
+
+    return Container(
+      constraints: const BoxConstraints(minWidth: 124),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: bgGradient,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: activeColor.withOpacity(isCompleted ? 0.35 : 0.16),
+          width: isCompleted ? 1.2 : 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isCompleted
+                ? Icons.check_circle_rounded
+                : Icons.radio_button_unchecked_rounded,
+            color: activeColor,
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: isCompleted
+                  ? prayerColor.withOpacity(0.9)
+                  : TasbeehColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String get _selectedDateLabel {
+    return '${_weekdayNames[_selectedDate.weekday - 1]}, '
+        '${_monthNames[_selectedDate.month - 1]} '
+        '${_selectedDate.day}, ${_selectedDate.year}';
+  }
+
+  bool _isSameMonth(DateTime left, DateTime right) {
+    return left.year == right.year && left.month == right.month;
+  }
+
+  DateTime _dateOnly(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
+  }
+}
+
+class _MiniPrayerDonutPainter extends CustomPainter {
+  final List<bool> completedList;
+  final List<Color> colors;
+
+  _MiniPrayerDonutPainter({
+    required this.completedList,
+    required this.colors,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 2;
+    const strokeWidth = 2.5;
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    const totalPrayers = 5;
+    const double angleSegment = (2 * 3.141592653589793) / totalPrayers;
+    const double gap = 0.12; // gap in radians
+
+    for (int i = 0; i < totalPrayers; i++) {
+      final isDone = completedList[i];
+      paint.color = isDone ? colors[i] : const Color(0xFF6B8FB5).withOpacity(0.12);
+
+      final startAngle = -3.141592653589793 / 2 + i * angleSegment + gap / 2;
+      final sweepAngle = angleSegment - gap;
+
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        sweepAngle,
+        false,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniPrayerDonutPainter oldDelegate) {
+    return oldDelegate.completedList != completedList || oldDelegate.colors != colors;
+  }
+}
+
+class _SelectedDayDonutPainter extends CustomPainter {
+  final List<bool> completedList;
+  final List<Color> colors;
+
+  _SelectedDayDonutPainter({
+    required this.completedList,
+    required this.colors,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 4;
+    const strokeWidth = 5.0;
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    const totalPrayers = 5;
+    const double angleSegment = (2 * 3.141592653589793) / totalPrayers;
+    const double gap = 0.10;
+
+    for (int i = 0; i < totalPrayers; i++) {
+      final isDone = completedList[i];
+      paint.color = isDone ? colors[i] : const Color(0xFF6B8FB5).withOpacity(0.12);
+
+      final startAngle = -3.141592653589793 / 2 + i * angleSegment + gap / 2;
+      final sweepAngle = angleSegment - gap;
+
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        sweepAngle,
+        false,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SelectedDayDonutPainter oldDelegate) {
+    return oldDelegate.completedList != completedList || oldDelegate.colors != colors;
+  }
+}
+
+// RAKATS TAB
 class _RakatsTab extends StatelessWidget {
   const _RakatsTab();
 

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'features/quran/state/quran_bloc.dart';
 import 'features/hadith/state/hadith_bloc.dart';
 import 'features/tasbeeh/state/tasbeeh_bloc.dart';
 
-import 'features/home/screens/home_screen.dart';
+import 'features/onboarding/screens/onboarding_screen.dart';
 import 'core/state/language_cubit.dart';
 import 'core/di.dart';
 
@@ -17,6 +16,7 @@ void main() async {
   await setupDependencies();
   await NotificationService().init();
 
+  // TEST MODE: always show onboarding on every launch
   runApp(const IslamicApp());
 }
 
@@ -45,7 +45,7 @@ class IslamicApp extends StatelessWidget {
               ),
               fontFamily: 'Poppins',
             ),
-            home: const HomeScreen(),
+            home: const OnboardingScreen(),
           );
         }),
     );

@@ -52,7 +52,7 @@ class TajweedAyahWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: isVbVActive ? const Color(0xFFFFFDF0) : Colors.white,
+        color: isVbVActive ? const Color(0xFFEBF4FD) : Colors.white,
         border: Border(
           bottom: const BorderSide(color: Color(0xFFEEEEEE)),
           left: isVbVActive
@@ -60,7 +60,7 @@ class TajweedAyahWidget extends StatelessWidget {
               : BorderSide.none,
         ),
         boxShadow: isVbVActive
-            ? [const BoxShadow(color: Color(0x22D4AF37), blurRadius: 8, offset: Offset(2, 0))]
+            ? [const BoxShadow(color: Color(0x2290BDE7), blurRadius: 8, offset: Offset(2, 0))]
             : null,
       ),
       child: Column(

@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,12 +10,14 @@ import '../models/surah.dart';
 import '../models/reading_mode.dart';
 import 'reader_screen.dart';
 import '../../../shared/widgets/custom_button.dart';
+import '../../../core/widgets/no_internet_widget.dart';
 import '../services/verse_by_verse_controller.dart';
 import '../widgets/global_tafseer_player.dart';
 import 'widgets/verse_playback_bar.dart';
 
 class SurahListScreen extends StatefulWidget {
-  const SurahListScreen({super.key});
+  final VoidCallback? onBack;
+  const SurahListScreen({super.key, this.onBack});
 
   @override
   State<SurahListScreen> createState() => _SurahListScreenState();
@@ -88,7 +89,7 @@ class _SurahListScreenState extends State<SurahListScreen> {
 
             // 3. Error (only if no data)
             if (state is QuranError && _allSurahs.isEmpty) {
-              return _ErrorWidget(
+              return NoInternetWidget(
                 message: state.message,
                 onRetry: () =>
                     context.read<QuranBloc>().add(const LoadSurahsEvent()),
@@ -115,6 +116,7 @@ class _SurahListScreenState extends State<SurahListScreen> {
                             .add(SearchQuranEvent(query: val));
                       }
                     },
+                    onBack: widget.onBack,
                   ),
                   Expanded(
                     child: CustomScrollView(
@@ -284,68 +286,69 @@ class _SurahListScreenState extends State<SurahListScreen> {
                       ],
                     ),
                   ),
-                  Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: ListenableBuilder(
-                    listenable: VerseByVerseController(),
-                    builder: (context, _) {
-                      final vbvState = VerseByVerseController().state;
-                      if (vbvState.isActive) {
-                        return VersePlaybackBar(
-                          controller: VerseByVerseController(),
-                          onSettingsTap: () {
-                            try {
-                              final surah = _allSurahs.firstWhere(
-                                  (s) => s.number == vbvState.surahNumber);
-                              _openSurah(
-                                context,
-                                surah,
-                                ReadingDisplayMode.arabicWithTranslation,
-                                initialAyah: vbvState.currentAyahInSurah,
-                                startVbvOnLoad: true,
-                              );
-                            } catch (_) {}
-                          },
-                          onClose: () => setState(() {}),
-                          onBarTap: () {
-                            try {
-                              final surah = _allSurahs.firstWhere(
-                                  (s) => s.number == vbvState.surahNumber);
-                              _openSurah(
-                                context,
-                                surah,
-                                ReadingDisplayMode.arabicWithTranslation,
-                                initialAyah: vbvState.currentAyahInSurah,
-                                startVbvOnLoad: true,
-                              );
-                            } catch (_) {}
-                          },
-                        );
-                      }
-                      return GlobalTafseerPlayerWidget(
+                ],
+              ),
+              // Floating player bar — must be a direct child of Stack
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: ListenableBuilder(
+                  listenable: VerseByVerseController(),
+                  builder: (context, _) {
+                    final vbvState = VerseByVerseController().state;
+                    if (vbvState.isActive) {
+                      return VersePlaybackBar(
+                        controller: VerseByVerseController(),
+                        onSettingsTap: () {
+                          try {
+                            final surah = _allSurahs.firstWhere(
+                                (s) => s.number == vbvState.surahNumber);
+                            _openSurah(
+                              context,
+                              surah,
+                              ReadingDisplayMode.arabicWithTranslation,
+                              initialAyah: vbvState.currentAyahInSurah,
+                              startVbvOnLoad: true,
+                            );
+                          } catch (_) {}
+                        },
+                        onClose: () => setState(() {}),
                         onBarTap: () {
-                          final surahNum = QuranAudioService().tafseerSurahNumber;
-                          if (surahNum != null) {
-                            try {
-                              final surah = _allSurahs.firstWhere(
-                                  (s) => s.number == surahNum);
-                              _openSurah(
-                                context,
-                                surah,
-                                ReadingDisplayMode.arabicWithTranslation,
-                                // We don't have exact ayah, so just go to surah
-                              );
-                            } catch (_) {}
-                          }
+                          try {
+                            final surah = _allSurahs.firstWhere(
+                                (s) => s.number == vbvState.surahNumber);
+                            _openSurah(
+                              context,
+                              surah,
+                              ReadingDisplayMode.arabicWithTranslation,
+                              initialAyah: vbvState.currentAyahInSurah,
+                              startVbvOnLoad: true,
+                            );
+                          } catch (_) {}
                         },
                       );
-                    },
-                  ),
+                    }
+                    return GlobalTafseerPlayerWidget(
+                      onBarTap: () {
+                        final surahNum = QuranAudioService().tafseerSurahNumber;
+                        if (surahNum != null) {
+                          try {
+                            final surah = _allSurahs.firstWhere(
+                                (s) => s.number == surahNum);
+                            _openSurah(
+                              context,
+                              surah,
+                              ReadingDisplayMode.arabicWithTranslation,
+                              // We don't have exact ayah, so just go to surah
+                            );
+                          } catch (_) {}
+                        }
+                      },
+                    );
+                  },
                 ),
-                ],
-              )
+              ),
             ]);
           },
         ),
@@ -455,46 +458,6 @@ class _LoadingWidget extends StatelessWidget {
             SizedBox(height: 16),
             TranslatedText('قرآن لوڈ ہو رہا ہے...',
                 style: TextStyle(fontSize: 16)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorWidget extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _ErrorWidget({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.wifi_off, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            const TranslatedText(
-              'انٹرنیٹ کنکشن نہیں',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey)),
-            const SizedBox(height: 24),
-            LiquidGlassButton(
-              label: 'Retry',
-              icon: const Icon(Icons.refresh, size: 18, color: Colors.white),
-              textStyle: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold),
-              glassColor: const Color(0x33948160),
-              onTap: onRetry,
-            ),
           ],
         ),
       ),
@@ -692,11 +655,14 @@ class _SearchBar extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
   final ValueChanged<String> onSubmitted;
+  final VoidCallback? onBack;
 
-  const _SearchBar(
-      {required this.controller,
-      required this.onChanged,
-      required this.onSubmitted});
+  const _SearchBar({
+    required this.controller,
+    required this.onChanged,
+    required this.onSubmitted,
+    this.onBack,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -704,6 +670,15 @@ class _SearchBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       child: Row(
         children: [
+          if (onBack != null) ...[
+            IconButton(
+              icon: const Icon(Icons.arrow_back, color: Color(0xFF2D2D2D)),
+              onPressed: onBack,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+            const SizedBox(width: 16),
+          ],
           Expanded(
             child: TextField(
               controller: controller,
