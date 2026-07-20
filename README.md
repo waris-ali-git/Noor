@@ -136,7 +136,7 @@ Built with a passion for both **deen** and **design**, Noor combines a premium d
     <td align="center"><img src="pics/worship3(2).jpg" width="180" alt="Hajj"/><br/><sub><b>Hajj Duas</b></sub></td>
   </tr>
   <tr>
-    <td colspan="4" align="center"><img src="pics/worship3(3).jpg" width="180" alt="Grammar School"/><br/><sub><b>Arabic Grammar School</b></sub></td>
+    <td colspan="4" align="center"><img src="pics/worship3(3).jpg" width="180" alt="Hajj"/><br/><sub><b>Hajj list</b></sub></td>
   </tr>
 </table>
 </div>
@@ -153,9 +153,9 @@ Built with a passion for both **deen** and **design**, Noor combines a premium d
 <table>
   <tr>
     <td align="center"><img src="pics/dua1.jpg" width="220" alt="Dua Categories"/><br/><sub><b>Dua Categories</b></sub></td>
-    <td align="center"><img src="pics/dua2.jpg" width="220" alt="Dua by Feeling"/><br/><sub><b>Find Duas by Feeling</b></sub></td>
-    <td align="center"><img src="pics/dua3.jpg" width="220" alt="Dua Detail"/><br/><sub><b>Full Dua with Translation</b></sub></td>
-    <td align="center"><img src="pics/dua4.jpg" width="220" alt="Dua Share Card"/><br/><sub><b>Shareable Dua Cards</b></sub></td>
+    <td align="center"><img src="pics/dua2.jpg" width="220" alt="Dua"/><br/><sub><b>Shareable Dua Cards</b></sub></td>
+    <td align="center"><img src="pics/dua3.jpg" width="220" alt="Dua by Feeling"/><br/><sub><b>Dua by Feeling</b></sub></td>
+    <td align="center"><img src="pics/dua4.jpg" width="220" alt="Dua"/><br/><sub><b>Full Dua with Translation</b></sub></td>
   </tr>
 </table>
 </div>
@@ -171,10 +171,10 @@ Built with a passion for both **deen** and **design**, Noor combines a premium d
 <div align="center">
 <table>
   <tr>
-    <td align="center"><img src="pics/story1.jpg" width="180" alt="Adam AS"/><br/><sub><b>Adam (AS)</b></sub></td>
-    <td align="center"><img src="pics/story2.jpg" width="180" alt="Idris AS"/><br/><sub><b>Idris (AS)</b></sub></td>
-    <td align="center"><img src="pics/story3.jpg" width="180" alt="Nuh AS"/><br/><sub><b>Nuh (AS)</b></sub></td>
-    <td align="center"><img src="pics/story4.jpg" width="180" alt="Hud AS"/><br/><sub><b>Hud (AS)</b></sub></td>
+    <td align="center"><img src="pics/story1.jpg" width="180"
+    <td align="center"><img src="pics/story2.jpg" width="180" alt="Idris AS"/><br/><sub><b></b></sub></td>
+    <td align="center"><img src="pics/story3.jpg" width="180" alt="Nuh AS"/><br/><sub><b></b></sub></td>
+    <td align="center"><img src="pics/story4.jpg" width="180" alt="Hud AS"/><br/><sub><b></b></sub></td>
   </tr>
   <tr>
     <td align="center"><img src="pics/story5.jpg" width="180" alt="Ibrahim AS"/><br/><sub><b>Ibrahim (AS)</b></sub></td>
