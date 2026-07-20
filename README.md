@@ -171,16 +171,16 @@ Built with a passion for both **deen** and **design**, Noor combines a premium d
 <div align="center">
 <table>
   <tr>
-    <td align="center"><img src="pics/story1.jpg" width="180"
+    <td align="center"><img src="pics/story1.jpg" width="180" alt="Adam AS"/><br/><sub><b></b></sub></td>
     <td align="center"><img src="pics/story2.jpg" width="180" alt="Idris AS"/><br/><sub><b></b></sub></td>
     <td align="center"><img src="pics/story3.jpg" width="180" alt="Nuh AS"/><br/><sub><b></b></sub></td>
     <td align="center"><img src="pics/story4.jpg" width="180" alt="Hud AS"/><br/><sub><b></b></sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="pics/story5.jpg" width="180" alt="Ibrahim AS"/><br/><sub><b>Ibrahim (AS)</b></sub></td>
-    <td align="center"><img src="pics/story6.jpg" width="180" alt="Musa AS"/><br/><sub><b>Musa (AS)</b></sub></td>
-    <td align="center"><img src="pics/story7.jpg" width="180" alt="Isa AS"/><br/><sub><b>Isa (AS)</b></sub></td>
-    <td align="center"><img src="pics/story8.jpg" width="180" alt="Muhammad SAW"/><br/><sub><b>Muhammad (ﷺ)</b></sub></td>
+    <td align="center"><img src="pics/story5.jpg" width="180" alt="Ibrahim AS"/><br/><sub><b></b></sub></td>
+    <td align="center"><img src="pics/story6.jpg" width="180" alt="Musa AS"/><br/><sub><b></b></sub></td>
+    <td align="center"><img src="pics/story7.jpg" width="180" alt="Isa AS"/><br/><sub><b></b></sub></td>
+    <td align="center"><img src="pics/story8.jpg" width="180" alt="Muhammad SAW"/><br/><sub><b></b></sub></td>
   </tr>
 </table>
 </div>
