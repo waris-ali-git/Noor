@@ -127,13 +127,13 @@ Built with a passion for both **deen** and **design**, Noor combines a premium d
     <td align="center"><img src="pics/worship.jpg" width="180" alt="Worship Hub"/><br/><sub><b>Worship Hub</b></sub></td>
     <td align="center"><img src="pics/worship1.jpg" width="180" alt="Namaz Guide"/><br/><sub><b>Namaz Guide</b></sub></td>
     <td align="center"><img src="pics/worship2(1).jpg" width="180" alt="Kalmas"/><br/><sub><b>Six Kalmas</b></sub></td>
-    <td align="center"><img src="pics/worship2(2).jpg" width="180" alt="Tasbeeh Counter"/><br/><sub><b>Tasbeeh Counter</b></sub></td>
+    <td align="center"><img src="pics/worship2(2).jpg" width="180" alt="Namaz Guide"/><br/><sub><b>Namaz Guide</b></sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="pics/worship2(3).jpg" width="180" alt="Asma ul Husna"/><br/><sub><b>Asma ul Husna</b></sub></td>
+    <td align="center"><img src="pics/worship2(3).jpg" width="180" alt="Rakats"/><br/><sub><b>Rakats</b></sub></td>
     <td align="center"><img src="pics/worship2(4).jpg" width="180" alt="Prayer Tracker"/><br/><sub><b>Prayer Tracker</b></sub></td>
     <td align="center"><img src="pics/worship3(1).jpg" width="180" alt="Hajj Guide"/><br/><sub><b>Hajj & Umrah Guide</b></sub></td>
-    <td align="center"><img src="pics/worship3(2).jpg" width="180" alt="Prophets Section"/><br/><sub><b>Stories of Prophets</b></sub></td>
+    <td align="center"><img src="pics/worship3(2).jpg" width="180" alt="Hajj"/><br/><sub><b>Hajj Duas</b></sub></td>
   </tr>
   <tr>
     <td colspan="4" align="center"><img src="pics/worship3(3).jpg" width="180" alt="Grammar School"/><br/><sub><b>Arabic Grammar School</b></sub></td>
